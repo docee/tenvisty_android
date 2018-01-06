@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical" >
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:background="#fff"
+        android:paddingLeft="5dp"
+        android:paddingRight="5dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:clickable="true"
+                android:onClick="clickLine"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/uidTextView"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:textSize="16dp"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/lab_camera_uid"
+                    android:textColor="#333333" />
+
+
+                <EditText
+                    android:id="@+id/edtUID"
+                    android:layout_width="fill_parent"
+                    android:layout_height="20dp"
+                    android:singleLine="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toLeftOf="@+id/btnScan"
+                    android:layout_toRightOf="@+id/uidTextView"
+                    android:background="@null"
+                    android:inputType="textCapCharacters"
+                    android:maxLength="20"
+                    android:textSize="15dp"
+                    android:maxLines="1"
+                    android:hint="@string/hint_input_camera_uid"
+                    android:digits="@string/filter_vcode"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+                <Button
+                    android:id="@+id/btnScan"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:background="@drawable/qcode" />
+            </RelativeLayout>
+
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="0.1dp"
+                android:layout_marginTop="10dp"
+                android:background="#DDDDDD" />
+
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:clickable="true"
+                android:onClick="clickLine"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/securityCodeTextView"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_password"
+                    android:textSize="15dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edtSecurityCode"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toRightOf="@id/securityCodeTextView"
+                    android:background="@null"
+                    android:inputType="textPassword"
+                    android:hint="@string/hint_input_camera_password"
+                    android:layout_marginRight="40dp"
+                    android:textSize="16dp"
+                    android:maxLines="1"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:textColor="#333333"  />
+                <Button
+                    android:id="@+id/btnShowPassword"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentRight="true"
+                    android:layout_marginRight="10dp"
+                    android:layout_marginBottom="5dp"
+                    android:background="@drawable/ic_password_hidden"
+                    android:onClick="showPassword" />
+            </RelativeLayout>
+
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="0.7dp"
+                android:layout_marginTop="10dp"
+                android:background="#DDDDDD" />
+
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="5dp"
+                android:paddingRight="5dp"
+                android:clickable="true"
+                android:onClick="clickLine"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/nameTextView"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentLeft="true"
+                    android:layout_alignParentStart="true"
+                    android:text="@string/lab_camera_name"
+                    android:textSize="16dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edtNickName"
+                    android:layout_width="fill_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toRightOf="@+id/nameTextView"
+                    android:background="@null"
+                    android:inputType="textCapCharacters"
+                    android:maxLines="1"
+                    android:textSize="15dp"
+                    android:layout_marginRight="40dp"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:hint="@string/hint_input_camera_name"
+                    android:textColor="#333333"  />
+            </RelativeLayout>
+
+
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_height="0.7dp"
+                android:layout_marginTop="10dp"
+                android:background="#DDDDDD" />
+
+        </LinearLayout>
+    </ScrollView>
+
+</LinearLayout>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center"
+    android:background="@color/transparent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:background="@drawable/ll_bg_round_cornor"
+        android:orientation="vertical">
+
+        <com.tws.commonlib.view.TwsListView
+            android:id="@+id/listview_itemlist"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:divider="@color/lightestgray"
+            android:dividerHeight="0.5dp"
+            android:layout_gravity="center"></com.tws.commonlib.view.TwsListView>
+
+    </LinearLayout>
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@drawable/ic_down" />
+</LinearLayout>

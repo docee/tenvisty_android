@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/lightestgray">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        style="@style/editbox_container_ll"
+        android:layout_below="@+id/title_top">
+        <View
+            android:layout_width="match_parent"
+            style="@style/split_long_thin_style"/>
+        <LinearLayout
+            style="@style/editbox_item_ll"
+            android:id="@+id/ll_setCameraOther">
+
+            <TextView
+                style="@style/editbox_item_textview"
+                android:text="@string/title_camera_name" />
+            <EditText
+                android:id="@+id/edit_cameraName"
+                style="@style/editbox_item_edittext"
+                android:text="camera name"/>
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            style="@style/split_long_thin_style"/>
+    </LinearLayout>
+</RelativeLayout>

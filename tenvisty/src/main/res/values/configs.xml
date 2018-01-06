@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="is_strict_pwd">true</bool>
+    <bool name="is_show_shoppingpager">true</bool>
+    <bool name="is_show_p2p_deviceinfo">true</bool>
+    <bool name="has_check_for_update">true</bool>
+    <bool name="has_share_photo">true</bool>
+    <bool name="has_model_select">true</bool>
+    <bool name="has_feedback">true</bool>
+    <bool name="has_account">false</bool>
+    <integer name="smartlink_type">2</integer>
+    <bool name="has_network_link_check">true</bool>
+</resources>

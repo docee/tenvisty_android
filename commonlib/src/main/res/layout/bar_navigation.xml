@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="40dp"
+    android:orientation="horizontal"
+    android:background="@color/colorPrimary"
+    tools:context="com.tws.commonlib.controller.NavigationBar">
+
+    <Button
+        android:id="@+id/btn_return"
+        android:layout_width="24dip"
+        android:layout_height="24dip"
+        android:layout_centerVertical="true"
+        android:layout_marginLeft="15dip"
+        android:visibility="invisible"
+        android:background="@drawable/ic_goback"/>
+
+    <TextView
+        android:id="@+id/title_middle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:gravity="left"
+        android:layout_marginLeft="57dp"
+        android:textColor="@android:color/white"
+        android:textSize="16dp"
+        android:visibility="invisible"
+        android:text="Title"
+        />
+
+    <Button
+        android:id="@+id/btn_finish2"
+        android:layout_width="24dip"
+        android:layout_height="24dip"
+        android:textColor="@android:color/white"
+        android:background="@drawable/ic_ok"
+        android:textSize="16dp"
+        android:visibility="gone"
+        android:layout_marginRight="15dip"
+        android:layout_toLeftOf="@+id/btn_finish"
+        android:layout_centerVertical="true" />
+    <Button
+        android:id="@+id/btn_finish"
+        android:layout_width="24dip"
+        android:layout_height="24dip"
+        android:gravity="right|center"
+        android:textColor="@color/white"
+        android:visibility="invisible"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:layout_marginRight="15dip"
+        android:background="@drawable/ic_ok"/>
+
+</RelativeLayout>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/btn_left"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_margin="0dp"
+        android:background="@drawable/spinner_btn_bg_left_hor_press"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="Photos"
+        android:textColor="@color/black"
+        android:textSize="13dp" />
+
+    <Button
+        android:id="@+id/btn_center"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_margin="0dp"
+        android:background="@drawable/spinner_btn_bg_center_hor"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="Photos"
+        android:textColor="@color/black"
+        android:textSize="13dp" />
+
+    <Button
+        android:id="@+id/btn_right"
+        android:layout_width="wrap_content"
+        android:layout_height="35dp"
+        android:layout_margin="0dp"
+        android:background="@drawable/spinner_btn_bg_right_hor"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:text="Videos"
+        android:textColor="@color/black"
+        android:textSize="13dp" />
+</LinearLayout>

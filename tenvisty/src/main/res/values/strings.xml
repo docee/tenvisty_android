@@ -1,0 +1,14 @@
+<resources>
+    <string name="app_name">TENVISTY</string>
+    <string name="title_home">Home</string>
+    <string name="title_dashboard">Dashboard</string>
+    <string name="title_notifications">Notifications</string>
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="app_name_apk">TENVISTY.apk</string>
+    <string name="app_update_sever_name">TENVISTY</string>
+    <string name="app_folder_name">TENVISTY</string>
+    <string name="shopping_url">http://www.tenvis.com</string>
+    <string name="gcm_defaultSenderId">432431523130</string>
+</resources>

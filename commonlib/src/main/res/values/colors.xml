@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#008cd6</color>
+    <color name="colorPrimaryDark">#008cd6</color>
+    <color name="colorPrimaryDarkest">#0273af</color>
+    <color name="colorAccent">#FF4081</color>
+
+
+    <color name="blue">#0000FF</color>
+    <color name="red">#FF0000</color>
+    <color name="darkred">#d70000</color>
+    <color name="lightred">#ff5f5f</color>
+
+    <color name="green">#00ff00</color>
+    <color name="darkgreen">#04a609</color>
+    <color name="lightgreen">#6dfd7b</color>
+
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="lightlessgray">#cfcfcf</color>
+    <color name="lightgray">#e6e6e6</color>
+    <color name="lightestgray">#f1f1f1</color>
+    <color name="transparent">#00000000</color>
+    <color name="gray">#969595</color>
+    <color name="darkgray">#646464</color>
+    <color name="darkergray">#5b5b5b</color>
+
+    <color name="mask_press">#88888888</color>
+
+    <color name="camera_item_bg_press">#55adfd</color><!--按钮点击高亮颜色-->
+    <color name="camera_item_bg_nor">#66454545</color><!--按钮普通状态颜色-->
+    <color name="camera_item_bg_disable">#aa000000</color><!--按钮禁用状态颜色-->
+    <color name="camera_item_mask_bg">#66000000</color><!--摄像机已连接，遮罩层颜色-->
+    <color name="camera_item_mask_bg_disconnect">#aa000000</color><!--摄像机未连接，遮罩层颜色-->
+
+    <!-- QRCode scanner color begin -->
+    <color name="viewfinder_mask">#60000000</color>
+    <color name="result_view">#B0000000</color>
+    <color name="viewfinder_frame">#90FFFFFF</color>
+    <color name="result_point_color">#C0FFFF00</color>
+    <color name="laser_color">#0F0</color>
+    <color name="corner_color">#00FF00</color>
+    <!-- QRCode scanner color end -->
+
+    <color name="live_view_layout_sides">#30000000</color>
+
+    <color name="radio_bg_normal">#b6b6b7</color>
+    <color name="radio_bg_selected">#80000000</color>
+    <color name="select_tint_color">#646464</color>
+</resources>

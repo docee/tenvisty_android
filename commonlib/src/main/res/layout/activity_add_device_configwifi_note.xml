@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="@color/white">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:id="@+id/relativeLayout1"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center|bottom"
+        android:layout_weight="1">
+        <TextView
+            android:id="@+id/textView1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="30dp"
+            android:paddingLeft="30dp"
+            android:paddingRight="30dp"
+            android:text="@string/tips_add_camera_wireless"
+            android:textColor="#555" />
+        </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:gravity="center"
+        android:layout_weight="2">
+        <com.tws.commonlib.controller.GifView
+            android:id="@+id/gif_configwifi_note"
+            android:layout_width="270dp"
+            android:layout_height="132dp"
+            app:gif="@raw/configwifi_note"
+            android:enabled="false" />
+        </LinearLayout>
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:gravity="center|top"
+    android:layout_weight="1">
+    <Button
+        android:id="@+id/btnConfirmNote"
+        android:layout_width="244dp"
+        android:layout_height="44dp"
+        android:background="@drawable/ll_bg_round_cornor"
+        android:onClick="configWifiSsid"
+        android:text="@string/ready"
+        android:textColor="#fff"></Button>
+</LinearLayout>
+
+    </LinearLayout>
+
+
+</RelativeLayout>

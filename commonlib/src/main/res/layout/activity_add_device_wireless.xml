@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/white" >
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+
+        <LinearLayout
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_below="@+id/title_top"
+            android:paddingBottom="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:orientation="vertical" >
+            <RelativeLayout
+                android:id="@+id/rl_note_wifi_support"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="5dp"
+                android:paddingBottom="5dp"
+                android:gravity="left|top">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textSize="14dp"
+                    android:textColor="@color/gray"
+                    android:text="@string/tips_wireless_install_operate" />
+            </RelativeLayout>
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_margin="5dp"
+                    android:layout_height="50dp" >
+                    <ImageView
+                        android:id="@+id/wifiSsidImgView"
+                        android:src="@drawable/config_wifi"
+                        android:layout_width="30dp"
+                        android:layout_alignParentLeft="true"
+                        android:layout_alignParentBottom="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_height="30dp"
+                        ></ImageView>
+                    <EditText
+                        android:id="@+id/edtWifiSsid"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:paddingLeft="5dp"
+                        android:layout_marginLeft="5dp"
+                        android:inputType="text"
+                        android:layout_alignParentBottom="true"
+                        android:layout_toRightOf="@id/wifiSsidImgView"
+                        android:background="@null"
+                        android:hint="SSID"
+                        android:textColorHint="@color/lightgray"
+                        android:text=""
+                        android:cursorVisible="false"
+                        android:textSize="17dp"
+                        android:focusable="false"
+                        android:focusableInTouchMode="false"
+                        android:textColor="#333333"
+                        android:maxLines="1" />
+                </RelativeLayout>
+            <View
+                style="@style/split_long_thin_style"
+                android:layout_width="match_parent"
+                android:layout_height="1dip"
+                android:layout_alignParentBottom="true"/>
+                <RelativeLayout
+                    android:layout_width="fill_parent"
+                    android:layout_margin="5dp"
+                    android:layout_height="50dp" >
+
+                    <ImageView
+                        android:id="@+id/wifiPasswordImgView"
+                        android:src="@drawable/ic_password"
+                        android:layout_alignParentLeft="true"
+                        android:layout_marginLeft="10dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        ></ImageView>
+
+                    <Button
+                        android:id="@+id/btnShowPassword"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_alignParentBottom="true"
+                        android:layout_alignParentRight="true"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginBottom="5dp"
+                        android:background="@drawable/ic_password_hidden"
+                        android:onClick="showPassword" >
+                    </Button>
+                    <EditText
+                        android:id="@+id/edtWifiPassword"
+                        android:layout_width="fill_parent"
+                        android:layout_height="30dp"
+                        android:layout_toLeftOf="@id/btnShowPassword"
+                        android:layout_toRightOf="@id/wifiPasswordImgView"
+                        android:layout_marginRight="10dp"
+                        android:layout_marginLeft="5dp"
+                        android:paddingLeft="5dp"
+                        android:layout_alignParentBottom="true"
+                        android:hint="@string/hint_wifi_password"
+                        android:background="@null"
+                        android:inputType="textPassword"
+                        android:text=""
+                        android:textSize="17dp"
+                        android:cursorVisible="true"
+                        android:textCursorDrawable="@null"
+                        android:textColor="#333333"
+                        android:maxLines="1" />
+                </RelativeLayout>
+            <View
+                android:layout_width="match_parent"
+                style="@style/split_long_thin_style"
+                android:layout_height="1dip"
+                android:layout_alignParentBottom="true"/>
+                <RelativeLayout
+                    android:id="@+id/rlNote"
+                    android:layout_width="fill_parent"
+                    android:layout_margin="5dp"
+                    android:paddingBottom="15dp"
+                    android:gravity="left|top"
+                    android:layout_height="200dp" >
+                    <TextView
+                        android:id="@+id/textView1"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:textSize="14dp"
+                        android:textColor="@color/gray"
+                        android:text="@string/tips_wireless_install" />
+                </RelativeLayout>
+        </LinearLayout>
+
+</RelativeLayout>

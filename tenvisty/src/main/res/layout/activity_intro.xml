@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#FFFFFF"
+    android:orientation="vertical"
+    tools:context="com.tws.tenvisty.IntroActivity">
+    <android.support.v4.view.ViewPager
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/vp"></android.support.v4.view.ViewPager>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/gointo_app_bt"
+        android:background="@drawable/goin"
+        android:text="GO"
+        android:textSize="18dp"
+        android:onClick="onClick"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="60sp"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/white"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/layout_scr_bottom"
+        android:orientation="horizontal"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="5dp"
+        android:gravity="center" >
+    </LinearLayout>
+
+</RelativeLayout>

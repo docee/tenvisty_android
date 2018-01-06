@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+	xmlns:android="http://schemas.android.com/apk/res/android"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:background="@color/colorPrimary"
+	android:clipToPadding="true"
+	android:fitsSystemWindows="true"
+	android:layout_height="fill_parent">
+
+	<com.tws.commonlib.controller.NavigationBar
+		android:id="@+id/title_top"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" />
+	<com.tws.commonlib.controller.MyGallery
+		android:id="@+id/gallery"
+		android:background="@color/white"
+		android:layout_width="fill_parent"
+		android:layout_height="fill_parent"
+		android:spacing="20px"></com.tws.commonlib.controller.MyGallery>
+
+
+</LinearLayout>

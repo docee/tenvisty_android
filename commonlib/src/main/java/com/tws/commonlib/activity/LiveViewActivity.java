@@ -1,0 +1,1561 @@
+package com.tws.commonlib.activity;
+
+import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.Activity;
+import android.content.Intent;
+import android.content.res.Configuration;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.graphics.Point;
+import android.graphics.Shader.TileMode;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v4.content.ContextCompat;
+import android.util.DisplayMetrics;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupWindow;
+import android.widget.ProgressBar;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ViewSwitcher;
+
+import com.tutk.IOTC.AVIOCTRLDEFs;
+import com.tutk.IOTC.Camera;
+import com.tutk.IOTC.ICameraPlayStateCallback;
+import com.tutk.IOTC.IRegisterIOTCListener;
+import com.tutk.IOTC.L;
+import com.tutk.IOTC.NSCamera;
+import com.tutk.IOTC.St_SInfo;
+import com.tws.commonlib.R;
+import com.tws.commonlib.base.MyConfig;
+import com.tws.commonlib.base.MyLiveViewGLMonitor;
+import com.tws.commonlib.base.ScreenSwitchUtils;
+import com.tws.commonlib.base.TwsToast;
+import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.TwsDataValue;
+
+import java.io.File;
+import java.util.Timer;
+
+/**
+ * 瀹炴椂瑙嗛瑙傜湅鐣岄潰
+ *
+ * @author Administrator
+ */
+public class LiveViewActivity extends BaseActivity implements
+        ViewSwitcher.ViewFactory, IRegisterIOTCListener, View.OnTouchListener, ICameraPlayStateCallback {
+
+    private static final int BUILD_VERSION_CODES_ICE_CREAM_SANDWICH = 14;
+    // private static final String FILE_TYPE = "image/*";
+
+    private static final int REQUEST_CODE_ALBUM = 99;
+
+
+    // private TouchedMonitor monitor = null;
+    private MyLiveViewGLMonitor monitor = null;
+    public MyCamera mCamera = null;
+
+    private String mDevUID;
+    private String mDevUUID;
+    private String mConnStatus = "";
+    private int mVideoFPS;
+    private long mVideoBPS;
+    private int mOnlineNm;
+    private int mFrameCount;
+    private int mIncompleteFrameCount;
+    private int mSelectedChannel;
+
+
+    private boolean mIsRecording = false;
+    private boolean mLedOn = false;
+    private BitmapDrawable bg;
+    private BitmapDrawable bgSplit;
+
+    private ProgressBar videoLoadProgressBar;
+
+    private Timer ptz_timer;
+    PopupWindow popupWindow;
+    //private FileOperation mFile = null;
+    private ScreenSwitchUtils instance;
+    int videoQuality;
+    playState playState;
+    private PopupWindow mPopupWindow;
+    private int select_preset = 0;
+    private int str_state_background[] = new int[]{
+            R.drawable.shape_state_connecting,
+            R.drawable.shape_state_connecting,
+            R.drawable.shape_state_online,
+            R.drawable.shape_state_offline,
+            R.drawable.shape_state_offline,
+            R.drawable.shape_state_pwderror,
+            R.drawable.shape_state_offline,
+            R.drawable.shape_state_offline,
+            R.drawable.shape_state_offline,
+            R.drawable.shape_state_pwderror,
+            R.drawable.shape_state_connecting};
+    String[] souceList;
+
+    String str_state[];
+
+    Button btn_stream;
+    LinearLayout lay_live_tools_top;
+    LinearLayout lay_live_tools_bottom;
+    boolean toolsVisible;
+
+    public Button getBtn_stream() {
+        return (Button) findViewById(R.id.btn_stream);
+    }
+
+    public Button getBtn_talk() {
+        return (Button) findViewById(R.id.btn_talk);
+    }
+
+    public ImageView getBtn_listen() {
+        return (ImageView) findViewById(R.id.btn_listen);
+    }
+
+    public ImageView getBtn_recording() {
+        return (ImageView) findViewById(R.id.btn_record);
+    }
+
+    public LinearLayout ll_recording_tip() {
+        return (LinearLayout) findViewById(R.id.ll_recording_tip);
+    }
+
+    public TextView txt_recording_tip_time() {
+        return (TextView) findViewById(R.id.txt_recording_tip_time);
+    }
+
+    private long lastReceiveFrameTime = 0;
+    private boolean isVideoShowing = false;
+
+    AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp presetList;
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // setContentView(R.layout.activity_live_view_portrait);
+
+        bg = (BitmapDrawable) getResources().getDrawable(R.drawable.bg_striped);
+        bgSplit = (BitmapDrawable) getResources().getDrawable(
+                R.drawable.bg_striped_split_img);
+
+        str_state = getResources().getStringArray(R.array.connect_state);
+        Bundle bundle = this.getIntent().getExtras();
+        mDevUID = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
+        //鏍规嵁浼犺繃鏉ョ殑UID鎵惧埌鐩稿簲鐨凜amera
+        for (MyCamera camera : TwsDataValue.cameraList()) {
+            if (mDevUID.equalsIgnoreCase(camera.uid)) {
+                mCamera = camera;// 鎵惧埌camera
+                break;
+            }
+        }
+
+        if (mCamera != null) {
+            playState = new playState(mCamera);
+            mCamera.registerIOTCListener(this);// 娉ㄥ唽鐩戝惉
+            mCamera.registerPlayStateListener(this);
+            if (mCamera.connect_state != NSCamera.CONNECTION_STATE_CONNECTED) {
+                mCamera.start();
+            }
+        }
+        instance = ScreenSwitchUtils.init(this.getApplicationContext());
+
+//        Display display = ((WindowManager) getSystemService(Context.WINDOW_SERVICE))
+//                .getDefaultDisplay();
+//        int rotation = display.getOrientation();// 鍒ゆ柇灞忓箷鏃嬭浆鐨勬柟鍚�
+        // display.getRotation();
+
+        souceList = getResources().getStringArray(R.array.stream_quality);
+//        if (rotation == Surface.ROTATION_0 || rotation == Surface.ROTATION_180)
+//            setupViewInPortraitLayout();// 绔栧睆
+//        else
+//            setupViewInLandscapeLayout();// 妯睆
+        setupViewInPortraitLayout();// 绔栧睆
+
+        //mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetStreamCtrlReq.parseContent(0));
+        mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
+
+        toolsVisible = true;
+    }// onCreate over
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        instance.start(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        instance.stop();
+    }
+
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        if (mCamera != null) {//鍋滄璇煶
+            mCamera.saveSnapShot(mSelectedChannel, null, mCamera.getUID(), new MyCamera.TaskExecute() {
+                @Override
+                public void onPosted(Object data) {
+                    Intent intent = new Intent();
+                    intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, mCamera.getUID());
+                    LiveViewActivity.this.sendBroadcast(intent);
+                }
+            });
+            delayHandler.removeMessages(0);
+            mCamera.asyncStopVideo(new MyCamera.TaskExecute() {
+                @Override
+                public void onPosted(Object data) {
+                    if (playState.isRecording()) {
+                        stopRecording();
+                    }
+                    if (playState.isSpeaking()) {
+                        mCamera.stopSpeak();
+                    }
+                    if (playState.isListening()) {
+                        mCamera.stopAudio();
+                    }
+                }
+            });
+            mCamera.unregisterPlayStateListener(LiveViewActivity.this);
+            mCamera.unregisterIOTCListener(LiveViewActivity.this);
+        }
+
+        if (monitor != null) {
+            monitor.deattachCamera();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        //LiveViewActivity.this.mFile = new FileOperation(LiveViewActivity.this.mCamera.uid, LiveViewActivity.this.mSelectedChannel);
+        if (monitor != null) {// 澧炲姞寮傚父澶勭悊
+            try {
+                monitor.attachCamera(mCamera, mSelectedChannel);
+            } catch (Exception e) {
+            }
+        }
+        isVideoShowing = false;
+        if (mCamera != null) {
+            mCamera.registerIOTCListener(LiveViewActivity.this);
+            mCamera.registerPlayStateListener(this);
+            mCamera.asyncStartVideo(new MyCamera.TaskExecute() {
+                @Override
+                public void onPosted(Object data) {
+                    if (playState.isListening()) {
+                        mCamera.startAudio();
+                    }
+                }
+            });
+        }
+        //GCMUtils.SetRemoteEventCamera(null, this.getApplicationContext());
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (instance.isPortrait()) {
+            setupViewInPortraitLayout();
+        } else {
+            setupViewInLandscapeLayout();
+        }
+        setRecodingView();
+        refreshViewStatus();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE_ALBUM) {
+            monitor = (MyLiveViewGLMonitor) findViewById(R.id.monitor);
+//            if (videoHeigth != 0 && videoWidth != 0) {
+//                monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
+//            }
+            monitor.initMatrix();
+            monitor.setMaxZoom(3.0f);
+            monitor.attachCamera(mCamera, mSelectedChannel);
+        }
+    }
+
+    /**
+     * 璁剧疆妯睆鏄剧ず
+     */
+    private void setupViewInLandscapeLayout() {
+        if (popupWindow != null && popupWindow.isShowing()) {
+            popupWindow.dismiss();
+        }
+        if (mPopupWindow != null && mPopupWindow.isShowing()) {
+            mPopupWindow.dismiss();
+        }
+
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);// 璁剧疆绐椾綋濮嬬粓鐐逛寒
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().clearFlags(
+                WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+        doFullScreenStatusBar(false);
+        setContentView(R.layout.activity_live_view_landscape);
+        if (Build.VERSION.SDK_INT < BUILD_VERSION_CODES_ICE_CREAM_SANDWICH) {//4.0浠ヤ笅鐨勮缃產ctionBar鐨勮儗鏅�
+
+            bg.setTileModeXY(TileMode.REPEAT, TileMode.REPEAT);
+            //getSupportActionBar().setBackgroundDrawable(bg);
+
+            bgSplit.setTileModeXY(TileMode.REPEAT, TileMode.REPEAT);
+            //getSupportActionBar().setSplitBackgroundDrawable(bgSplit);
+        }
+
+        if (monitor != null) {
+            monitor.deattachCamera();
+        }
+
+        monitor = null;
+        monitor = (MyLiveViewGLMonitor) findViewById(R.id.monitor);
+//        if (videoHeigth != 0 && videoWidth != 0) {
+//            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
+//        }
+        monitor.initMatrix();
+        monitor.setMonitorOnTouchListener(this);
+        monitor.setMaxZoom(3.0f);
+        try {
+            monitor.attachCamera(mCamera, mSelectedChannel);
+        } catch (Exception e) {
+        }
+        videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
+        lay_live_tools_top = (LinearLayout) findViewById(R.id.lay_live_tools_top);
+        lay_live_tools_bottom = (LinearLayout) findViewById(R.id.lay_live_tools_bottom);
+        //monitor.setTouchListener(this);
+        setViewVisible(!this.toolsVisible);
+        getBtn_stream().setText(souceList[playState.getVideoQuality()]);
+        getBtn_talk().setOnTouchListener(this);
+        initBtn();
+
+    }
+
+    private void setViewVisible(boolean visible) {
+        lay_live_tools_top.setVisibility(visible ? View.VISIBLE : View.GONE);
+        lay_live_tools_bottom.setVisibility(visible ? View.VISIBLE : View.GONE);
+        getBtn_talk().setVisibility((visible && playState.isListening()) ? View.VISIBLE : View.GONE);
+        this.toolsVisible = visible;
+    }
+
+    /**
+     * 璁剧疆绔栧睆鏄剧ず
+     */
+    private void setupViewInPortraitLayout() {
+        if (popupWindow != null && popupWindow.isShowing()) {
+            popupWindow.dismiss();
+        }
+        if (mPopupWindow != null && mPopupWindow.isShowing()) {
+            mPopupWindow.dismiss();
+        }
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
+                WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        //getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        getWindow().clearFlags(
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        doFullScreenStatusBar(true);
+        setContentView(R.layout.activity_live_view_portrait);
+
+        this.setTitle(mCamera.name);
+        super.initView();
+        getBtn_talk().setOnTouchListener(this);
+        if (Build.VERSION.SDK_INT < BUILD_VERSION_CODES_ICE_CREAM_SANDWICH) {
+            bg.setTileModeXY(TileMode.REPEAT, TileMode.REPEAT);
+            //getSupportActionBar().setBackgroundDrawable(bg);
+
+            bgSplit.setTileModeXY(TileMode.REPEAT, TileMode.REPEAT);
+            //getSupportActionBar().setSplitBackgroundDrawable(bgSplit);
+        }
+
+        if (monitor != null) {
+            monitor.deattachCamera();
+        }
+
+        monitor = null;
+        monitor = (MyLiveViewGLMonitor) findViewById(R.id.monitor);
+//        if (videoHeigth != 0 && videoWidth != 0) {
+//            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
+//        }
+        monitor.initMatrix();
+        monitor.setMonitorOnTouchListener(this);
+        monitor.setMaxZoom(3.0f);
+
+        try {
+            monitor.attachCamera(mCamera, mSelectedChannel);
+        } catch (Exception e) {
+        }
+        videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
+
+        getBtn_stream().setText(souceList[playState.getVideoQuality()]);
+        TextView txt_state = (TextView) findViewById(R.id.txt_state);
+        if (txt_state != null) {
+            txt_state.setBackgroundResource(str_state_background[mCamera.connect_state]);
+//            String conType = "";
+//            try {
+//                conType = (mCamera.getSessionMode() == 0 ? "P2P" : (mCamera.getSessionMode() == 1 ? "RELAY" : "LAN"));
+//            } catch (Exception ex) {
+//
+//            }
+            txt_state.setText(str_state[mCamera.connect_state]);
+        }
+        initBtn();
+
+    }
+
+
+    //SD鍗℃槸鍚﹀彲鐢�
+    private static boolean isSDCardValid() {
+
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED);
+    }
+
+    /**
+     * 浜戝彴鎺у埗鍛戒护锛堢幇鍦ㄥ凡涓嶇敤锛�
+     *
+     * @param view
+     */
+    public void ptz(View view) {
+        int ptzType = Integer.parseInt(view.getTag().toString());
+        mCamera.ptz(ptzType);
+    }
+
+    /**
+     * 閫�鍑哄綋鍓嶇晫闈紝鍥炲埌涓婚〉闈ideoList
+     */
+    private void quit() {
+//        if (monitor != null) {
+//            monitor.deattachCamera();
+//        }
+//
+//        if (mCamera != null) {
+//
+//            mCamera.unregisterIOTCListener(this);
+//            mCamera.stopSpeak();
+//            mCamera.stopAudio();
+//            mCamera.stopVideo();
+//        }
+        setResult(RESULT_OK);
+        finish();
+    }
+
+
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+
+            case KeyEvent.KEYCODE_BACK:
+                if (instance.isPortrait()) {
+                    quit();
+                } else {
+                    instance.toggleScreen();
+                    return false;
+                }
+                break;
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    public void receiveFrameData(final NSCamera camera, int avChannel,
+                                 final Bitmap bmp) {
+        if (mCamera == camera && avChannel == mSelectedChannel) {
+            lastReceiveFrameTime = System.currentTimeMillis();
+            isVideoShowing = true;
+        }
+    }
+
+    /**
+     * 瑙嗛鏁版嵁鐩稿叧鍙傛暟淇℃伅
+     */
+    @Override
+    public void receiveFrameInfo(final NSCamera camera, int avChannel,
+                                 long bitRate, int frameRate, int onlineNm, int frameCount,
+                                 int incompleteFrameCount) {
+        if (mCamera == camera && avChannel == mSelectedChannel) {
+            mVideoFPS = frameRate;
+            mVideoBPS = bitRate;
+            mOnlineNm = onlineNm;
+            mFrameCount = frameCount;
+            mIncompleteFrameCount = incompleteFrameCount;
+
+            Bundle bundle = new Bundle();
+            bundle.putInt("avChannel", avChannel);
+
+            Message msg = handler.obtainMessage();
+            msg.what = TwsDataValue.HANDLE_MESSAGE_STS_CHANGE_STREAMINFO;
+            msg.setData(bundle);
+            handler.sendMessage(msg);
+        }
+    }
+
+    @Override
+    public void receiveChannelInfo(final NSCamera camera, int avChannel,
+                                   int resultCode) {
+        if (mCamera == camera && avChannel == mSelectedChannel) {
+
+            Bundle bundle = new Bundle();
+            bundle.putInt("avChannel", avChannel);
+
+            Message msg = handler.obtainMessage();
+            msg.what = resultCode;
+            msg.setData(bundle);
+            handler.sendMessage(msg);
+        }
+    }
+
+    @Override
+    public void receiveSessionInfo(final NSCamera camera, final int resultCode) {
+        Bundle bundle = new Bundle();
+        Message msg = handler.obtainMessage();
+        msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
+        msg.arg1 = resultCode;
+        msg.setData(bundle);
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void receiveIOCtrlData(final NSCamera camera, int avChannel,
+                                  int avIOCtrlMsgType, byte[] data) {
+        Bundle bundle = new Bundle();
+
+        bundle.putInt("avChannel", avChannel);
+        bundle.putByteArray("data", data);
+        Message msg = new Message();
+        msg.arg1 = avIOCtrlMsgType;
+        msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
+        msg.setData(bundle);
+        handler.sendMessage(msg);
+            /*
+             * Message msg = handler.obtainMessage(); msg.what =
+			 * avIOCtrlMsgType; handler.sendMessage(msg);
+			 */
+
+    }
+
+    private Handler delayHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    if (playState.isRecording()) {
+                        TwsToast.showToast(LiveViewActivity.this, getString(R.string.toast_stop_record));
+                        stopRecording();
+                    }
+                    break;
+            }
+        }
+    };
+    private Handler handler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+
+            Bundle bundle = msg.getData();
+            int avChannel = bundle.getInt("avChannel");
+            byte[] data = bundle.getByteArray("data");
+
+            St_SInfo stSInfo = new St_SInfo();
+            int requestCode = msg.arg1;
+            switch (msg.what) {
+                case TwsDataValue.HANDLE_MESSAGE_CHANNEL_STATE:
+                    if (requestCode == NSCamera.CONNECTION_STATE_TIMEOUT) {
+                        mCamera.asyncStop(new MyCamera.TaskExecute() {
+                            @Override
+                            public void onPosted(Object data) {
+                                mCamera.start();
+                            }
+                        });
+                    }
+                    break;
+                case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
+                    if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
+                        ((MyCamera) mCamera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (((MyCamera) mCamera).getVideoQuality() == 0 ? 1 : 5)));
+                        mCamera.startVideo();
+                    } else if (requestCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
+                            NSCamera.CONNECTION_STATE_DISCONNECTED || requestCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
+                        mCamera.asyncStop(new MyCamera.TaskExecute() {
+                            @Override
+                            public void onPosted(Object data) {
+                                mCamera.start();
+                            }
+                        });
+                    }
+                    TextView txt_state = (TextView) findViewById(R.id.txt_state);
+                    if (txt_state != null) {
+                        txt_state.setBackgroundResource(str_state_background[requestCode]);
+                        if (mCamera != null) {
+                            //(camera.getSessionMode() == 0 ? "P2P" : (camera.getSessionMode() == 1 ? "RELAY" : "LAN")) + " " +
+                            txt_state.setText(str_state[requestCode]);
+                        }
+                    }
+                    break;
+                case TwsDataValue.HANDLE_MESSAGE_IO_RESP:
+                    switch (requestCode) {
+                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_RESP:
+                            presetList = new AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp(data);
+                            break;
+                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP:
+                            //success
+                            if (data[0] == 0) {
+                                TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_set_succ));
+                                mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
+                            } else {
+                                TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_set_fail));
+                            }
+                            break;
+                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_RESP:
+                            //success
+                            if (data[0] == 0) {
+                                mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
+                                //TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_call_succ));
+                            } else {
+                                TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_call_fail));
+                            }
+                            break;
+                    }
+                    break;
+
+                case TwsDataValue.HANDLE_MESSAGE_STS_CHANGE_STREAMINFO:
+                    if (mVideoBPS < 1) {
+                        videoLoadProgressBar.setVisibility(View.VISIBLE);
+                        delayHandler.sendEmptyMessageDelayed(0, 10000);
+                        //playState.setRecordingPause(true);
+                        isVideoShowing = false;
+                    } else {
+                        delayHandler.removeMessages(0);
+                        videoLoadProgressBar.setVisibility(View.GONE);
+                        isVideoShowing = true;
+                        //playState.setRecordingPause(false);
+                    }
+                    break;
+
+
+            }
+
+            super.handleMessage(msg);
+        }
+    };
+
+    private boolean inArray(String str, String[] source) {
+        if (source != null) {
+            for (int i = 0; i < source.length; i++) {
+                if (source[i].equalsIgnoreCase(str)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
+    @Override
+    public View makeView() {
+        TextView t = new TextView(this);
+        return t;
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
+                                         byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
+                                         int paramInt3) {
+        // TODO Auto-generated method stub
+//	    if (this.mFile == null);
+//	    while ((this.mCamera != paramCamera) || (paramInt1 != this.mSelectedChannel))
+//	      return;
+//	    int i = paramInt2 + paramInt3;
+//	    byte[] arrayOfByte = new byte[4];
+//	    arrayOfByte[0] = Integer.valueOf(0xFF & i >> 0).byteValue();
+//	    arrayOfByte[1] = Integer.valueOf(0xFF & i >> 8).byteValue();
+//	    arrayOfByte[2] = Integer.valueOf(0xFF & i >> 16).byteValue();
+//	    arrayOfByte[3] = Integer.valueOf(0xFF & i >> 24).byteValue();
+//	    this.mFile.WriteData("TUTKH264".getBytes(), "TUTKH264".length());
+//	    this.mFile.WriteData(arrayOfByte, 4);
+//	    this.mFile.WriteData(paramArrayOfByte1, paramInt2);
+//	    this.mFile.WriteData(paramArrayOfByte2, paramInt3);
+    }
+
+    @Override
+    public void receiveRGBData(Camera paramCamera, int paramInt1,
+                               byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+        Message msg = recordingHandler.obtainMessage();
+        msg.what = paramInt1;
+        recordingHandler.sendMessage(msg);
+    }
+
+    void startListen() {
+//        if (!isVideoShowing) {
+//            showAlert(getString(R.string.alert_play_video_first));
+//            return;
+//        }
+        if (mCamera != null
+                && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+
+            if (playState.isSpeaking()) {
+                return;
+            }
+            getBtn_listen().setImageResource(R.drawable.ic_btn_listen_on);
+
+
+            if (!playState.isListening()) {
+                playState.setListening(true);
+                mCamera.startAudio();
+            }
+            if (!instance.isPortrait()) {
+                if (this.toolsVisible) {
+                    getBtn_talk().setVisibility(View.VISIBLE);
+                }
+            }
+        }
+    }
+
+    void stopListen() {
+        if (playState.isListening()) {
+            playState.setListening(false);
+            mCamera.stopAudio();
+        }
+        if (instance.isPortrait()) {
+            getBtn_listen().setImageResource(R.drawable.ic_btn_listen_off);
+        } else {
+            getBtn_listen().setImageResource(R.drawable.ic_btn_liveview_listen_close);
+        }
+        if (!instance.isPortrait()) {
+            getBtn_talk().setVisibility(View.GONE);
+        }
+    }
+
+    void startSpeak() {
+
+        if (!isVideoShowing) {
+            showAlert(getString(R.string.alert_play_video_first));
+            return;
+        }
+        if (mCamera != null
+                && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+
+            if (!TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.RECORD_AUDIO) ||
+                    !TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+
+                TwsTools.showAlertDialog(LiveViewActivity.this);
+                return;
+            }
+            instance.stop();
+            playState.setSpeaking(true);
+            mCamera.startSpeak();
+        }
+    }
+
+    void stopSpeak() {
+        instance.start(this);
+        playState.setSpeaking(false);
+        mCamera.stopSpeak();
+    }
+
+    void snap() {
+
+//        if (!isVideoShowing) {
+//            showAlert(getString(R.string.alert_play_video_first));
+//            return;
+//        }
+        if (mCamera != null && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+
+            if (isSDCardValid()) {// 濡傛灉sd鍗″彲鐢�
+                if (!TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    showAlert(getString(R.string.dialog_msg_no_permission));
+                    return;
+                }
+                final String fileName = mCamera.getUID() + "_" + TwsTools.getFileNameWithTime(0);
+                mCamera.saveSnapShot(mSelectedChannel, TwsDataValue.SNAP_DIR, fileName, new MyCamera.TaskExecute() {
+                    @Override
+                    public void onPosted(Object data) {
+                        String path = (String) data;
+                        if (path != null) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Toast.makeText(LiveViewActivity.this, LiveViewActivity.this.getText(R.string.tips_snapshot_ok), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                            TwsTools.addImageGallery(LiveViewActivity.this, path, fileName);
+                        } else {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    LiveViewActivity.this.showAlert(LiveViewActivity.this.getString(R.string.alert_snapshot_failed));
+                                }
+                            });
+                        }
+
+                    }
+                });
+            } else {// 濡傛灉sd鍗′笉鍙敤
+                showAlert(getString(R.string.alert_snapshot_no_sdcard));
+            }
+        }
+    }
+
+    public void doClick(View view) {
+        if (view.getId() == R.id.btn_record) {
+            if (playState.isRecording()) {
+                stopRecording();
+            } else {
+                startRecording();
+            }
+        } else if (view.getId() == R.id.btn_stream) {
+            if (playState.isRecording()) {
+                TwsToast.showToast(LiveViewActivity.this, getString(R.string.tip_not_switch_quality));
+            } else {
+                popupWindow = showPopupWindow(view, souceList, new AdapterView.OnItemClickListener() {
+
+                    @Override
+                    public void onItemClick(AdapterView<?> parent, View view, final int position, long id) {
+                        if (!playState.isRecording()) {
+                            if (playState.getVideoQuality() != position) {
+                                playState.setVideoQuality(position);
+                                mCamera.asyncStopVideo(new MyCamera.TaskExecute() {
+                                    @Override
+                                    public void onPosted(Object data) {
+                                        int videoQuality = position == 0 ? 1 : 5;
+                                        playState.setVideoQuality(position);
+                                        ((MyCamera) mCamera).sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (videoQuality)));
+                                        mCamera.startVideo();
+                                    }
+                                });
+                            }
+                        }
+                        popupWindow.dismiss();
+                    }
+                });
+            }
+        } else if (view.getId() == R.id.btn_exit) {
+            instance.toggleScreen();
+        } else if (view.getId() == R.id.btn_listen) {
+            if (!playState.isListening()) {
+                startListen();
+            } else {
+                stopListen();
+            }
+        } else if (view.getId() == R.id.btn_fullscreen) {
+            instance.toggleScreen();
+            //  setupViewInLandscapeLayout();
+        } else if (view.getId() == R.id.btn_snap) {
+            snap();
+        } else if (view.getId() == R.id.btn_live_preset) {
+            clickPreset((ImageView) view);
+        } else if (view.getId() == R.id.btn_event) {
+//            if (!isVideoShowing) {
+//                showAlert(getString(R.string.alert_camera_connected_failed));
+//                return;
+//            }
+            goActivity(EventListActivity.class);
+        } else if (view.getId() == R.id.btn_folder) {
+            if (monitor != null) {
+                monitor.deattachCamera();
+            }
+            Intent intent = new Intent(LiveViewActivity.this,
+                    CameraFolderActivity.class);
+            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, mDevUID);
+            startActivity(intent);
+//            File folder = new File(Environment.getExternalStorageDirectory()
+//                    .getAbsolutePath() + "/" + MyConfig.getFolderName() + "/Snapshot/" + mDevUID);// 鍥剧墖鏂囦欢鐩綍
+//
+//            String[] allFiles = folder.list();// 鑾峰彇folder鐩綍涓嬫墍鏈夋枃浠跺垪琛紝濡傛灉涓虹┖杩斿洖null
+//
+//            if (allFiles != null && allFiles.length > 0) {
+//
+//                String file = folder.getAbsolutePath() + "/"
+//                        + allFiles[allFiles.length - 1];
+//
+//                Intent intent = new Intent(LiveViewActivity.this,
+//                        CameraFolderActivity.class);
+//                intent.putExtra("snap", mDevUID);
+//                intent.putExtra("images_path", folder.getAbsolutePath());
+//                startActivity(intent);
+//
+//            } else {// 濡傛灉涓虹┖
+//                String msg = LiveViewActivity.this.getText(
+//                        R.string.tips_no_snapshot_found).toString();// tips_no_snapshot_found">鏌ユ棤蹇収
+//                Toast.makeText(LiveViewActivity.this, msg, Toast.LENGTH_SHORT)
+//                        .show();
+//            }
+        }
+    }
+
+    void goActivity(Class<?> cls) {
+        mCamera.stopVideo();
+        if (playState.isSpeaking()) {
+            mCamera.stopSpeak();
+        }
+        if (playState.isListening()) {
+            mCamera.stopAudio();
+        }
+        Bundle extras = new Bundle();
+        Intent intent = new Intent();
+
+        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.uid);
+        intent.putExtras(extras);
+        intent.setClass(LiveViewActivity.this, cls);
+        startActivity(intent);
+    }
+
+    void goEventActivity() {
+        mCamera.stopVideo();
+
+        Bundle extras = new Bundle();
+        Intent intent = new Intent();
+
+        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.uid);
+
+        intent.putExtras(extras);
+        intent.setClass(LiveViewActivity.this, EventListActivity.class);
+        startActivity(intent);
+    }
+
+    private float action_down_x;
+    private float action_down_y;
+
+    float lastX;
+    float lastY;
+
+    int xlenOld;
+    int ylenOld;
+
+    float move_x;
+    float move_y;
+
+    public float left;
+    public float width;
+    public float height;
+    public float bottom;
+
+    double nLenStart = 0;
+
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
+
+
+        if (v.getId() == R.id.btn_talk) {
+
+            switch (event.getAction()) {
+                case MotionEvent.ACTION_DOWN: {
+                    //HiLog.v("MotionEvent.ACTION_DOWN");
+                    if (playState.isListening()) {
+                        mCamera.stopAudio();
+                        getBtn_listen().setImageResource(R.drawable.ic_btn_listen_pause);
+                    }
+                    startSpeak();
+                    break;
+                }
+                case MotionEvent.ACTION_MOVE: {
+                    break;
+                }
+                case MotionEvent.ACTION_UP: {
+                    //	HiLog.v("MotionEvent.ACTION_UP");
+                    if (playState.isListening()) {
+                        mCamera.startAudio();
+                        getBtn_listen().setImageResource(R.drawable.ic_btn_listen_on);
+                    }
+                    stopSpeak();
+                    break;
+                }
+                default:
+                    break;
+            }
+        } else if (v.getId() == R.id.monitor) {
+            int nCnt = event.getPointerCount();
+            if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_POINTER_DOWN && 2 == nCnt) {
+                monitor.setTouchMove(2);
+                for (int i = 0; i < nCnt; i++) {
+                    float x = event.getX(i);
+                    float y = event.getY(i);
+
+                    Point pt = new Point((int) x, (int) y);
+                }
+
+                xlenOld = Math.abs((int) event.getX(0) - (int) event.getX(1));
+                ylenOld = Math.abs((int) event.getY(0) - (int) event.getY(1));
+                nLenStart = Math.sqrt((double) xlenOld * xlenOld + (double) ylenOld * ylenOld);
+
+            } else if ((event.getAction() & MotionEvent.ACTION_MASK) == MotionEvent.ACTION_MOVE && 2 == nCnt) {
+                monitor.setTouchMove(2);
+                // mMonitor.setState(3);
+                for (int i = 0; i < nCnt; i++) {
+                    float x = event.getX(i);
+                    float y = event.getY(i);
+
+                    Point pt = new Point((int) x, (int) y);
+
+                }
+
+                int xlen = Math.abs((int) event.getX(0) - (int) event.getX(1));
+                int ylen = Math.abs((int) event.getY(0) - (int) event.getY(1));
+
+                int moveX = Math.abs(xlen - xlenOld);
+                int moveY = Math.abs(ylen - ylenOld);
+
+                double nLenEnd = Math.sqrt((double) xlen * xlen + (double) ylen * ylen);
+                if (moveX < 20 && moveY < 20) {
+
+                    return false;
+                }
+
+                if (nLenEnd > nLenStart) {
+                    resetMonitorSize(true, nLenEnd);
+                } else {
+                    resetMonitorSize(false, nLenEnd);
+                }
+
+                xlenOld = xlen;
+                ylenOld = ylen;
+                nLenStart = nLenEnd;
+
+                return true;
+            } else if (nCnt == 1) {
+
+                switch (event.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        L.i("LiveView", "ACTION_MOVE");
+                        action_down_x = event.getRawX();
+                        action_down_y = event.getRawY();
+
+                        lastX = action_down_x;
+                        lastY = action_down_y;
+
+                        // HiLog.e("ACTION_DOWN");
+                        monitor.setTouchMove(0);
+                        break;
+                    case MotionEvent.ACTION_MOVE:
+
+                        if (monitor.getTouchMove() != 0)
+                            break;
+                        L.i("LiveView", "ACTION_MOVE");
+
+                        move_x = event.getRawX();
+                        move_y = event.getRawY();
+
+                        if (Math.abs(move_x - action_down_x) > 40 || Math.abs(move_y - action_down_y) > 40) {
+                            monitor.setTouchMove(1);
+                            // HiLog.e("ACTION_MOVE");
+                        }
+
+
+                        break;
+                    case MotionEvent.ACTION_UP: {
+                        if (monitor.getTouchMove() != 0) {
+                            break;
+                        }
+
+                        // if(mToolsBarVisibility == View.VISIBLE) {
+                        // setToolsBarsVisibility(View.GONE);
+                        // }
+                        // else if(mToolsBarVisibility == View.GONE) {
+                        // setToolsBarsVisibility(View.VISIBLE);
+                        // }
+                        if (!instance.isPortrait()) {
+                            setViewVisible(!this.toolsVisible);
+                        }
+                        // HiTools.hideVirtualKey(this);
+
+                        break;
+                    }
+                    default:
+                        break;
+                }
+            }
+        }
+        return false;
+    }
+
+    void initBtn() {
+        if (playState.isListening()) {
+            startListen();
+        } else {
+            stopListen();
+        }
+        if (playState.isRecording()) {
+            startRecording();
+        } else {
+            stopRecording();
+        }
+
+    }
+
+    String filePath = null;
+
+    void startRecording() {
+        if (!isVideoShowing) {
+            showAlert(getString(R.string.alert_play_video_first));
+            return;
+        }
+        if (!playState.isRecording()) {
+            if (!isSDCardValid()) {
+                showAlert(getString(R.string.alert_snapshot_no_sdcard));
+                return;
+            }
+            if (!TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                TwsTools.showAlertDialog(LiveViewActivity.this);
+                return;
+            }
+            MyCamera myCamera = (MyCamera) mCamera;
+            //+appname + "/"
+            File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
+//            File targetFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName());
+//            File videoFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/VideoRecording/");
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + ((MyCamera) mCamera).getUID());
+//            if (!rootFolder.exists()) {
+//                rootFolder.mkdir();
+//            }
+//            if (!targetFolder.exists()) {
+//                targetFolder.mkdir();
+//            }
+//            if (!videoFolder.exists()) {
+//                videoFolder.mkdir();
+//            }
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+
+
+            final String file = cameraFolder.getAbsoluteFile() + "/" + myCamera.getUID() + "_" + TwsTools.getFileNameWithTime(1);
+            filePath = file;
+            setRecodingView();
+            myCamera.startRecording(file, mSelectedChannel);
+//            playState.setRecording(true);
+//            txt_recording_tip_time().setText("00:00");
+//            playState.setRecordingSeconds(0);
+//            recordingHandler.postDelayed(recordingTask, 1000);
+        }
+//        ll_recording_tip().setVisibility(View.VISIBLE);
+//        if (instance.isPortrait()) {
+//            getBtn_recording().setImageResource(R.drawable.ic_btn_record_press);
+//        } else {
+//            getBtn_recording().setImageResource(R.drawable.ic_btn_liveview_record_open);
+//        }
+    }
+
+    void stopRecording() {
+        if (playState.isRecording()) {
+            delayHandler.removeMessages(0);
+            MyCamera myCamera = (MyCamera) mCamera;
+            if (playState.isRecording()) {
+                myCamera.stopRecording(mSelectedChannel);
+                //myCamera.stop_record();
+                playState.setRecording(false);
+                if (filePath != null) {
+                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));
+                }
+            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    setRecodingView();
+                }
+            });
+
+            recordingHandler.removeCallbacks(recordingTask);
+        }
+
+    }
+
+    @Override
+    public void callbackState(Camera camera, int channel, int state, int w, int h) {
+        if (channel == mSelectedChannel) {
+            if (state == 1) {
+                LiveViewActivity.this.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        stopRecording();
+                    }
+                });
+                isVideoShowing = false;
+            } else {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        videoLoadProgressBar.setVisibility(View.GONE);
+                    }
+                });
+
+                isVideoShowing = true;
+                if (w >= 1000) {
+                    playState.setVideoQuality(0);
+                } else {
+                    playState.setVideoQuality(1);
+                }
+            }
+            if (w != 0 && h != 0 && Math.abs(this.mCamera.getVideoRatio(LiveViewActivity.this) - w / h) > 0.2) {
+                this.mCamera.setVideoRatio(LiveViewActivity.this, (float) w / h);
+                if (monitor != null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            monitor.resizeVideoWrapper(LiveViewActivity.this.mCamera);
+                        }
+                    });
+                }
+            }
+            if (monitor != null) {
+                monitor.initMatrix();
+            }
+        }
+    }
+
+    @Override
+    public void callbackPlayUTC(Camera var1, int var2) {
+
+    }
+
+    class playState {
+        private playState(MyCamera camera) {
+            this.camera = camera;
+        }
+
+        public MyCamera getCamera() {
+            return camera;
+        }
+
+        MyCamera camera;
+
+        boolean isListening;
+        boolean isSpeaking;
+        boolean isRecording;
+
+        public boolean isRecordingPause() {
+            return isRecordingPause;
+        }
+
+        public void setRecordingPause(boolean recordingPause) {
+            isRecordingPause = recordingPause;
+        }
+
+        boolean isRecordingPause;
+
+        public int getRecordingSeconds() {
+            return recordingSeconds;
+        }
+
+        public void setRecordingSeconds(int recordingSeconds) {
+            this.recordingSeconds = recordingSeconds;
+        }
+
+        int recordingSeconds;
+
+        public int getVideoQuality() {
+            return mCamera.getVideoQuality();
+        }
+
+        public void setVideoQuality(final int videoQuality) {
+            //this.videoQuality = videoQuality;
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    getBtn_stream().setText(souceList[videoQuality]);
+                }
+            });
+            mCamera.setVideoQuality(videoQuality);
+            mCamera.sync2Db(LiveViewActivity.this);
+        }
+
+        int videoQuality;
+
+        public boolean isListening() {
+            return isListening;
+        }
+
+        public void setListening(boolean listening) {
+            isListening = listening;
+        }
+
+        public boolean isSpeaking() {
+            return isSpeaking;
+        }
+
+        public void setSpeaking(boolean speaking) {
+            isSpeaking = speaking;
+        }
+
+        public boolean isRecording() {
+            return isRecording;
+        }
+
+        public void setRecording(boolean recording) {
+            isRecording = recording;
+            if (recording) {
+                isRecordingPause = false;
+            }
+        }
+
+    }
+
+    void setRecodingView() {
+        if (playState.isRecording()) {
+            ll_recording_tip().setVisibility(View.VISIBLE);
+            if (instance.isPortrait()) {
+                getBtn_recording().setImageResource(R.drawable.ic_btn_record_press);
+            } else {
+                getBtn_recording().setImageResource(R.drawable.ic_btn_liveview_record_open);
+            }
+            getBtn_stream().setBackgroundResource(R.drawable.btn_videoquality_shape_disable);
+        } else {
+            ll_recording_tip().setVisibility(View.INVISIBLE);
+            if (instance.isPortrait()) {
+                getBtn_recording().setImageResource(R.drawable.ic_btn_record_nor);
+            } else {
+                getBtn_recording().setImageResource(R.drawable.ic_btn_liveview_record_close);
+            }
+            getBtn_stream().setBackgroundResource(R.drawable.btn_videoquality_shape_normal);
+        }
+    }
+
+    private Handler recordingHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what) {
+                case 0:
+                    if (!playState.isRecording()) {
+                        playState.setRecording(true);
+                        txt_recording_tip_time().setText("00:00");
+                        playState.setRecordingSeconds(0);
+                    }
+                    setRecodingView();
+                    break;
+                case 1:
+                    setRecodingView();
+                    break;
+                case 2:
+                    showAlert(getString(R.string.alert_record_failed));
+                    stopRecording();
+                    break;
+                case 3:
+                    recordingHandler.postDelayed(recordingTask, 1000);
+                    break;
+            }
+        }
+
+    };
+
+    private Runnable recordingTask = new Runnable() {
+        public void run() {
+            if (!playState.isRecordingPause()) {
+                // TODOAuto-generated method stub
+                playState.setRecordingSeconds(playState.getRecordingSeconds() + 1);
+                int hours = playState.getRecordingSeconds() / 60 / 60;
+                int minutes = playState.getRecordingSeconds() % (60 * 60) / 60;
+                int seconds = playState.getRecordingSeconds() % 60;
+                String text = "";
+                if (hours > 0) {
+                    text += (hours >= 10 ? hours : ("0" + hours)) + ":";
+                }
+                text += (minutes >= 10 ? minutes : ("0" + minutes)) + ":";
+                text += seconds >= 10 ? seconds : ("0" + seconds);
+                txt_recording_tip_time().setText(text);
+            }
+            //需要执行的代码
+            recordingHandler.postDelayed(this, 1 * 1000);//设置延迟时间，此处是1秒
+        }
+    };
+
+    private void refreshViewStatus() {
+//        if (isVideoShowing) {
+//            getBtn_recording().setEnabled(true);
+//            getBtn_listen().setEnabled(true);
+//            getBtn_talk().setEnabled(true);
+//            getBtn_stream().setEnabled(true);
+//        } else {
+//            getBtn_listen().setEnabled(false);
+//            getBtn_recording().setEnabled(false);
+//            getBtn_talk().setEnabled(false);
+//            getBtn_stream().setEnabled(false);
+//        }
+    }
+
+
+    // 预设位
+    private void clickPreset(ImageView iv) {
+        @SuppressLint("InflateParams")
+        final View customView = getLayoutInflater().inflate(R.layout.popview_preset, null, false);
+
+        mPopupWindow = new PopupWindow(customView);
+        ColorDrawable cd = new ColorDrawable(0000);
+        mPopupWindow.setBackgroundDrawable(cd);
+        mPopupWindow.setOutsideTouchable(true);
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // w:210 h:40+5*3+35*2 = 125
+
+		/*
+         * if (getResources().getConfiguration().orientation ==
+		 * Configuration.ORIENTATION_PORTRAIT) { int offsetx =
+		 * -HiTools.dip2px(this, 80); int offsety = HiTools.dip2px(this, 40);
+		 * mPopupWindow.showAsDropDown(iv,offsetx,offsety); } else
+		 * if(getResources().getConfiguration().orientation ==
+		 * Configuration.ORIENTATION_LANDSCAPE){
+		 */
+        int offsetx = TwsTools.dip2px(this, 20);
+        int location[] = new int[2];
+        iv.getLocationOnScreen(location);
+        int offsety = TwsTools.dip2px(this, 90);
+        mPopupWindow.showAtLocation(iv, 0, location[0] - offsetx, offsety - location[1]);
+        // }
+
+        if (presetList != null && presetList.Points != null) {
+            for (AVIOCTRLDEFs.SMsgAVIoctrlPointInfo info : presetList.Points) {
+                if (info != null && info.BitID <= 8) {
+                    if (info.BitID == 1) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_0)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 2) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_1)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 3) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_2)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 4) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_3)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 5) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_4)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 6) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_5)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 7) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_6)).setTextColor(Color.GREEN);
+                    } else if (info.BitID == 8) {
+                        ((RadioButton) customView.findViewById(R.id.radio_quality_7)).setTextColor(Color.GREEN);
+                    }
+                }
+            }
+        }
+        final RadioGroup radio_group_preset = (RadioGroup) customView.findViewById(R.id.radio_group_preset);
+        Button btn_set = (Button) customView.findViewById(R.id.btn_preset_set);
+
+        btn_set.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View arg0) {
+                // isSetPTZReset = true;
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((RadioButton) customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).setTextColor(Color.GREEN);
+                        select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
+                    }
+                });
+                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp.parseContent(select_preset, "preset" + (select_preset)));
+            }
+        });
+        ((RadioButton) customView.findViewById(R.id.radio_quality_0)).performClick();
+        Button btn_call = (Button) customView.findViewById(R.id.btn_preset_call);
+        btn_call.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
+                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlPointOprReq.parseContent(select_preset, 0));
+            }
+        });
+
+        Button btn_preset_clear = (Button) customView.findViewById(R.id.btn_preset_clear);
+        btn_preset_clear.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                ((RadioButton) customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).setTextColor(ContextCompat.getColor(LiveViewActivity.this, R.color.lightestgray));
+                select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
+                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlPointOprReq.parseContent(select_preset, 1));
+            }
+        });
+
+    }
+
+    int moveX;
+    int moveY;
+
+    private void resetMonitorSize(boolean large, double move) {
+
+        if (monitor.height == 0 && monitor.width == 0) {
+            monitor.initMatrix();// initMatrix((int) monitor.screen_width, (int) monitor.screen_height);
+        }
+
+        moveX = (int) (move / 2);
+        moveY = (int) ((move * monitor.screen_height / monitor.screen_width) / 2);
+
+        if (large) {
+            L.i("LiveView", " larger and larger ");
+            if (monitor.width <= 3 * monitor.screen_width && monitor.height <= 3 * monitor.screen_height) {
+
+                monitor.left -= (moveX / 2);
+                monitor.bottom -= (moveY / 2);
+                monitor.width += (moveX);
+                monitor.height += (moveY);
+            }
+        } else {
+            L.e("LiveView", " smaller and smaller ");
+
+            monitor.left += (moveX / 2);
+            monitor.bottom += (moveY / 2);
+            monitor.width -= (moveX);
+            monitor.height -= (moveY);
+        }
+
+        if (monitor.left > 0 || monitor.width < (int) monitor.screen_width || monitor.height < (int) monitor.screen_height || monitor.bottom > 0) {
+            monitor.initMatrix();// initMatrix((int) monitor.screen_width, (int) monitor.screen_height);
+        }
+
+        L.i("LiveView", "mMonitor.left=" + monitor.left + " mMonitor.bottom=" + monitor.bottom + "\n mMonitor.width=" + monitor.width + " mMonitor.height=" + monitor.height);
+
+        if (monitor.width > (int) monitor.screen_width) {
+            monitor.setState(1);
+        } else {
+            monitor.setState(0);
+        }
+
+        monitor.setMatrix(monitor.left, monitor.bottom, monitor.width, monitor.height);
+
+    }
+
+    private void initMatrix(int screen_width, int screen_height) {
+        monitor.left = 0;
+        monitor.bottom = 0;
+
+        monitor.width = screen_width;
+        monitor.height = screen_height;
+    }
+}

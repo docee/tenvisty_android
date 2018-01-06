@@ -1,0 +1,61 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.0"
+
+    defaultConfig {
+
+        minSdkVersion 14
+        targetSdkVersion 22
+        versionCode 1
+        versionName "1.0"
+        useLibrary 'org.apache.http.legacy'
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+        vectorDrawables.useSupportLibrary = true
+        ndk {
+            //根据需要 自行选择添加的对应cpu类型的.so库。
+            abiFilters 'armeabi'
+            // 还可以添加 'x86', 'x86_64', 'mips', 'mips64'
+
+
+            manifestPlaceholders = [
+
+                    XG_ACCESS_ID:"2100263755",
+                    XG_ACCESS_KEY : "A8P437N8UEQB",
+            ]
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile project(':iOTCamera_New_Tenvis')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:26.+'
+    compile 'com.android.support:design:26.+'
+    compile 'com.android.support:support-vector-drawable:26.+'
+    testCompile 'junit:junit:4.12'
+    compile 'com.google.zxing:core:3.3.0'
+    //信鸽的版本
+    compile 'com.tencent.xinge:xinge:3.1.8-alpha'
+
+    //wup包 如果和其他腾讯系的sdk 发生wup冲突，这个依赖可不添加
+    compile 'com.tencent.wup:wup:1.0.0.E-alpha'
+
+    //mid包
+    compile 'com.tencent.mid:mid:3.72.4-alpha'
+    compile project(':push')
+
+}

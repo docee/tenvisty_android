@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:orientation="vertical" >
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="40dp"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:textSize="18dp"
+        android:background="@color/colorPrimary"
+        android:text="@string/title_about_fragment"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        style="@style/split_long_thin_style"/>
+        <ListView
+        android:id="@+id/about_fragment_item_list"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dip"
+        android:background="@drawable/layout_camera_fragment_main_bg"
+        android:divider="@color/lightestgray"
+        android:dividerHeight="1dip" />
+
+    <ImageView
+        android:layout_width="match_parent"
+        style="@style/split_long_thin_style"/>
+</LinearLayout>

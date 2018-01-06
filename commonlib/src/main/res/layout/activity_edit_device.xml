@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="@color/colorPrimary"
+	android:clipToPadding="true"
+	android:fitsSystemWindows="true"
+	android:orientation="vertical"
+	tools:context="com.tws.commonlib.activity.setting.EditDeviceActivity">
+
+	<com.tws.commonlib.controller.NavigationBar
+		android:id="@+id/title_top"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" />
+	<LinearLayout
+		android:layout_width="match_parent"
+		android:background="#ffffff"
+		android:orientation="vertical"
+		android:paddingTop="20dp"
+		android:layout_height="match_parent">
+		<LinearLayout
+			android:layout_width="fill_parent"
+			android:paddingLeft="15dp"
+			android:paddingRight="15dp"
+			android:clickable="true"
+			android:gravity="center_vertical"
+			android:background="#ffffff"
+			android:onClick="clickLine"
+			android:layout_height="45dp">
+
+			<TextView
+				android:id="@+id/uidTextView"
+				android:layout_width="0dp"
+				android:layout_weight="1"
+				android:layout_height="wrap_content"
+				android:textSize="16dp"
+				android:text="@string/lab_camera_uid"
+				android:textColor="#333333" />
+
+
+			<TextView
+				android:id="@+id/edtUID"
+				android:layout_width="0dp"
+				android:layout_weight="2"
+				android:layout_height="wrap_content"
+				android:layout_toRightOf="@id/uidTextView"
+				android:background="@null"
+				android:inputType="none"
+				android:maxLength="20"
+				android:textSize="16dp"
+				android:maxLines="1"
+				android:layout_marginRight="10dp"
+				android:textColor="#333333"  />
+		</LinearLayout>
+
+		<ImageView
+			android:layout_width="fill_parent"
+		style="@style/split_short_thin_style" />
+
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			android:orientation="vertical">
+			<LinearLayout
+				android:layout_width="fill_parent"
+				android:paddingLeft="15dp"
+				android:paddingRight="15dp"
+				android:clickable="true"
+				android:background="#ffffff"
+				android:onClick="clickLine"
+				android:gravity="center_vertical"
+				android:layout_height="45dp">
+
+				<TextView
+					android:id="@+id/nameTextView"
+					android:layout_width="0dp"
+					android:layout_weight="1"
+					android:layout_height="wrap_content"
+					android:text="@string/lab_camera_name"
+					android:textSize="16dp"
+					android:textColor="#333333" />
+				<EditText
+					android:id="@+id/edtNickName"
+					android:layout_width="0dp"
+					android:layout_weight="2"
+					android:layout_height="wrap_content"
+					android:layout_toRightOf="@+id/nameTextView"
+					android:background="@null"
+					android:inputType="text"
+					android:cursorVisible="true"
+					android:textCursorDrawable="@null"
+					android:maxLines="1"
+					android:textSize="16dp"
+					android:focusable="true"
+					android:focusableInTouchMode="true"
+					android:layout_marginRight="10dp"
+					android:textColor="#333333"  />
+			</LinearLayout>
+
+
+			<!--<ImageView-->
+				<!--android:layout_width="fill_parent"-->
+				<!--android:layout_height="0.7dp"-->
+				<!--android:layout_marginLeft="10dp"-->
+				<!--android:layout_marginRight="10dp"-->
+				<!--android:background="#DDDDDD" />-->
+
+
+			<!--<LinearLayout-->
+				<!--android:layout_width="fill_parent"-->
+				<!--android:paddingLeft="15dp"-->
+				<!--android:paddingRight="15dp"-->
+				<!--android:clickable="true"-->
+				<!--android:onClick="clickLine"-->
+				<!--android:gravity="center_vertical"-->
+				<!--android:background="@color/edit_item_bg"-->
+				<!--android:layout_height="45dp">-->
+
+				<!--<TextView-->
+					<!--android:id="@+id/securityCodeTextView"-->
+					<!--android:layout_width="0dp"-->
+					<!--android:layout_weight="1"-->
+					<!--android:layout_height="wrap_content"-->
+					<!--android:text="@string/txtSecurityCode"-->
+					<!--android:textSize="16dp"-->
+					<!--android:textColor="#333333" />-->
+
+				<!--<EditText-->
+					<!--android:id="@+id/edtSecurityCode"-->
+					<!--android:layout_width="0dp"-->
+					<!--android:layout_weight="2"-->
+					<!--android:layout_height="wrap_content"-->
+					<!--android:layout_toRightOf="@id/securityCodeTextView"-->
+					<!--android:background="@null"-->
+					<!--android:inputType="textPassword"-->
+					<!--android:cursorVisible="true"-->
+					<!--android:textCursorDrawable="@null"-->
+					<!--android:layout_marginRight="10dp"-->
+					<!--android:textSize="16dp"-->
+					<!--android:maxLines="1"-->
+					<!--android:textColor="#333333"  />-->
+			<!--</LinearLayout>-->
+
+			<ImageView
+				android:layout_width="fill_parent"
+				style="@style/split_long_thin_style" />
+
+
+
+		</LinearLayout>
+	</LinearLayout>
+</LinearLayout>

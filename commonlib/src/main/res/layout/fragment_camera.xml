@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#eeeeee"
+    android:orientation="vertical" >
+
+    <RelativeLayout
+        android:id="@+id/relativeLayout1"
+        android:layout_width="fill_parent"
+        android:layout_height="40dp"
+        android:background="@color/colorPrimary"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:textColor="@color/white"
+            android:gravity="center"
+            android:textSize="18dp"
+            android:background="@color/colorPrimary"
+            android:text="@string/title_camera_list"/>
+
+        <Button
+            android:id="@+id/btnAdd"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentRight="true"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/btn_add_camera"
+            android:layout_centerVertical="true" >
+        </Button>
+    </RelativeLayout>
+    <android.support.v4.view.ViewPager
+        android:id="@+id/gridViewPager"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/relativeLayout1" >
+    </android.support.v4.view.ViewPager>
+
+    <LinearLayout
+        android:id="@+id/ll_container_first_add_tip"
+        android:layout_width="match_parent"
+        android:layout_height="300sp"
+        android:layout_marginTop="50sp"
+        android:gravity="center">
+
+        <LinearLayout
+            android:id="@+id/ll_first_add_tip"
+            android:layout_width="220sp"
+            android:layout_height="180sp"
+            android:background="@drawable/ll_background_dark_corner"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <ImageView
+                android:id="@+id/btn_first_add_camera"
+                android:layout_width="64sp"
+                android:layout_height="64sp"
+                android:layout_marginBottom="60sp"
+                android:background="@drawable/ic_first_add"
+                android:clickable="true" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="-40sp"
+                android:text="@string/lab_first_add_camera"
+                android:textColor="#a39fa0"
+                android:textSize="13dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+</RelativeLayout>
