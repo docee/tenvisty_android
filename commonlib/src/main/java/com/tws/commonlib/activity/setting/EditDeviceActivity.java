@@ -2,22 +2,20 @@ package com.tws.commonlib.activity.setting;
 
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
 public class EditDeviceActivity extends BaseActivity {
 
     private EditText edtNickName;
-    private MyCamera mCamera = null;
+    private IMyCamera mCamera = null;
 
 
     @Override
@@ -28,9 +26,9 @@ public class EditDeviceActivity extends BaseActivity {
         Bundle bundle = this.getIntent().getExtras();
         String devUID = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
 
-        for (NSCamera camera : TwsDataValue.cameraList()) {
-            if (devUID.equalsIgnoreCase(camera.uid)) {
-                mCamera = (MyCamera) camera;
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
+            if (devUID.equalsIgnoreCase(camera.getUid())) {
+                mCamera = camera;
                 break;
             }
         }
@@ -57,9 +55,9 @@ public class EditDeviceActivity extends BaseActivity {
             }
         });
         /* find view */
-        ((TextView) findViewById(R.id.edtUID)).setText(mCamera.uid);
+        ((TextView) findViewById(R.id.edtUID)).setText(mCamera.getUid());
         edtNickName = (EditText) findViewById(R.id.edtNickName);
-        edtNickName.setText(mCamera.getName());
+        edtNickName.setText(mCamera.getNickName());
         edtNickName.requestFocus();
     }
 
@@ -73,7 +71,7 @@ public class EditDeviceActivity extends BaseActivity {
             edtNickName.requestFocus();
             return false;
         }
-        mCamera.setName(edtNickName.getText().toString());
+        mCamera.setNickName(edtNickName.getText().toString());
         mCamera.sync2Db(this);
         return true;
     }

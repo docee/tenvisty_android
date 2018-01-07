@@ -17,10 +17,12 @@ import android.widget.FrameLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.hichip.sdk.HiChipSDK;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.L;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.fragment.AboutFragment;
@@ -123,10 +125,11 @@ public class MainActivity extends AppCompatActivity {
             Toast.makeText(this, R.string.tips_press_again_to_exit, Toast.LENGTH_LONG).show();
             if (press_exit_num == 0) {
                 finish();
-                for(MyCamera camera:TwsDataValue.cameraList()){
+                for(IMyCamera camera:TwsDataValue.cameraList()){
                     camera.stop();
                 }
                 MyCamera.uninit();
+                HiChipSDK.uninit();
                 //杀死该应用进程
                 android.os.Process.killProcess(android.os.Process.myPid());
             } else {

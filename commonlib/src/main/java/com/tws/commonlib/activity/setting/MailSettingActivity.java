@@ -17,13 +17,12 @@ import android.widget.ToggleButton;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
-import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.ExpandAnimation;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -37,10 +36,10 @@ import java.util.List;
  *
  * @author Administrator
  */
-public class MailSettingActivity extends BaseActivity implements IRegisterIOTCListener {
+public class MailSettingActivity extends BaseActivity implements IIOTCListener {
 
     private String dev_uid;
-    private MyCamera camera;
+    private IMyCamera camera;
     ToggleButton togbtn_open;
     EditText mailbox_setting_username_edt;
     EditText mailbox_setting_psw_edt;
@@ -68,9 +67,9 @@ public class MailSettingActivity extends BaseActivity implements IRegisterIOTCLi
 
         setContentView(R.layout.activity_mail_setting);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (NSCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
-                camera = (MyCamera) _camera;
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
+                camera = _camera;
                 break;
             }
         }
@@ -247,27 +246,27 @@ public class MailSettingActivity extends BaseActivity implements IRegisterIOTCLi
     }
 
     @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
 
     }
 
     @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
     }
 
     @Override
-    public void receiveSessionInfo(NSCamera camera, int resultCode) {
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
 
     }
 
     @Override
-    public void receiveChannelInfo(NSCamera camera, int avChannel, int resultCode) {
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
 
     }
 
     @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
         Bundle bundle = new Bundle();
         bundle.putInt("sessionChannel", avChannel);
         bundle.putByteArray("data", data);
@@ -279,22 +278,22 @@ public class MailSettingActivity extends BaseActivity implements IRegisterIOTCLi
     }
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 

@@ -348,15 +348,9 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
         if (TextUtils.isEmpty(resultString)) {
             Toast.makeText(CaptureActivity.this, "Scan failed!", Toast.LENGTH_SHORT).show();
         } else {
-            if (resultString.length() > 20) {
-                String temp = "";
-                for (int t = 0; t < resultString.length(); t++) {
-                    if (resultString.substring(t, t + 1).matches("[A-Z0-9]{1}"))
-                        temp += resultString.substring(t, t + 1);
-                }
-                resultString = temp;
-            }
-            if (resultString.length() != 20) {
+            resultString = TwsTools.takeInnerUid(resultString);
+
+            if (resultString == null) {
                 Toast.makeText(CaptureActivity.this, getString(R.string.alert_invalid_uid_qrcode), Toast.LENGTH_SHORT).show();
                 handler.sendEmptyMessageDelayed(R.id.restart_preview, 5000);
                 return;

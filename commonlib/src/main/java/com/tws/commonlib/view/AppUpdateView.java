@@ -27,10 +27,10 @@ import com.tutk.IOTC.L;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.MyConfig;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.db.DatabaseManager;
-import com.tws.commonlib.start.IntroActivity;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -388,7 +388,7 @@ public class AppUpdateView {
                 "snapshot", "ask_format_sdcard", "cameraStatus",
                 "dev_videoQuality", "ownerCameraId", "cameraModel"}, null, null, null, null, "_id LIMIT "
                 + TwsDataValue.CAMERA_MAX_LIMITS);
-        List<MyCamera> cameraList = TwsDataValue.cameraList();
+        List<IMyCamera> cameraList = TwsDataValue.cameraList();
         cameraList.clear();
         while (cursor.moveToNext()) {
 
@@ -409,15 +409,15 @@ public class AppUpdateView {
                     .getInt(cursor.getColumnIndex("cameraModel"));
             int videoQuality = cursor.getInt(cursor.getColumnIndex("dev_videoQuality"));
 
-            MyCamera camera = new MyCamera(dev_nickname, dev_uid, view_acc,
+            IMyCamera camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(dev_nickname, dev_uid, view_acc,
                     view_pwd);
             camera.setSnapshot(loadImageFromUrl(context, camera));
             if (cameraModel == 0) {
-                camera.cameraModel = com.tutk.IOTC.NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264;
+                camera.setCameraModel(com.tutk.IOTC.NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
             }
             camera.setVideoQuality(videoQuality);
-            camera.pushNotificationStatus = event_notification;
-            camera.databaseId = db_id + "";
+            camera.setEventNum(event_notification);
+            camera.setDatabaseId(db_id);
             //DeviceInfo dev = new DeviceInfo(db_id, camera.getUUID(), dev_nickname, dev_uid, view_acc, view_pwd, "", event_notification, channel, null);
             //VideoList.DeviceList.add(dev);
             //VideoList.cameraList.add(dev);
@@ -435,7 +435,7 @@ public class AppUpdateView {
 
     }
 
-    public static Bitmap loadImageFromUrl(Context context, MyCamera camera) {
+    public static Bitmap loadImageFromUrl(Context context, IMyCamera camera) {
 
 
         //是否SD卡可用
@@ -446,7 +446,7 @@ public class AppUpdateView {
             if (!folder.exists()) {
                 folder.mkdir();
             }
-            File f = new File(FileUrl + camera.uid);
+            File f = new File(FileUrl + camera.getUid());
             //SD卡中是否有该文件，有则直接读取返回
             if (f.exists()) {
                 FileInputStream fis = null;

@@ -33,6 +33,7 @@ import com.tws.commonlib.R;
 import com.tws.commonlib.adapter.LocalPicItemListAdapter;
 import com.tws.commonlib.base.DateScrollItem;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.LocalPichModel;
 import com.tws.commonlib.controller.MyGallery;
 import com.tws.commonlib.controller.MyImageView;
@@ -162,7 +163,7 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
         File[] files = folder.listFiles(new FileFilter() {
             @Override
             public boolean accept(File file) {
-                return file.isDirectory() || (file.getName().length() == 39);
+                return file.isDirectory() || file.getName().length() == 36 || file.getName().length() == 39;
             }
         });
         for (File f : files) {
@@ -170,7 +171,7 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
                 File[] pics = f.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
-                        return (file.getName().length() == 39);
+                        return file.getName().length() == 36 || file.getName().length() == 39;
                     }
                 });
                 for (File pic : pics) {
@@ -356,7 +357,7 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
             String filePath = pathsrcs.get(currentposition);
             String[] paths = filePath.split("/");
             String fileName = paths[paths.length - 1];
-            title.setTitle(fileName.substring(21, 39) + "(" + (currentposition + 1) + "/" + pathsrcs.size() + ")");
+            title.setTitle(fileName.substring((fileName.length() == 36?18:21), fileName.length()) + "(" + (currentposition + 1) + "/" + pathsrcs.size() + ")");
             MyImageView view = new MyImageView(context, bmp.getWidth(), bmp.getHeight());
             view.setLayoutParams(new Gallery.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 

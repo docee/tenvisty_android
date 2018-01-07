@@ -2,7 +2,6 @@ package com.tws.commonlib.activity;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
@@ -18,7 +17,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v4.content.ContextCompat;
-import android.util.DisplayMetrics;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -32,15 +30,12 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.ICameraPlayStateCallback;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.St_SInfo;
@@ -50,6 +45,9 @@ import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
+import com.tws.commonlib.bean.IPlayStateListener;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
@@ -62,7 +60,7 @@ import java.util.Timer;
  * @author Administrator
  */
 public class LiveViewActivity extends BaseActivity implements
-        ViewSwitcher.ViewFactory, IRegisterIOTCListener, View.OnTouchListener, ICameraPlayStateCallback {
+        ViewSwitcher.ViewFactory, IIOTCListener, View.OnTouchListener, IPlayStateListener {
 
     private static final int BUILD_VERSION_CODES_ICE_CREAM_SANDWICH = 14;
     // private static final String FILE_TYPE = "image/*";
@@ -100,21 +98,7 @@ public class LiveViewActivity extends BaseActivity implements
     playState playState;
     private PopupWindow mPopupWindow;
     private int select_preset = 0;
-    private int str_state_background[] = new int[]{
-            R.drawable.shape_state_connecting,
-            R.drawable.shape_state_connecting,
-            R.drawable.shape_state_online,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_pwderror,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_pwderror,
-            R.drawable.shape_state_connecting};
     String[] souceList;
-
-    String str_state[];
 
     Button btn_stream;
     LinearLayout lay_live_tools_top;
@@ -160,13 +144,12 @@ public class LiveViewActivity extends BaseActivity implements
         bgSplit = (BitmapDrawable) getResources().getDrawable(
                 R.drawable.bg_striped_split_img);
 
-        str_state = getResources().getStringArray(R.array.connect_state);
         Bundle bundle = this.getIntent().getExtras();
         mDevUID = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
         //鏍规嵁浼犺繃鏉ョ殑UID鎵惧埌鐩稿簲鐨凜amera
-        for (MyCamera camera : TwsDataValue.cameraList()) {
-            if (mDevUID.equalsIgnoreCase(camera.uid)) {
-                mCamera = camera;// 鎵惧埌camera
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
+            if (mDevUID.equalsIgnoreCase(camera.getUid())) {
+                mCamera = (MyCamera) camera;// 鎵惧埌camera
                 break;
             }
         }
@@ -175,7 +158,7 @@ public class LiveViewActivity extends BaseActivity implements
             playState = new playState(mCamera);
             mCamera.registerIOTCListener(this);// 娉ㄥ唽鐩戝惉
             mCamera.registerPlayStateListener(this);
-            if (mCamera.connect_state != NSCamera.CONNECTION_STATE_CONNECTED) {
+            if (!mCamera.isConnected()) {
                 mCamera.start();
             }
         }
@@ -217,27 +200,27 @@ public class LiveViewActivity extends BaseActivity implements
     protected void onPause() {
         super.onPause();
         if (mCamera != null) {//鍋滄璇煶
-            mCamera.saveSnapShot(mSelectedChannel, null, mCamera.getUID(), new MyCamera.TaskExecute() {
+            mCamera.saveSnapShot(mSelectedChannel, null, mCamera.getUid(), new IMyCamera.TaskExecute() {
                 @Override
-                public void onPosted(Object data) {
+                public void onPosted(IMyCamera c,Object data) {
                     Intent intent = new Intent();
                     intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
-                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, mCamera.getUID());
+                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
                     LiveViewActivity.this.sendBroadcast(intent);
                 }
             });
             delayHandler.removeMessages(0);
-            mCamera.asyncStopVideo(new MyCamera.TaskExecute() {
+            mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
                 @Override
-                public void onPosted(Object data) {
+                public void onPosted(IMyCamera c, Object data) {
                     if (playState.isRecording()) {
                         stopRecording();
                     }
                     if (playState.isSpeaking()) {
-                        mCamera.stopSpeak();
+                        c.stopSpeak();
                     }
                     if (playState.isListening()) {
-                        mCamera.stopAudio();
+                        c.stopAudio();
                     }
                 }
             });
@@ -264,11 +247,11 @@ public class LiveViewActivity extends BaseActivity implements
         if (mCamera != null) {
             mCamera.registerIOTCListener(LiveViewActivity.this);
             mCamera.registerPlayStateListener(this);
-            mCamera.asyncStartVideo(new MyCamera.TaskExecute() {
+            mCamera.asyncStartVideo(new IMyCamera.TaskExecute() {
                 @Override
-                public void onPosted(Object data) {
+                public void onPosted(IMyCamera c,Object data) {
                     if (playState.isListening()) {
-                        mCamera.startAudio();
+                        c.startAudio();
                     }
                 }
             });
@@ -381,7 +364,7 @@ public class LiveViewActivity extends BaseActivity implements
         doFullScreenStatusBar(true);
         setContentView(R.layout.activity_live_view_portrait);
 
-        this.setTitle(mCamera.name);
+        this.setTitle(mCamera.getNickName());
         super.initView();
         getBtn_talk().setOnTouchListener(this);
         if (Build.VERSION.SDK_INT < BUILD_VERSION_CODES_ICE_CREAM_SANDWICH) {
@@ -414,14 +397,14 @@ public class LiveViewActivity extends BaseActivity implements
         getBtn_stream().setText(souceList[playState.getVideoQuality()]);
         TextView txt_state = (TextView) findViewById(R.id.txt_state);
         if (txt_state != null) {
-            txt_state.setBackgroundResource(str_state_background[mCamera.connect_state]);
+            txt_state.setBackgroundResource(mCamera.getCameraStateBackgroundColor());
 //            String conType = "";
 //            try {
 //                conType = (mCamera.getSessionMode() == 0 ? "P2P" : (mCamera.getSessionMode() == 1 ? "RELAY" : "LAN"));
 //            } catch (Exception ex) {
 //
 //            }
-            txt_state.setText(str_state[mCamera.connect_state]);
+            txt_state.setText(mCamera.getCameraStateDesc());
         }
         initBtn();
 
@@ -483,7 +466,7 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void receiveFrameData(final NSCamera camera, int avChannel,
+    public void receiveFrameData(final IMyCamera camera, int avChannel,
                                  final Bitmap bmp) {
         if (mCamera == camera && avChannel == mSelectedChannel) {
             lastReceiveFrameTime = System.currentTimeMillis();
@@ -495,7 +478,7 @@ public class LiveViewActivity extends BaseActivity implements
      * 瑙嗛鏁版嵁鐩稿叧鍙傛暟淇℃伅
      */
     @Override
-    public void receiveFrameInfo(final NSCamera camera, int avChannel,
+    public void receiveFrameInfo(final IMyCamera camera, int avChannel,
                                  long bitRate, int frameRate, int onlineNm, int frameCount,
                                  int incompleteFrameCount) {
         if (mCamera == camera && avChannel == mSelectedChannel) {
@@ -516,7 +499,7 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void receiveChannelInfo(final NSCamera camera, int avChannel,
+    public void receiveChannelInfo(final IMyCamera camera, int avChannel,
                                    int resultCode) {
         if (mCamera == camera && avChannel == mSelectedChannel) {
 
@@ -531,7 +514,7 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void receiveSessionInfo(final NSCamera camera, final int resultCode) {
+    public void receiveSessionInfo(final IMyCamera camera, final int resultCode) {
         Bundle bundle = new Bundle();
         Message msg = handler.obtainMessage();
         msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
@@ -541,7 +524,7 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void receiveIOCtrlData(final NSCamera camera, int avChannel,
+    public void receiveIOCtrlData(final IMyCamera camera, int avChannel,
                                   int avIOCtrlMsgType, byte[] data) {
         Bundle bundle = new Bundle();
 
@@ -583,35 +566,25 @@ public class LiveViewActivity extends BaseActivity implements
             St_SInfo stSInfo = new St_SInfo();
             int requestCode = msg.arg1;
             switch (msg.what) {
-                case TwsDataValue.HANDLE_MESSAGE_CHANNEL_STATE:
-                    if (requestCode == NSCamera.CONNECTION_STATE_TIMEOUT) {
-                        mCamera.asyncStop(new MyCamera.TaskExecute() {
-                            @Override
-                            public void onPosted(Object data) {
-                                mCamera.start();
-                            }
-                        });
-                    }
-                    break;
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
                     if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
-                        ((MyCamera) mCamera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (((MyCamera) mCamera).getVideoQuality() == 0 ? 1 : 5)));
+                        mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (mCamera.getVideoQuality() == 0 ? 1 : 5)));
                         mCamera.startVideo();
                     } else if (requestCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
                             NSCamera.CONNECTION_STATE_DISCONNECTED || requestCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
-                        mCamera.asyncStop(new MyCamera.TaskExecute() {
+                        mCamera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(Object data) {
-                                mCamera.start();
+                            public void onPosted(IMyCamera c,Object data) {
+                                c.start();
                             }
                         });
                     }
                     TextView txt_state = (TextView) findViewById(R.id.txt_state);
                     if (txt_state != null) {
-                        txt_state.setBackgroundResource(str_state_background[requestCode]);
+                        txt_state.setBackgroundResource(mCamera.getCameraStateBackgroundColor());
                         if (mCamera != null) {
                             //(camera.getSessionMode() == 0 ? "P2P" : (camera.getSessionMode() == 1 ? "RELAY" : "LAN")) + " " +
-                            txt_state.setText(str_state[requestCode]);
+                            txt_state.setText(mCamera.getCameraStateDesc());
                         }
                     }
                     break;
@@ -686,13 +659,13 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1,
                                          byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
                                          int paramInt3) {
         // TODO Auto-generated method stub
@@ -712,14 +685,14 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1,
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1,
                                byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
         Message msg = recordingHandler.obtainMessage();
         msg.what = paramInt1;
         recordingHandler.sendMessage(msg);
@@ -731,7 +704,7 @@ public class LiveViewActivity extends BaseActivity implements
 //            return;
 //        }
         if (mCamera != null
-                && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+                && mCamera.isConnected()) {
 
             if (playState.isSpeaking()) {
                 return;
@@ -773,7 +746,7 @@ public class LiveViewActivity extends BaseActivity implements
             return;
         }
         if (mCamera != null
-                && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+                && mCamera.isConnected()) {
 
             if (!TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.RECORD_AUDIO) ||
                     !TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
@@ -799,17 +772,17 @@ public class LiveViewActivity extends BaseActivity implements
 //            showAlert(getString(R.string.alert_play_video_first));
 //            return;
 //        }
-        if (mCamera != null && mCamera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+        if (mCamera != null && mCamera.isConnected()) {
 
             if (isSDCardValid()) {// 濡傛灉sd鍗″彲鐢�
                 if (!TwsTools.checkPermission(LiveViewActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     showAlert(getString(R.string.dialog_msg_no_permission));
                     return;
                 }
-                final String fileName = mCamera.getUID() + "_" + TwsTools.getFileNameWithTime(0);
-                mCamera.saveSnapShot(mSelectedChannel, TwsDataValue.SNAP_DIR, fileName, new MyCamera.TaskExecute() {
+                final String fileName = mCamera.getUid() + "_" + TwsTools.getFileNameWithTime(0);
+                mCamera.saveSnapShot(mSelectedChannel, TwsDataValue.SNAP_DIR, fileName, new IMyCamera.TaskExecute() {
                     @Override
-                    public void onPosted(Object data) {
+                    public void onPosted(IMyCamera c,Object data) {
                         String path = (String) data;
                         if (path != null) {
                             runOnUiThread(new Runnable() {
@@ -854,13 +827,13 @@ public class LiveViewActivity extends BaseActivity implements
                         if (!playState.isRecording()) {
                             if (playState.getVideoQuality() != position) {
                                 playState.setVideoQuality(position);
-                                mCamera.asyncStopVideo(new MyCamera.TaskExecute() {
+                                mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
                                     @Override
-                                    public void onPosted(Object data) {
+                                    public void onPosted(IMyCamera c,Object data) {
                                         int videoQuality = position == 0 ? 1 : 5;
                                         playState.setVideoQuality(position);
-                                        ((MyCamera) mCamera).sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (videoQuality)));
-                                        mCamera.startVideo();
+                                        c.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (videoQuality)));
+                                        c.startVideo();
                                     }
                                 });
                             }
@@ -934,7 +907,7 @@ public class LiveViewActivity extends BaseActivity implements
         Bundle extras = new Bundle();
         Intent intent = new Intent();
 
-        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.uid);
+        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.getUid());
         intent.putExtras(extras);
         intent.setClass(LiveViewActivity.this, cls);
         startActivity(intent);
@@ -946,7 +919,7 @@ public class LiveViewActivity extends BaseActivity implements
         Bundle extras = new Bundle();
         Intent intent = new Intent();
 
-        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.uid);
+        extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.getUid());
 
         intent.putExtras(extras);
         intent.setClass(LiveViewActivity.this, EventListActivity.class);
@@ -1138,12 +1111,11 @@ public class LiveViewActivity extends BaseActivity implements
                 TwsTools.showAlertDialog(LiveViewActivity.this);
                 return;
             }
-            MyCamera myCamera = (MyCamera) mCamera;
             //+appname + "/"
             File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
 //            File targetFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName());
 //            File videoFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/VideoRecording/");
-            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + ((MyCamera) mCamera).getUID());
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + (mCamera).getUid());
 //            if (!rootFolder.exists()) {
 //                rootFolder.mkdir();
 //            }
@@ -1158,10 +1130,10 @@ public class LiveViewActivity extends BaseActivity implements
             }
 
 
-            final String file = cameraFolder.getAbsoluteFile() + "/" + myCamera.getUID() + "_" + TwsTools.getFileNameWithTime(1);
+            final String file = cameraFolder.getAbsoluteFile() + "/" + mCamera.getUid() + "_" + TwsTools.getFileNameWithTime(1);
             filePath = file;
             setRecodingView();
-            myCamera.startRecording(file, mSelectedChannel);
+            mCamera.startRecording(file, mSelectedChannel);
 //            playState.setRecording(true);
 //            txt_recording_tip_time().setText("00:00");
 //            playState.setRecordingSeconds(0);
@@ -1178,9 +1150,8 @@ public class LiveViewActivity extends BaseActivity implements
     void stopRecording() {
         if (playState.isRecording()) {
             delayHandler.removeMessages(0);
-            MyCamera myCamera = (MyCamera) mCamera;
             if (playState.isRecording()) {
-                myCamera.stopRecording(mSelectedChannel);
+                mCamera.stopRecording(mSelectedChannel);
                 //myCamera.stop_record();
                 playState.setRecording(false);
                 if (filePath != null) {
@@ -1200,7 +1171,7 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void callbackState(Camera camera, int channel, int state, int w, int h) {
+    public void callbackState(IMyCamera camera, int channel, int state, int w, int h) {
         if (channel == mSelectedChannel) {
             if (state == 1) {
                 LiveViewActivity.this.runOnUiThread(new Runnable() {
@@ -1243,20 +1214,20 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     @Override
-    public void callbackPlayUTC(Camera var1, int var2) {
+    public void callbackPlayUTC(IMyCamera var1, int var2) {
 
     }
 
     class playState {
-        private playState(MyCamera camera) {
+        private playState(IMyCamera camera) {
             this.camera = camera;
         }
 
-        public MyCamera getCamera() {
+        public IMyCamera getCamera() {
             return camera;
         }
 
-        MyCamera camera;
+        IMyCamera camera;
 
         boolean isListening;
         boolean isSpeaking;

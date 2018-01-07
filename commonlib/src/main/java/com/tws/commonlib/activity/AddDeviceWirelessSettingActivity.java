@@ -1,47 +1,37 @@
 package com.tws.commonlib.activity;
 
-import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
-import android.widget.TextView;
 
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
-import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-import com.tws.commonlib.controller.GifView;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.widget.SaundProgressBar;
 import com.tws.commonlib.wificonfig.BaseConfig;
 import com.tws.commonlib.wificonfig.WiFiConfigureContext;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.util.Calendar;
 import java.util.TimeZone;
 
-public class AddDeviceWirelessSettingActivity extends BaseActivity implements IRegisterIOTCListener {
+public class AddDeviceWirelessSettingActivity extends BaseActivity implements IIOTCListener {
     private int timeout = 60;
     private int percent = 0;
-    private MyCamera camera;
+    private IMyCamera camera;
     private boolean succeeded = false;
     private final int CONFIG_WIFI_SUCCESS = 0;
     private final int CONFIG_WIFI_FAIL = 1;
@@ -115,7 +105,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
                 handler.postDelayed(this, times * 10);//设置延迟时间，此处是1秒
             } else {
                 wifiConfiger.stopConfig();
-                if (MyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
+                if (IMyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
                     //没有扫二维码，则提示用户是否依然听到摄像机叮咚声音
                     showAlertnew(android.R.drawable.ic_dialog_alert, null, getString(R.string.dialog_msg_onekey_configwifi_soundstop), getString(R.string.no), getString(R.string.yes),
                             new DialogInterface.OnClickListener() {
@@ -158,7 +148,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
                     } else {
                         if (camera != null) {
                             camera.asyncStop(null);
-                            camera.unregisterIOTCListener(AddDeviceWirelessSettingActivity.this);
+                            camera.registerIOTCListener(AddDeviceWirelessSettingActivity.this);
                         }
                         showAlertnew(android.R.drawable.ic_dialog_alert, null, getString(R.string.dialog_msg_onekey_configwifi_fail), getString(R.string.title_userhelp), getString(R.string.dialog_btn_retry),
                                 new DialogInterface.OnClickListener() {
@@ -236,14 +226,14 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
         wifiConfiger.setReceiveListner(new BaseConfig.OnReceivedListener() {
             @Override
             public void OnReceived(final String status, final String ip, final String UID) {
-                if (!addSuccess && dev_uid.equalsIgnoreCase(MyCamera.NO_USE_UID) || dev_uid.equalsIgnoreCase(UID)) {
+                if (!addSuccess && dev_uid.equalsIgnoreCase(IMyCamera.NO_USE_UID) || dev_uid.equalsIgnoreCase(UID)) {
                     addSuccess = true;
                     wifiConfiger.setReceiveListner(null);
 
                     if (camera == null) {
                         dev_uid = UID;
-                        camera = new MyCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
-                        camera.cameraModel = NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264;
+                        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
+                        camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
                     }
 
                     mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
@@ -251,7 +241,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
             }
         });
         //SmartLink.GetInstance().RunConfig();
-        if (!MyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
+        if (!IMyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
             connectCamera();
         }
     }
@@ -297,7 +287,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (camera != null && camera.uid != null && !camera.uid.equalsIgnoreCase(MyCamera.NO_USE_UID)) {
+        if (camera != null && camera.getUid() != null && !camera.getUid().equalsIgnoreCase(IMyCamera.NO_USE_UID)) {
             camera.unregisterIOTCListener(this);
             if (!camera.isExist()) {
                 camera.asyncStop(null);
@@ -305,68 +295,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
         }
     }
 
-    @Override
-    public void receiveSessionInfo(final NSCamera camera, final int resultCode) {
-        if (resultCode == NSCamera.CONNECTION_STATE_CONNECTED) {//如果判定输入的摄像头密码和用户正确则添加
-            if (percent < 100) {
-                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
-            }
-        } else if (resultCode == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {//连接摄像机的时候发现密码错误，弹出相应提示框
-            if (percent < 100) {
-                mHandler.obtainMessage(CONFIG_WIFI_WRONG_PWD).sendToTarget();
-            }
-        } else if (resultCode == NSCamera.CONNECTION_STATE_SLEEPING) {//连接摄像机的时候发现密码错误，弹出相应提示框
-            if (percent < 100) {
-                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
-            }
-        } else if (resultCode == NSCamera.CONNECTION_STATE_CONNECTING) {
 
-        } else {
-            if (percent < 100) {
-                ((MyCamera) camera).asyncStop(new MyCamera.TaskExecute() {
-                    @Override
-                    public void onPosted(Object data) {
-                        camera.start();
-                    }
-                });
-            }
-        }
-//        this.runOnUiThread(new Runnable() {
-//
-//            @Override
-//            public void run() {
-//            }
-//        });
-
-    }
-
-    @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate,
-                                 int frameRate, int onlineNm, int frameCount,
-                                 int incompleteFrameCount) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveChannelInfo(NSCamera camera, int avChannel,
-                                   int resultCode) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel,
-                                  int avIOCtrlMsgType, byte[] data) {
-        // TODO Auto-generated method stub
-
-    }
 
 
     private void save() {
@@ -374,9 +303,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
          * 判断是否已经添加过该摄像机
          */
         boolean duplicated = false;
-        for (NSCamera camera_ : TwsDataValue.cameraList()) {
+        for (IMyCamera camera_ : TwsDataValue.cameraList()) {
 
-            if (camera.uid.equalsIgnoreCase(camera_.uid)) {
+            if (camera.getUid().equalsIgnoreCase(camera_.getUid())) {
                 duplicated = true;
                 break;
             }
@@ -396,8 +325,8 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
 
     void connectCamera() {
         /* add value to server data base */
-        camera = new MyCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
-        camera.cameraModel = NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264;
+        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
+        camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
         //看是否能正确启动摄像机
         camera.registerIOTCListener(this);
         camera.start();
@@ -405,28 +334,76 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements IR
 
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
-        // TODO Auto-generated method stub
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
-                                         byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
-                                         int paramInt3) {
-        // TODO Auto-generated method stub
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1,
-                               byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
-        // TODO Auto-generated method stub
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
+        if (resultCode == NSCamera.CONNECTION_STATE_CONNECTED) {//如果判定输入的摄像头密码和用户正确则添加
+            if (percent < 100) {
+                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
+            }
+        } else if (resultCode == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {//连接摄像机的时候发现密码错误，弹出相应提示框
+            if (percent < 100) {
+                mHandler.obtainMessage(CONFIG_WIFI_WRONG_PWD).sendToTarget();
+            }
+        } else if (resultCode == NSCamera.CONNECTION_STATE_SLEEPING) {//连接摄像机的时候发现密码错误，弹出相应提示框
+            if (percent < 100) {
+                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
+            }
+        } else if (resultCode == NSCamera.CONNECTION_STATE_CONNECTING) {
+
+        } else {
+            if (percent < 100) {
+                camera.asyncStop(new IMyCamera.TaskExecute() {
+                    @Override
+                    public void onPosted(IMyCamera c,Object data) {
+                        c.start();
+                    }
+                });
+            }
+        }
+//        this.runOnUiThread(new Runnable() {
+//
+//            @Override
+//            public void run() {
+//            }
+//        });
+    }
+
+    @Override
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+
+    }
+
+    @Override
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
+
+    }
+
+    @Override
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 }

@@ -16,7 +16,6 @@ import android.widget.Toast;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
@@ -25,7 +24,8 @@ import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -35,10 +35,10 @@ import com.tws.commonlib.controller.NavigationBar;
  *
  * @author Administrator
  */
-public class ModifyCameraPasswordActivity extends BaseActivity implements IRegisterIOTCListener {
+public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCListener {
 
     private String dev_uid;
-    private MyCamera camera;
+    private IMyCamera camera;
     EditText edit_cameraOldPassword;
     EditText edit_cameraNewPassword;
     EditText edit_cameraConfirmPassword;
@@ -53,8 +53,8 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
 
         setContentView(R.layout.activity_modify_camerapassword);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (MyCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
                 camera = _camera;
                 break;
             }
@@ -86,11 +86,11 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
         edit_cameraOldPassword = (EditText) findViewById(R.id.edit_cameraOldPassword);
         edit_cameraNewPassword = (EditText) findViewById(R.id.edit_cameraNewPassword);
         edit_cameraConfirmPassword = (EditText) findViewById(R.id.edit_cameraConfirmPassword);
-        if (!camera.pwd.equals(MyCamera.DEFAULT_PASSWORD) && MyConfig.isStrictPwd()) {
+        if (!camera.getPassword().equals(IMyCamera.DEFAULT_PASSWORD) && MyConfig.isStrictPwd()) {
             edit_cameraOldPassword.requestFocus();
             title.setButton(NavigationBar.NAVIGATION_BUTTON_LEFT);
         } else {
-            edit_cameraOldPassword.setText(MyCamera.DEFAULT_PASSWORD);
+            edit_cameraOldPassword.setText(IMyCamera.DEFAULT_PASSWORD);
             edit_cameraNewPassword.requestFocus();
         }
         ((CheckBox) findViewById(R.id.cb_showpassword)).setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -113,7 +113,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (camera.getPassword().equalsIgnoreCase(MyCamera.DEFAULT_PASSWORD) && MyConfig.isStrictPwd()) {
+            if (camera.getPassword().equalsIgnoreCase(IMyCamera.DEFAULT_PASSWORD) && MyConfig.isStrictPwd()) {
                 return true;
             }
 
@@ -133,7 +133,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
         }
 
         //tips_old_password_is_wrong">旧密码输入错误
-        if (!oldPwd.equals(camera.pwd)) {
+        if (!oldPwd.equals(camera.getPassword())) {
             showAlert(getText(R.string.alert_old_password_is_wrong).toString());
             return false;
         }
@@ -155,7 +155,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
         if (true || TwsTools.isUserPwdLegal(newPwd)) {
             if (camera != null) {
                 newPassword = newPwd;
-                ((MyCamera) camera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetPasswdReq.parseContent(oldPwd, newPwd));
+                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetPasswdReq.parseContent(oldPwd, newPwd));
                 isModifying = true;
                 if (maxRetryCount > 0) {
                     handler.sendEmptyMessageDelayed(Reconnect, 10000);
@@ -180,29 +180,29 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
     }
 
     @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
 
     }
 
     @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
     }
 
     @Override
-    public void receiveSessionInfo(NSCamera camera, int resultCode) {
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
         Message msg = new Message();
         msg.what = resultCode;
         handler.sendMessage(msg);
     }
 
     @Override
-    public void receiveChannelInfo(NSCamera camera, int avChannel, int resultCode) {
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
 
     }
 
     @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
         Bundle bundle = new Bundle();
         bundle.putInt("sessionChannel", avChannel);
         bundle.putByteArray("data", data);
@@ -214,22 +214,22 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
     }
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 
@@ -271,10 +271,10 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IRegis
                     }
                     break;
                 case Reconnect:
-                    camera.asyncStop(new MyCamera.TaskExecute() {
+                    camera.asyncStop(new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(Object data) {
-                            camera.start();
+                        public void onPosted(IMyCamera c,Object data) {
+                            c.start();
                         }
                     });
                     break;

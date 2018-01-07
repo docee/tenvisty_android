@@ -23,6 +23,7 @@ import com.tutk.IOTC.HiGLMonitor;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 
 /**
@@ -459,12 +460,12 @@ public class MyLiveViewGLMonitor extends HiGLMonitor implements View.OnTouchList
             this.height = (int) screen_height;
         }
     }
-    public void attachCamera(NSCamera camera, int avChannel) {
-        super.attachCamera(camera,avChannel);
-        resizeVideoWrapper((MyCamera) camera);
+    public void attachCamera(MyCamera camera, int avChannel) {
+        super.attachCamera((NSCamera) camera,avChannel);
+        resizeVideoWrapper(camera);
     }
 
-    public void  resizeVideoWrapper(MyCamera camera){
+    public void  resizeVideoWrapper(IMyCamera camera){
         RelativeLayout rl = (RelativeLayout)getParent();
         ViewGroup.LayoutParams layoutParams = rl.getLayoutParams();
         float ratio = (camera).getVideoRatio(this.getContext());

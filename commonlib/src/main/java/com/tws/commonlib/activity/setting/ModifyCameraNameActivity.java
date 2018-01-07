@@ -4,10 +4,9 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 
-import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -20,7 +19,7 @@ import com.tws.commonlib.controller.NavigationBar;
 public class ModifyCameraNameActivity extends BaseActivity {
 
     private String dev_uid;
-    private MyCamera camera;
+    private IMyCamera camera;
     EditText edit_cameraName;
 
     @Override
@@ -29,9 +28,9 @@ public class ModifyCameraNameActivity extends BaseActivity {
 
         setContentView(R.layout.activity_modify_cameraname);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (NSCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
-                camera = (MyCamera) _camera;
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
+                camera =  _camera;
                 break;
             }
         }
@@ -57,7 +56,7 @@ public class ModifyCameraNameActivity extends BaseActivity {
             }
         });
         edit_cameraName = (EditText) findViewById(R.id.edit_cameraName);
-        edit_cameraName.setText(camera.name);
+        edit_cameraName.setText(camera.getNickName());
         edit_cameraName.requestFocus();
     }
 
@@ -70,7 +69,7 @@ public class ModifyCameraNameActivity extends BaseActivity {
             showAlert(getString(R.string.alert_input_camera_name));
             return false;
         }
-        camera.setName(edit_cameraName.getText().toString().trim());
+        camera.setNickName(edit_cameraName.getText().toString().trim());
         camera.sync2Db(this);
         return true;
     }

@@ -23,8 +23,9 @@ import com.tws.commonlib.adapter.LocalPicItemListAdapter;
 import com.tws.commonlib.base.DateScrollItem;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.HichipCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.LocalPichModel;
-import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
@@ -52,7 +53,7 @@ public class CameraFolderActivity extends BaseActivity {
     private DateScrollItemListAdapter adapter;
     int firstVisibleItem;
     int accSelect = -1;
-    MyCamera mCamera;
+    IMyCamera mCamera;
 
     private String getImagesPath() {
         if (imagesPath == null) {
@@ -93,8 +94,8 @@ public class CameraFolderActivity extends BaseActivity {
         setContentView(R.layout.activity_camera_folder);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
         //鏍规嵁浼犺繃鏉ョ殑UID鎵惧埌鐩稿簲鐨凜amera
-        for (MyCamera camera : TwsDataValue.cameraList()) {
-            if (dev_uid.equalsIgnoreCase(camera.uid)) {
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
+            if (dev_uid.equalsIgnoreCase(camera.getUid())) {
                 mCamera = camera;// 鎵惧埌camera
                 break;
             }
@@ -107,7 +108,7 @@ public class CameraFolderActivity extends BaseActivity {
     @Override
     protected void initView() {
         title = (NavigationBar) findViewById(R.id.title_top);
-        title.setTitle(mCamera.getName());
+        title.setTitle(mCamera.getNickName());
         title.setButton(NavigationBar.NAVIGATION_BUTTON_LEFT);
         title.setButton(NavigationBar.NAVIGATION_BUTTON_RIGHT);
         title.setRightBtnText(getString(R.string.edit));
@@ -400,7 +401,7 @@ public class CameraFolderActivity extends BaseActivity {
                 File[] files = folder.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
-                        return file.isDirectory() || (file.getName().length() == 39);
+                        return file.isDirectory() ||  (file.getName().length() == (mCamera instanceof HichipCamera?36:39));
                     }
                 });
                 if (files != null) {
@@ -409,7 +410,7 @@ public class CameraFolderActivity extends BaseActivity {
                             File[] pics = f.listFiles(new FileFilter() {
                                 @Override
                                 public boolean accept(File file) {
-                                    return (file.getName().length() == 39);
+                                    return (file.getName().length() == (mCamera instanceof HichipCamera?36:39));
                                 }
                             });
                             for (File pic : pics) {

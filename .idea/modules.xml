@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Tenvisty.iml" filepath="$PROJECT_DIR$/Tenvisty.iml" />
       <module fileurl="file://$PROJECT_DIR$/commonlib/commonlib.iml" filepath="$PROJECT_DIR$/commonlib/commonlib.iml" />
       <module fileurl="file://$PROJECT_DIR$/iOTCamera_New_Tenvis/iOTCamera_New_Tenvis.iml" filepath="$PROJECT_DIR$/iOTCamera_New_Tenvis/iOTCamera_New_Tenvis.iml" />
       <module fileurl="file://$PROJECT_DIR$/push/push.iml" filepath="$PROJECT_DIR$/push/push.iml" />
       <module fileurl="file://$PROJECT_DIR$/tenvisty/tenvisty.iml" filepath="$PROJECT_DIR$/tenvisty/tenvisty.iml" />
+      <module fileurl="file://$PROJECT_DIR$/tenvisty_android.iml" filepath="$PROJECT_DIR$/tenvisty_android.iml" />
     </modules>
   </component>
 </project>

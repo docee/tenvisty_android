@@ -9,23 +9,17 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.misc.objc.NSDictionary;
-import com.misc.objc.NSNotification;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.MjpegCamera;
-import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.NSCamera.CAMERA_MODEL;
 import com.tutk.IOTC.st_LanSearchInfo;
 import com.tws.commonlib.R;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.SearchLanAsync;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -96,8 +90,8 @@ public class SearchCameraActivity extends BaseActivity {
                                     int position, long id) {
                 SearchResult searchResult = list.get(position);
                 //如果该摄像机已经在自己摄像机列表中，则弹出相关提示对话框
-                for (NSCamera camera : TwsDataValue.cameraList()) {
-                    if (camera.uid.equalsIgnoreCase(searchResult.uid)) {
+                for (IMyCamera camera : TwsDataValue.cameraList()) {
+                    if (camera.getUid().equalsIgnoreCase(searchResult.uid)) {
                         Toast.makeText(SearchCameraActivity.this.getApplicationContext(), getText(R.string.tips_add_camera_duplicated_search), Toast.LENGTH_SHORT).show();
                         return;
                     }
@@ -331,8 +325,8 @@ public class SearchCameraActivity extends BaseActivity {
             port = port_;
             ddnsUser = ddnsUser_;
             cameraModel = cameraModel_;
-            for (NSCamera camera : TwsDataValue.cameraList()) {
-                if (camera.uid.equalsIgnoreCase(uid_)) {
+            for (IMyCamera camera : TwsDataValue.cameraList()) {
+                if (camera.getUid().equalsIgnoreCase(uid_)) {
                     hasAdded = true;
                     break;
                 }

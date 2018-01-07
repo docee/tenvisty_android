@@ -1,6 +1,5 @@
 package com.tws.commonlib.activity.setting;
 
-import android.app.usage.UsageEvents;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -8,23 +7,19 @@ import android.os.Handler;
 import android.os.Message;
 import android.view.View;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
-import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-import com.tws.commonlib.controller.NavigationBar;
 
-import org.json.JSONArray;
 import org.json.JSONObject;
 
 
@@ -33,7 +28,7 @@ import org.json.JSONObject;
  *
  * @author Administrator
  */
-public class EventSettingActivity extends BaseActivity implements IRegisterIOTCListener {
+public class EventSettingActivity extends BaseActivity implements IIOTCListener {
     private static final int SENSITIVITY_SET = 0xA1;
     private String dev_uid;
     ToggleButton togbtn_push;
@@ -78,8 +73,8 @@ public class EventSettingActivity extends BaseActivity implements IRegisterIOTCL
 
         setContentView(R.layout.activity_event_setting);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (MyCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
                 camera = _camera;
                 break;
             }
@@ -106,7 +101,7 @@ public class EventSettingActivity extends BaseActivity implements IRegisterIOTCL
                 setPush(togbtn_push.isChecked());
             }
         });
-        togbtn_push.setChecked(camera.pushNotificationStatus == 1);
+        togbtn_push.setChecked(camera.isPushOpen());
     }
 
     public void goSetting(View view) {
@@ -197,27 +192,27 @@ public class EventSettingActivity extends BaseActivity implements IRegisterIOTCL
     }
 
     @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
 
     }
 
     @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
     }
 
     @Override
-    public void receiveSessionInfo(NSCamera camera, int resultCode) {
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
 
     }
 
     @Override
-    public void receiveChannelInfo(NSCamera camera, int avChannel, int resultCode) {
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
 
     }
 
     @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
         Bundle bundle = new Bundle();
         bundle.putInt("sessionChannel", avChannel);
         bundle.putByteArray("data", data);
@@ -229,22 +224,22 @@ public class EventSettingActivity extends BaseActivity implements IRegisterIOTCL
     }
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 }

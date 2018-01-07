@@ -1,18 +1,14 @@
 package com.tws.commonlib.activity;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
 import android.text.method.PasswordTransformationMethod;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.WindowManager;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.RelativeLayout;
 
@@ -22,12 +18,10 @@ import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.A2bigA;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
-
-
-import java.util.Timer;
 
 
 /**
@@ -44,7 +38,7 @@ public class SaveCameraActivity extends BaseActivity {
     private EditText edtName;
     private Button btnScan;
     private String dev_uid;
-    private MyCamera camera;
+    private IMyCamera camera;
     Button btnShowPassword;
 
     String dev_nickname = "";
@@ -168,8 +162,8 @@ public class SaveCameraActivity extends BaseActivity {
             showAlert(getText(R.string.alert_input_camera_uid));
             return;
         }
-
-        if (!TwsTools.isValidUid(dev_uid)) {
+        dev_uid = TwsTools.takeInnerUid(dev_uid);
+        if (dev_uid == null) {
             showAlert(getText(R.string.alert_invalid_camera_uid));
             return;
         }
@@ -187,9 +181,9 @@ public class SaveCameraActivity extends BaseActivity {
          * 判断是否已经添加过该摄像机
          */
         boolean duplicated = false;
-        for (NSCamera camera_ : TwsDataValue.cameraList()) {
+        for (IMyCamera camera_ : TwsDataValue.cameraList()) {
 
-            if (dev_uid.equalsIgnoreCase(camera_.uid)) {
+            if (dev_uid.equalsIgnoreCase(camera_.getUid())) {
                 duplicated = true;
                 break;
             }
@@ -202,8 +196,8 @@ public class SaveCameraActivity extends BaseActivity {
         }
 
 			/* add value to server data base */
-        camera = new MyCamera(dev_nickname, dev_uid, "admin", view_pwd);
-        camera.cameraModel = NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264;
+        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(dev_nickname, dev_uid, "admin", view_pwd);
+        camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
         camera.save(this);
 //        camera.start();
 //        Intent broadcast = new Intent();

@@ -20,13 +20,11 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
-import com.google.zxing.common.BitMatrix;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.base.FolderInfoModel;
 import com.tws.commonlib.base.MyConfig;
-import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
 import java.io.File;
@@ -79,11 +77,11 @@ public class FolderFragment extends BaseFragment {
         return videosPath;
     }
 
-    FolderInfoModel processFolderInfo(MyCamera camera) {
+    FolderInfoModel processFolderInfo(IMyCamera camera) {
         String thumbPath = null;
         int photoCount = 0;
         int videoCount = 0;
-        File photoFolder = new File(getImagesPath(camera.getUID()));
+        File photoFolder = new File(getImagesPath(camera.getUid()));
         File[] photos = null;
         if (photoFolder.exists()) {
             photos = photoFolder.listFiles(new FileFilter() {
@@ -101,7 +99,7 @@ public class FolderFragment extends BaseFragment {
             photoCount = 0;
         }
         File[] videos = null;
-        File videoFolder = new File(getVideosPath(camera.getUID()));
+        File videoFolder = new File(getVideosPath(camera.getUid()));
         if (videoFolder.exists()) {
             videos = videoFolder.listFiles(new FileFilter() {
                 @Override
@@ -147,7 +145,7 @@ public class FolderFragment extends BaseFragment {
                 }
             }
         }
-        FolderInfoModel m = new FolderInfoModel(thumbPath, camera.getUID(), camera.getName(), photoCount, videoCount);
+        FolderInfoModel m = new FolderInfoModel(thumbPath, camera.getUid(), camera.getNickName(), photoCount, videoCount);
         return m;
     }
 
@@ -155,7 +153,7 @@ public class FolderFragment extends BaseFragment {
         sourceList.clear();
         ListView picture_fragment_camera_list = (ListView) view.findViewById(R.id.picture_fragment_camera_list);
 
-        for (MyCamera camera : TwsDataValue.cameraList()) {
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
             sourceList.add(processFolderInfo(camera));
         }
 

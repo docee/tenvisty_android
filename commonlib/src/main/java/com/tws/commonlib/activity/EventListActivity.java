@@ -14,8 +14,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.content.ContextCompat;
-import android.view.ContextThemeWrapper;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,25 +28,21 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
-import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlListEventReq;
 import com.tutk.IOTC.AVIOCTRLDEFs.STimeDay;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
-import com.tws.commonlib.activity.setting.EventSettingActivity;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
 
 import java.io.File;
@@ -65,7 +59,7 @@ import java.util.UUID;
 import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_ALL;
 import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_MOTIONDECT;
 
-public class EventListActivity extends BaseActivity implements IRegisterIOTCListener {
+public class EventListActivity extends BaseActivity implements IIOTCListener {
 
     private static final int Build_VERSION_CODES_ICE_CREAM_SANDWICH = 14;
 
@@ -79,7 +73,7 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
     private List<EventInfo> list = Collections.synchronizedList(new ArrayList<EventInfo>());
     private EventListAdapter adapter;
 
-    private MyCamera mCamera;
+    private IMyCamera mCamera;
 
     private View loadingView = null;
     private View offlineView = null;
@@ -117,11 +111,10 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
         isCloudEvent = false;
 
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (NSCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
-                mCamera = (MyCamera) _camera;
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
+                mCamera = _camera;
                 mCamera.registerIOTCListener(this);
-                mCamera.resetEventCount();
                 break;
             }
         }
@@ -129,10 +122,7 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
         Bundle bundle = this.getIntent().getExtras();
         dev_uid = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
 
-
-        if (mCamera != null) {
-            supportPlayback = mCamera.getPlaybackSupported(0);
-        }
+        supportPlayback = true;
         this.setTitle(getResources().getString(R.string.title_event_list));
         initView();
 
@@ -423,7 +413,7 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
         txt_search_event_time.setText(startTimeSring + " - " + stopTimeString);
 
 
-        if (mCamera != null && mCamera.isChannelConnected(Camera.DEFAULT_AV_CHANNEL)) {
+        if (mCamera != null && mCamera.isConnected()) {
             eventListView.setEnabled(false);
             searchEventList2(startTime, stopTime, eventType);
             /* timeout for no search result been found */
@@ -443,6 +433,62 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
     private void searchEventList2(final long startTime, final long stopTime, int eventType) {
         eventType = searchEventType;
         mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTEVENT_REQ, SMsgAVIoctrlListEventReq.parseConent(Camera.DEFAULT_AV_CHANNEL, startTime, stopTime, (byte) eventType, (byte) 0));
+    }
+
+    @Override
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
+
+    }
+
+    @Override
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+
+    }
+
+    @Override
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
+        Bundle bundle = new Bundle();
+        Message msg = handler.obtainMessage();
+        msg.what = resultCode;
+        msg.setData(bundle);
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
+
+    }
+
+    @Override
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("sessionChannel", avChannel);
+            bundle.putByteArray("data", data);
+
+            Message msg = new Message();
+            msg.what = avIOCtrlMsgType;
+            msg.setData(bundle);
+            handler.sendMessage(msg);
+    }
+
+    @Override
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
+
+    }
+
+    @Override
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
+
     }
 
     public class EventInfo {
@@ -547,7 +593,7 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
 
             holder.txt_event_type.setText(TwsTools.getEventType(EventListActivity.this, evt.EventType, false));
             if (mCamera != null) {
-                holder.txt_event_title.setText(mCamera.getName());
+                holder.txt_event_title.setText(mCamera.getNickName());
             }
             if (evt.EventTime != null) {
                 holder.txt_event_time.setText(evt.strTime);
@@ -629,63 +675,12 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
         }
     }// EventListAdapter
 
-    @Override
-    public void receiveIOCtrlData(final NSCamera camera, int sessionChannel, int avIOCtrlMsgType, byte[] data) {
-
-        if (mCamera == camera) {
-            Bundle bundle = new Bundle();
-            bundle.putInt("sessionChannel", sessionChannel);
-            bundle.putByteArray("data", data);
-
-            Message msg = new Message();
-            msg.what = avIOCtrlMsgType;
-            msg.setData(bundle);
-            handler.sendMessage(msg);
-        }
-    }
 
     public static String getStringDateShort(Date currentTime) {
         SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
         formatter.setTimeZone(TimeZone.getDefault());
         String dateString = formatter.format(currentTime);
         return dateString;
-    }
-
-    @Override
-    public void receiveFrameData(final NSCamera camera, int sessionChannel, Bitmap bmp) {
-
-    }
-
-    @Override
-    public void receiveFrameInfo(final NSCamera camera, int sessionChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
-
-    }
-
-    @Override
-    public void receiveSessionInfo(final NSCamera camera, int resultCode) {
-
-        if (mCamera == camera) {
-            Bundle bundle = new Bundle();
-            Message msg = handler.obtainMessage();
-            msg.what = resultCode;
-            msg.setData(bundle);
-            handler.sendMessage(msg);
-        }
-    }
-
-    @Override
-    public void receiveChannelInfo(final NSCamera camera, int sessionChannel, int resultCode) {
-
-        if (mCamera == camera) {
-            Bundle bundle = new Bundle();
-            bundle.putInt("sessionChannel", sessionChannel);
-
-            Message msg = handler.obtainMessage();
-            msg.what = resultCode;
-            msg.setData(bundle);
-            handler.sendMessage(msg);
-        }
-
     }
 
     private Handler handler = new Handler() {
@@ -818,32 +813,6 @@ public class EventListActivity extends BaseActivity implements IRegisterIOTCList
                 list.get(i).isDateFirstItem = !list.get(i).strDate.equals(list.get(i - 1).strDate);
             }
         }
-    }
-
-    @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
-                                         byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
-                                         int paramInt3) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1,
-                               byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
-
     }
 
     private void showCustomSearch() {

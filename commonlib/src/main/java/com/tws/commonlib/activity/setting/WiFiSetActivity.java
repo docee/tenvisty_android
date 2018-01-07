@@ -1,7 +1,6 @@
 package com.tws.commonlib.activity.setting;
 
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -17,24 +16,18 @@ import android.widget.LinearLayout;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
-import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 
 /**
@@ -42,10 +35,10 @@ import java.util.List;
  *
  * @author Administrator
  */
-public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListener {
+public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
 
     private String dev_uid;
-    private MyCamera camera;
+    private IMyCamera camera;
     EditText edtWifiSsid;
     EditText edtWifiPassword;
     byte[] ssid;
@@ -62,9 +55,9 @@ public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListen
 
         setContentView(R.layout.activity_wifi_setting);
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (NSCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(dev_uid)) {
-                camera = (MyCamera) _camera;
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
+                camera =  _camera;
                 break;
             }
         }
@@ -131,18 +124,18 @@ public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListen
     }
 
     @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
 
     }
 
     @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
     }
 
     @Override
-    public void receiveSessionInfo(NSCamera camera, int resultCode) {
-        Log.i(this.getClass().getSimpleName(), "connect state " + camera.uid + " " + resultCode);
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
+        Log.i(this.getClass().getSimpleName(), "connect state " + camera.getUid() + " " + resultCode);
         Message msg = handler.obtainMessage();
         msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
         msg.arg1 = resultCode;
@@ -151,12 +144,12 @@ public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListen
     }
 
     @Override
-    public void receiveChannelInfo(NSCamera camera, int avChannel, int resultCode) {
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
 
     }
 
     @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
         Message msg = handler.obtainMessage();
         msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
         msg.arg1 = avIOCtrlMsgType;
@@ -168,22 +161,22 @@ public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListen
     }
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 
@@ -311,7 +304,7 @@ public class WiFiSetActivity extends BaseActivity implements IRegisterIOTCListen
                     break;
 
                 case REQUEST_GET_WIFI:
-                    if (camera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+                    if (camera.isConnected()) {
                         isRequestWiFiListForResult = true;
                         camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
                     }

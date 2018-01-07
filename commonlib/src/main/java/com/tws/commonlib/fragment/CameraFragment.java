@@ -1,29 +1,21 @@
 package com.tws.commonlib.fragment;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
-import android.app.Notification;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.GestureDetector;
 import android.view.GestureDetector.OnGestureListener;
 import android.view.LayoutInflater;
@@ -39,44 +31,41 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.NSCamera.CAMERA_MODEL;
 import com.tutk.IOTC.Packet;
-import com.tws.commonlib.App;
-import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.AddCameraActivity;
-import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
+import com.tws.commonlib.activity.LiveView_HichipActivity;
 import com.tws.commonlib.activity.setting.DeviceSettingActivity;
 import com.tws.commonlib.activity.setting.EditDeviceActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraPasswordActivity;
-import com.tws.commonlib.activity.setting.SystemSettingActivity;
 import com.tws.commonlib.adapter.GridViewPagerAdapter;
 import com.tws.commonlib.adapter.VideoViewAdapter;
 import com.tws.commonlib.base.ConnectionState;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.CameraState;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-
-import org.json.JSONException;
+import com.tws.commonlib.bean.TwsSessionState;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.TimeZone;
 
 public class CameraFragment extends BaseFragment implements OnTouchListener,
-        OnGestureListener, IRegisterIOTCListener {
+        OnGestureListener, IIOTCListener {
     static final int MY_CAMERA_REQUEST_CODE = 0;
     static final int PUBLIC_CAMERA_REQUEST_CODE = 1;
     static final int CAMERA_ADD_REQUEST_CODE = 2;
@@ -140,29 +129,27 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             super.handleMessage(msg);
             switch (msg.what) {
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE: {
-                    final MyCamera camera = (MyCamera) msg.obj;
+                    final IMyCamera camera = (IMyCamera) msg.obj;
 
                     if (!camera.isExist()) {
                         return;
                     }
                     refreshItems();
                     int resultCode = msg.arg1;
-                    if (resultCode == NSCamera.CONNECTION_STATE_CONNECTED) {
+                    if (resultCode == TwsSessionState.CONNECTION_STATE_CONNECTED) {
                         //已经成功建立连接
-                        if (MyConfig.isStrictPwd() && camera.pwd.equals(TwsDataValue.DEFAULT_PASSWORD)) {//检测该摄像机密码格式是否符合要求
+                        if (MyConfig.isStrictPwd() && camera.getPassword().equals(TwsDataValue.DEFAULT_PASSWORD)) {//检测该摄像机密码格式是否符合要求
                             modifyPasswordHint(camera);
-                        } else if (camera.isFirstLogin()) {
-                            initDeviceInfo(camera);
                         }
                     }
                     //收到密码错误，则弹出输入密码的dialog
-                    else if (resultCode == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {
-                        if (camera.getState() == MyCamera.CameraState.Reseting) {
+                    else if (resultCode == TwsSessionState.CONNECTION_STATE_WRONG_PASSWORD) {
+                        if (camera.getState() == CameraState.Reseting) {
                             camera.setPassword(TwsDataValue.DEFAULT_PASSWORD);
-                            camera.asyncStop(new MyCamera.TaskExecute() {
+                            camera.asyncStop(new IMyCamera.TaskExecute() {
                                 @Override
-                                public void onPosted(Object data) {
-                                    camera.start();
+                                public void onPosted(IMyCamera c,Object data) {
+                                    c.start();
                                 }
                             });
                         } else {
@@ -171,22 +158,22 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         }
                     }
                     //收到密码错误，则弹出输入密码的dialog
-                    else if (resultCode == NSCamera.CONNECTION_STATE_WAKINGUP) {
+                    else if (resultCode == TwsSessionState.CONNECTION_STATE_WAKINGUP) {
                         camera.start();
-                    } else if (resultCode == NSCamera.CONNECTION_STATE_TIMEOUT) {
-                        camera.asyncStop(new MyCamera.TaskExecute() {
+                    } else if (resultCode == TwsSessionState.CONNECTION_STATE_TIMEOUT) {
+                        camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(Object data) {
-                                camera.start();
+                            public void onPosted(IMyCamera c,Object data) {
+                                c.start();
                             }
                         });
-                    } else if (resultCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || resultCode ==
-                            NSCamera.CONNECTION_STATE_DISCONNECTED || resultCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
-                        if (camera.getState() != MyCamera.CameraState.None) {
-                            camera.asyncStop(new MyCamera.TaskExecute() {
+                    } else if (resultCode == TwsSessionState.CONNECTION_STATE_CONNECT_FAILED || resultCode ==
+                            TwsSessionState.CONNECTION_STATE_DISCONNECTED || resultCode == TwsSessionState.CONNECTION_STATE_UNKNOWN_DEVICE) {
+                        if (camera.getState() != CameraState.None) {
+                            camera.asyncStop(new IMyCamera.TaskExecute() {
                                 @Override
-                                public void onPosted(Object data) {
-                                    camera.start();
+                                public void onPosted(IMyCamera c,Object data) {
+                                    c.start();
                                 }
                             });
                         } else {
@@ -199,7 +186,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                 case TwsDataValue.HANDLE_MESSAGE_IO_RESP:
                     int avIOCtrlMsgType = msg.arg1;
                     byte[] data = msg.getData().getByteArray("data");
-                    MyCamera camera = (MyCamera) msg.obj;
+                    IMyCamera camera = (IMyCamera) msg.obj;
                     if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_EVENT_REPORT) {//IOTYPE_USER_IPCAM_EVENT_REPORT (0x1FFF)---由IPCamera發往App--當IPCamera發生事件時，即時發送資訊通知App
 
                         byte[] t = new byte[8];
@@ -214,7 +201,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                 && evtType != AVIOCTRLDEFs.AVIOCTRL_EVENT_IOALARMPASS) {
                             boolean canPush = true;//((MyCamera) camera).shouldPush();
                             if (evtType == AVIOCTRLDEFs.AVIOCTRL_EVENT_BELL_RING || canPush) {
-                                TwsTools.showAlarmNotification(getActivity(),camera.getUID(), 2, System.currentTimeMillis());
+                                TwsTools.showAlarmNotification(getActivity(),camera.getUid(), 2, System.currentTimeMillis());
                             }
                         }
 
@@ -234,12 +221,12 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         int version = Packet.byteArrayToInt_Little(data, 32);
                         int free = Packet.byteArrayToInt_Little(data, 44);
                         int mTotalSize = Packet.byteArrayToInt_Little(data, 40);
-                        camera.mTotalSize = mTotalSize;
+                        camera.setTotalSDSize(mTotalSize);
                     } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FIRMWARE_INFO_RESP) {
                         if (data != null && data.length > 0) {
                             String firmver = TwsTools.getString(data);
                             String[] arrFirm = firmver.split("\\.");
-                            MyCamera mCamera = camera;
+                            IMyCamera mCamera = camera;
                             if (arrFirm.length >= 5) {
                                 if (mCamera.getCustomTypeVersion() != null && mCamera.getSystemTypeVersion() != null && mCamera.getVendorTypeVersion() != null) {
                                     if (!arrFirm[0].equalsIgnoreCase(mCamera.getCustomTypeVersion()) || !arrFirm[1].equalsIgnoreCase(mCamera.getVendorTypeVersion()) || !(arrFirm[2] + "." + arrFirm[3] + "." + arrFirm[4]).equalsIgnoreCase(mCamera.getSystemTypeVersion())) {
@@ -253,12 +240,10 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                 mCamera.setSystemTypeVersion(arrFirm[2] + "." + arrFirm[3] + "." + arrFirm[4]);
                             }
                         }
-                    } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_UPGRADE_STATUS) {
+                    }
+                    else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_UPGRADE_STATUS) {
                         final View view = getCameraView(camera);
                         final AVIOCTRLDEFs.SMsgAVIoctrlUpgradeStatus process = new AVIOCTRLDEFs.SMsgAVIoctrlUpgradeStatus(data);
-                        if (process.p >= 100) {
-                            camera.setState(MyCamera.CameraState.WillRebooting);
-                        }
                         if (view != null) {
                             if (CameraFragment.this.getActivity() != null) {
                                 CameraFragment.this.getActivity().runOnUiThread(new Runnable() {
@@ -278,28 +263,28 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             }
                         }
                     }
-                    //注意！！！由于在NTP同步的时候，设置完同步会去获取时间。这里获取完时间会去设置时间，注意不要死循环了
-                    else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
-                        if (camera.isFirstLogin()) {
-                            camera.setFirstLogin(false);
-                            AVIOCTRLDEFs.SMsgAVIoctrlTime time = new AVIOCTRLDEFs.SMsgAVIoctrlTime(data);
-                            if (time.adjustFlg == 0) {
-                                Calendar phoneCal = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
-                                phoneCal.setTimeInMillis(System.currentTimeMillis());
-                                byte[] phoneTime = AVIOCTRLDEFs.STimeDay.parseContent(phoneCal.get(Calendar.YEAR), phoneCal.get(Calendar.MONTH) + 1, phoneCal.get(Calendar.DAY_OF_MONTH),
-                                        phoneCal.get(Calendar.DAY_OF_WEEK), phoneCal.get(Calendar.HOUR_OF_DAY), phoneCal.get(Calendar.MINUTE), phoneCal.get(Calendar.SECOND));
-                                byte[] data2 = AVIOCTRLDEFs.SMsgAVIoctrlTime.parseContent(phoneTime, 0, TwsDataValue.NTP_SERVER, 1);
-                                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_REQ, data2);
-                            }
-                        }
-                    } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_RESP) {
-                       if(Packet.byteArrayToInt_Little(data) == 0){
-                           TwsToast.showToast(CameraFragment.this.getActivity(),"sync time succeed");
-                       }
-                       else{
-                           TwsToast.showToast(CameraFragment.this.getActivity(),"sync time failed");
-                       }
-                    }
+//                    //注意！！！由于在NTP同步的时候，设置完同步会去获取时间。这里获取完时间会去设置时间，注意不要死循环了
+//                    else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
+//                        if (camera.isFirstLogin()) {
+//                            camera.setFirstLogin(false);
+//                            AVIOCTRLDEFs.SMsgAVIoctrlTime time = new AVIOCTRLDEFs.SMsgAVIoctrlTime(data);
+//                            if (time.adjustFlg == 0) {
+//                                Calendar phoneCal = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
+//                                phoneCal.setTimeInMillis(System.currentTimeMillis());
+//                                byte[] phoneTime = AVIOCTRLDEFs.STimeDay.parseContent(phoneCal.get(Calendar.YEAR), phoneCal.get(Calendar.MONTH) + 1, phoneCal.get(Calendar.DAY_OF_MONTH),
+//                                        phoneCal.get(Calendar.DAY_OF_WEEK), phoneCal.get(Calendar.HOUR_OF_DAY), phoneCal.get(Calendar.MINUTE), phoneCal.get(Calendar.SECOND));
+//                                byte[] data2 = AVIOCTRLDEFs.SMsgAVIoctrlTime.parseContent(phoneTime, 0, TwsDataValue.NTP_SERVER, 1);
+//                                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_REQ, data2);
+//                            }
+//                        }
+//                    } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_RESP) {
+//                       if(Packet.byteArrayToInt_Little(data) == 0){
+//                           TwsToast.showToast(CameraFragment.this.getActivity(),"sync time succeed");
+//                       }
+//                       else{
+//                           TwsToast.showToast(CameraFragment.this.getActivity(),"sync time failed");
+//                       }
+//                    }
 
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_CHANNEL_STATE:
@@ -381,21 +366,21 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     /**
      * 如果是默认密码或者密码格式不符合要求，显示修改摄像机密码提示dialog
      */
-    private void modifyPasswordHint(final MyCamera camera) {
+    private void modifyPasswordHint(final IMyCamera camera) {
         if (!isShowModifyPwdDlg && CameraFragment.this.getContext() != null) {
 
             isShowModifyPwdDlg = true;
             Builder dlgBuilder = new Builder(CameraFragment.this.getContext());
             dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
 
-            dlgBuilder.setMessage(String.format(getString(R.string.dialog_msg_strict_modify_pwd), camera.getName()));
+            dlgBuilder.setMessage(String.format(getString(R.string.dialog_msg_strict_modify_pwd), camera.getNickName()));
             dlgBuilder.setCancelable(false);
             dlgBuilder.setPositiveButton(getText(R.string.modify),
                     new DialogInterface.OnClickListener() {//点击修改按钮跳转至高级设置界面修改设备密码
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Intent intent = new Intent();
-                            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUID());
+                            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUid());
                             intent.setClass(CameraFragment.this.getActivity(), ModifyCameraPasswordActivity.class);
                             startActivity(intent);
                         }
@@ -424,7 +409,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
      * @param camera
      * @return camera所对应的View
      */
-    public View getCameraView(NSCamera camera) {
+    public View getCameraView(IMyCamera camera) {
         int index = TwsDataValue.cameraList().indexOf(camera);//1.获得该camera在cameraList中的位置
         if (gridViews.size() < index / (rows * columns)) {//超出界限
             return null;
@@ -452,21 +437,6 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
 //		nc.removeObserver(this);
     }
 
-    /**
-     * 如果设备是走P2P通道，则发送获取设备型号和内存相关情况的请求
-     *
-     * @param camera
-     */
-    private void initDeviceInfo(NSCamera camera) {
-        // TODO Auto-generated method stub
-        if (camera.cameraModel == CAMERA_MODEL.CAMERA_MODEL_H264) {
-            ((Camera) camera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetTimeReq.parseContent(true));
-            //((Camera) camera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
-            //((Camera) camera).sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FIRMWARE_INFO_REQ, new byte[1]);
-        }
-
-    }
-
 
     /**
      * 设置当前的gridView相关参数
@@ -488,9 +458,9 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         adapter.setOnButtonClickListener(new VideoViewAdapter.OnButtonClickListener() {
 
             @Override
-            public void onButtonClick(int btnId, final MyCamera camera) {
+            public void onButtonClick(int btnId, final IMyCamera camera) {
                 Bundle extras = new Bundle();
-                extras.putString(TwsDataValue.EXTRA_KEY_UID, camera.getUID());
+                extras.putString(TwsDataValue.EXTRA_KEY_UID, camera.getUid());
                 Intent intent = new Intent();
                 intent.putExtras(extras);
                 // TODO Auto-generated method stub
@@ -509,9 +479,10 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
                         int intId = camera.getIntId();
-                        manager.cancel(camera.getUID(), intId);
+                        manager.cancel(camera.getUid(), intId);
                     }
-                    intent.setClass(CameraFragment.this.getActivity(), LiveViewActivity.class);
+
+                    intent.setClass(CameraFragment.this.getActivity(),camera instanceof MyCamera? LiveViewActivity.class: LiveView_HichipActivity.class);
                     startActivity(intent);
                 }
                 else if(btnId == R.id.btn_modifyPassword){
@@ -519,46 +490,34 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     showPasswordWrongHint(camera);
                 }
                 else if(btnId == R.id.btn_reconnect){
-                    camera.asyncStop(new MyCamera.TaskExecute() {
+                    camera.asyncStop(new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(Object data) {
-                            camera.start();
+                        public void onPosted(IMyCamera c,Object data) {
+                            c.start();
                         }
                     });
                 }
 
                 else if (btnId == R.id.img_snapshot) {
-                    if (camera.connect_state == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {
+                    if (camera.isPasswordWrong()) {
                         camera.stop();
                         showPasswordWrongHint(camera);
-                    } else if (camera.connect_state == NSCamera.CONNECTION_STATE_SLEEPING) {
-                        int result = camera.wakeUp();
-                        refreshItems();
-                        if (result < 0) {
-                            TwsToast.showToast(CameraFragment.this.getContext(), "not support wake up");
-                        } else {
-                            Message msg = handler.obtainMessage();
-                            msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
-                            msg.arg1 = NSCamera.CONNECTION_STATE_WAKINGUP;
-                            msg.obj = camera;
-                            handler.sendMessageDelayed(msg, 12000);
-                        }
-                    } else if (camera.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
+                    }  else if (camera.isConnected()) {
                         camera.asyncStartVideo(null);
 
                         if (camera.getEventNum() > 0) {
                             NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                             int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
                             int intId = camera.getIntId();
-                            manager.cancel(camera.getUID(), intId);
+                            manager.cancel(camera.getUid(), intId);
                         }
                         intent.setClass(CameraFragment.this.getActivity(), LiveViewActivity.class);
                         startActivity(intent);
                     } else {
-                        camera.asyncStop(new MyCamera.TaskExecute() {
+                        camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(Object data) {
-                                camera.start();
+                            public void onPosted(IMyCamera c,Object data) {
+                                c.start();
                             }
                         });
                     }
@@ -567,7 +526,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     startActivity(intent);
                 } else if (btnId == R.id.ll_mask_image) {
 
-                    if (camera.connect_state >= NSCamera.CONNECTION_STATE_DISCONNECTED && camera.connect_state <= NSCamera.CONNECTION_STATE_CONNECT_FAILED) {
+                    if (camera.isDisconnect()) {
                         if (CameraFragment.this.getContext() != null) {
                             ConnectionState.getInstance(CameraFragment.this.getContext()).CheckConnectState();
                             if (ConnectionState.getInstance(CameraFragment.this.getContext()).isNoneConnected()) {
@@ -583,10 +542,10 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                     }
                                 }).show();
                             } else {
-                                camera.asyncStop(new MyCamera.TaskExecute() {
+                                camera.asyncStop(new IMyCamera.TaskExecute() {
                                     @Override
-                                    public void onPosted(Object data) {
-                                        camera.start();
+                                    public void onPosted(IMyCamera c,Object data) {
+                                        c.start();
                                     }
                                 });
                             }
@@ -620,12 +579,12 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         gridViews.add(gridView);
 
         int no_in_page;
-        NSCamera camera;
+        IMyCamera camera;
         int camera_list_count = TwsDataValue.cameraList().size();
         for (no_in_page = 0; no_in_page < camera_list_count; no_in_page++) {
             Map<String, Object> cell = new HashMap<String, Object>();
             camera = TwsDataValue.cameraList().get(no_in_page);
-            cell.put("cameraUid", camera.uid);
+            cell.put("cameraUid", camera.getUid());
             cell.put("object", camera);
             cells.add(cell);
         }
@@ -654,11 +613,11 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         super.onResume();
 
         refreshItems();
-        for (MyCamera camera : TwsDataValue.cameraList()) {
-            if (camera.isConnected() && camera.getPassword().equalsIgnoreCase(MyCamera.DEFAULT_PASSWORD)) {
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
+            if (camera.isConnected() && camera.getPassword().equalsIgnoreCase(IMyCamera.DEFAULT_PASSWORD)) {
                 modifyPasswordHint(camera);
                 break;
-            } else if (camera.connect_state == NSCamera.CONNECTION_STATE_NONE) {
+            } else if (camera.isNotConnect()) {
                 camera.registerIOTCListener(CameraFragment.this);
                 camera.asyncStart(null);
             }
@@ -681,6 +640,63 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
     }
 
+    @Override
+    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
+
+    }
+
+    @Override
+    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+
+    }
+
+    @Override
+    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
+        Log.i(this.getClass().getSimpleName(), "connect state " + camera.getUid() + " " + resultCode);
+        Message msg = handler.obtainMessage();
+        msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
+        msg.arg1 = resultCode;
+        msg.obj = camera;
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
+
+    }
+
+    @Override
+    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
+        Message msg = handler.obtainMessage();
+        msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
+        msg.arg1 = avIOCtrlMsgType;
+        Bundle bundle = new Bundle();
+        bundle.putByteArray("data", data);
+        msg.setData(bundle);
+        msg.obj = camera;
+        handler.sendMessage(msg);
+    }
+
+    @Override
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
+
+    }
+
+    @Override
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
+
+    }
+
+    @Override
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
+
+    }
+
 
     /**
      * 滑动的最小间距和速度设置
@@ -700,54 +716,12 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
     }
 
-
-    /**
-     * 收到连接设备情况的信息
-     */
-    @Override
-    public void receiveSessionInfo(final NSCamera camera, int resultCode) {
-        Log.i(this.getClass().getSimpleName(), "connect state " + camera.uid + " " + resultCode);
-        Message msg = handler.obtainMessage();
-        msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
-        msg.arg1 = resultCode;
-        msg.obj = camera;
-        handler.sendMessage(msg);
-    }
-
-    @Override
-    public void receiveChannelInfo(final NSCamera camera, int avChannel,
-                                   int resultCode) {
-//        Log.i(this.getClass().getSimpleName(), "connect state " + camera.uid + " " + resultCode);
-//        Message msg = handler.obtainMessage();
-//        msg.what = TwsDataValue.HANDLE_MESSAGE_CHANNEL_STATE;
-//        msg.arg1 = resultCode;
-//        msg.arg2 = avChannel;
-//        msg.obj = camera;
-//        handler.sendMessage(msg);
-    }
-
-    /**
-     * 收到摄像机的相关信息
-     */
-    @Override
-    public void receiveIOCtrlData(NSCamera camera, int avChannel,
-                                  int avIOCtrlMsgType, byte[] data) {
-        Message msg = handler.obtainMessage();
-        msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
-        msg.arg1 = avIOCtrlMsgType;
-        Bundle bundle = new Bundle();
-        bundle.putByteArray("data", data);
-        msg.setData(bundle);
-        msg.obj = camera;
-        handler.sendMessage(msg);
-    }
-
     /**
      * 显示密码错误的对话框
      *
      * @param camera
      */
-    public void showPasswordWrongHint(final MyCamera camera) {
+    public void showPasswordWrongHint(final IMyCamera camera) {
 
         Log.i("1233333", "==showPasswordWrongHint==");
         if (CameraFragment.this.getContext() == null) {
@@ -776,7 +750,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                 dlg.dismiss();
                 dlg = null;
                 String newPassword = passwordEditText.getText().toString();
-                camera.editPassword(newPassword);
+                camera.setPassword(newPassword);
                 camera.sync2Db(CameraFragment.this.getContext());
                 //camera.stop();
                 camera.start();
@@ -801,7 +775,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     /**
      * 删除设备
      */
-    public void deleteCamera(final MyCamera camera) {
+    public void deleteCamera(final IMyCamera camera) {
         //显示确认删除该摄像机的提示对话框
         Builder dlgBuilder = new Builder(CameraFragment.this.getActivity());
         dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
@@ -844,33 +818,6 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
-
-    @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
-                                         byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
-                                         int paramInt3) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1,
-                               byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
-
-    }
-
     private class CameraBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -880,13 +827,13 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             if (intent.getAction().equals(TwsDataValue.ACTION_CAMERA_INIT_END)) {
                 //updatePager();
                 refreshItems();
-                for (final MyCamera camera : TwsDataValue.cameraList()) {
+                for (final IMyCamera camera : TwsDataValue.cameraList()) {
                     camera.registerIOTCListener(CameraFragment.this);
-                    if ((camera.connect_state != NSCamera.CONNECTION_STATE_CONNECTED && camera.connect_state != NSCamera.CONNECTION_STATE_WRONG_PASSWORD)) {
-                        camera.asyncStop(new MyCamera.TaskExecute() {
+                    if (!camera.isConnected() && !camera.isPasswordWrong()) {
+                        camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(Object data) {
-                                camera.start();
+                            public void onPosted(IMyCamera c,Object data) {
+                                c.start();
                             }
                         });
                     }
@@ -898,8 +845,8 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                 if(bundle != null){
                     String uid = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
                     if(uid!= null){
-                        for(MyCamera c : TwsDataValue.cameraList()){
-                            if(c.getUID().equals(uid)){
+                        for(IMyCamera c : TwsDataValue.cameraList()){
+                            if(c.getUid().equals(uid)){
                                 View cameraView = getCameraView(c);//.findViewById(R.id.img_push_alarm)
                                 if(cameraView!=null){
                                     if( c.getEventNum()>0) {
@@ -923,23 +870,23 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
 
     private void afterInit() {
         updatePager();
-        for (NSCamera camera : TwsDataValue.cameraList()) {
+        for (IMyCamera camera : TwsDataValue.cameraList()) {
             camera.registerIOTCListener(CameraFragment.this);
-            if ((camera.connect_state != NSCamera.CONNECTION_STATE_CONNECTED && camera.connect_state != NSCamera.CONNECTION_STATE_WRONG_PASSWORD)) {
-                camera.start();
+            if (camera.isNotConnect()) {
+                //camera.start();
             }
         }
     }
 
     void refreshItems() {
         int no_in_page;
-        NSCamera camera;
+        IMyCamera camera;
         int camera_list_count = TwsDataValue.cameraList().size();
         cells.clear();
         for (no_in_page = 0; no_in_page < camera_list_count; no_in_page++) {
             Map<String, Object> cell = new HashMap<String, Object>();
             camera = TwsDataValue.cameraList().get(no_in_page);
-            cell.put("cameraUid", camera.uid);
+            cell.put("cameraUid", camera.getUid());
             cell.put("object", camera);
             cells.add(cell);
         }
@@ -967,21 +914,6 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             ll_container_first_add_tip.setVisibility(ViewStub.GONE);
             //viewpager.setVisibility(ViewStub.VISIBLE);
         }
-    }
-
-
-    @Override
-    public void receiveFrameData(NSCamera camera, int avChannel, Bitmap bmp) {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void receiveFrameInfo(NSCamera camera, int avChannel, long bitRate,
-                                 int frameRate, int onlineNm, int frameCount,
-                                 int incompleteFrameCount) {
-        // TODO Auto-generated method stub
-
     }
 
     @Override

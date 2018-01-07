@@ -4,12 +4,16 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import com.hichip.base.HiLog;
+import com.hichip.sdk.HiChipSDK;
 import com.tws.commonlib.R;
 import com.tws.commonlib.push.RedirectAdapter;
 import com.tws.commonlib.view.AppUpdateView;
@@ -21,6 +25,7 @@ import com.tws.commonlib.view.AppUpdateView;
  */
 public class MainActivity extends AppCompatActivity {
 
+	private final static int HANDLE_MESSAGE_INIT_END = 0x90000001;
 	private static boolean isFirstLaunch = true;
 
 	private String currentVersionString="";
@@ -30,7 +35,30 @@ public class MainActivity extends AppCompatActivity {
 	private  boolean isReceiverRegistered;
 	private final String TAG = "MainActivity";
 	//private Handler currentdownHandler;
+	private static long initSdkTime;
+	private Handler handler = new Handler() {
+		@Override
+		public void handleMessage(Message msg) {
+			switch (msg.what) {
+				case HANDLE_MESSAGE_INIT_END:
+					long spendingTime = System.currentTimeMillis() - initSdkTime;
+					if (spendingTime < 2000 && spendingTime > 0) {
+						this.postDelayed(new Runnable() {
+							@Override
+							public void run() {
+								// requestEnd();
+								AppUpdateView updateView  = new AppUpdateView(MainActivity.this.context,MainActivity.this);
+								updateView.checkNewVersion();
+							}
+						}, 2000 - spendingTime);
 
+					} else {
+					}
+					break;
+
+			}
+		}
+	};
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -68,12 +96,33 @@ public class MainActivity extends AppCompatActivity {
 
 		//Activity鐣岄潰鍒囨崲鍔ㄧ敾
 		overridePendingTransition(R.anim.mainfadein, R.anim.splashfadeout);
+		this.initP2P();
 
 
-		AppUpdateView updateView  = new AppUpdateView(this,this);
-		updateView.checkNewVersion();
 	}
 
+	private void initP2P() {
+		initSdkTime = System.currentTimeMillis();
+		HiChipSDK.init(new HiChipSDK.HiChipInitCallback() {
+
+			@Override
+			public void onSuccess() {
+				Message msg = handler.obtainMessage();
+				msg.what = HANDLE_MESSAGE_INIT_END;
+				handler.sendMessage(msg);
+				HiLog.e("SDK INIT success");
+			}
+
+			@Override
+			public void onFali(int arg0, int arg1) {
+				Message msg = handler.obtainMessage();
+				msg.what = HANDLE_MESSAGE_INIT_END;
+				handler.sendMessage(msg);
+				HiLog.e("SDK INIT fail");
+			}
+		});
+
+	}
 
 
 	@Override

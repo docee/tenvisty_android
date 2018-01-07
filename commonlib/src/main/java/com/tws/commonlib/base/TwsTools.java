@@ -24,7 +24,6 @@ import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
 import android.support.v4.graphics.drawable.DrawableCompat;
@@ -32,17 +31,11 @@ import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
 
-import com.tencent.android.tpush.XGLocalMessage;
-import com.tencent.android.tpush.XGPushManager;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.L;
-import com.tutk.IOTC.NSCamera;
-import com.tws.commonlib.App;
 import com.tws.commonlib.R;
-import com.tws.commonlib.activity.PhotoShowActivity;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
 import java.io.BufferedReader;
@@ -58,9 +51,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Pattern;
@@ -386,8 +377,17 @@ public class TwsTools {
         return getString(m);
     }
 
-    public static boolean isValidUid(String uid) {
-        return Pattern.matches("^[A-Z0-9]{20}$", uid);
+    public  static  String takeInnerUid(String contents){
+        if (contents.length() > 20) {
+            String temp = "";
+
+            for (int t = 0; t < contents.length(); t++) {
+                if (contents.substring(t, t + 1).matches("[A-Z0-9]{1}"))
+                    temp += contents.substring(t, t + 1);
+            }
+            contents = temp;
+        }
+        return contents;
     }
 
     public static String getFileNameWithTime(int type) {
@@ -623,10 +623,10 @@ public class TwsTools {
     public static void showAlarmNotification(Context context, String uid, int evtType, long evtTime) {
 
         try {
-            MyCamera camera = null;
-            for (NSCamera _caemra : TwsDataValue.cameraList()) {
-                if (uid!=null && uid.equals(_caemra.uid)) {
-                    camera = (MyCamera) _caemra;
+            IMyCamera camera = null;
+            for (IMyCamera _caemra : TwsDataValue.cameraList()) {
+                if (uid!=null && uid.equals(_caemra.getUid())) {
+                    camera = _caemra;
                     break;
                 }
             }
@@ -635,7 +635,7 @@ public class TwsTools {
                 return;
             }
 
-            if (!((MyCamera) camera).shouldPush()) {
+            if (!camera.shouldPush()) {
                 return;
             }
             String[] alarmList = context.getResources().getStringArray(R.array.tips_alarm_list_array);
@@ -652,7 +652,7 @@ public class TwsTools {
             builder.setAutoCancel(true);
             builder.setWhen(System.currentTimeMillis());
             Intent intent = new Intent(context, com.tws.commonlib.start.MainActivity.class);
-            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUID());
+            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUid());
             intent.putExtra("eventTime", evtTime);
             int notificationId = camera.getIntId();
             PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId+evtType, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -661,10 +661,10 @@ public class TwsTools {
             int eventnum = camera.refreshEventNum(context);
             //+ (evtType==0?" from server um":evtType==1?"from server xg":"from p2p")
             builder.setContentText(alarmList[0] + (eventnum > 1 ? (" +" + eventnum) : ""));
-            builder.setContentTitle(camera.getName() + " [" + camera.getUID() + "]");
+            builder.setContentTitle(camera.getNickName() + " [" + camera.getUid() + "]");
             Notification notification = builder.build();
 
-            manager.notify(camera.getUID(), notificationId+evtType, notification);
+            manager.notify(camera.getUid(), notificationId+evtType, notification);
             Intent newIntent = new Intent();
             newIntent.putExtra(TwsDataValue.EXTRA_KEY_UID,uid);
             newIntent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
@@ -684,7 +684,7 @@ public class TwsTools {
 //            local_msg.setContent(alarmList[0] + (eventnum > 1 ? (" +" + eventnum) : ""));
 ////            if (type < strAlarmType.length && type >= 0)
 ////                local_msg.setContent(strAlarmType[type]);
-//            XGPushManager.setTag(context,((MyCamera) camera).getUID());
+//            XGPushManager.setTag(context,((MyCamera) camera).getUid());
 //            XGPushManager.addLocalNotification(context, local_msg);
         } catch (Exception e) {
             e.printStackTrace();

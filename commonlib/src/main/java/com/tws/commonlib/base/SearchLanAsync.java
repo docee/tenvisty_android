@@ -3,6 +3,7 @@ package com.tws.commonlib.base;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.TextUtils;
 
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.st_LanSearchInfo;
@@ -12,6 +13,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import com.hichip.tools.HiSearchSDK;
+import com.hichip.tools.HiSearchSDK.HiSearchResult;
+import com.tws.commonlib.bean.TwsDataValue;
 
 /**
  * Created by Administrator on 2017/9/23.
@@ -26,6 +30,7 @@ public class SearchLanAsync {
     volatile long maxWaitTime;
     volatile long beginTime;
     volatile SearchState state;
+    private HiSearchSDK searchSDK;
     private Handler handler = new Handler() {
         public void handleMessage(Message msg) {
             switch (msg.what) {
@@ -36,15 +41,32 @@ public class SearchLanAsync {
                     break;
                 case HANDLE_MESSAGE_SCAN_RESULT:
                     if (_listener != null) {
-                        st_LanSearchInfo result = (st_LanSearchInfo) msg.obj;
-                        if (result != null) {
-                            for (st_LanSearchInfo info : deviceList) {
-                                if (btsCmp(info.UID, result.UID, 20)) {
-                                    return;
+                        if(msg.obj instanceof HiSearchResult){
+                            HiSearchResult hiresult = (HiSearchResult) msg.obj;
+                            if (hiresult != null) {
+                                for (st_LanSearchInfo info : deviceList) {
+                                    if (TwsTools.getString(info.UID).equalsIgnoreCase(hiresult.uid)) {
+                                        return;
+                                    }
                                 }
+                                st_LanSearchInfo result = new st_LanSearchInfo();
+                                result.IP =  hiresult.ip.getBytes();
+                                result.UID = hiresult.uid.getBytes();
+                                deviceList.add(result);
+                                _listener.onReceiveSearchResult(result, 1);
                             }
-                            deviceList.add(result);
-                            _listener.onReceiveSearchResult(result, 1);
+                        }
+                        else if(msg.obj instanceof st_LanSearchInfo){
+                            st_LanSearchInfo result = (st_LanSearchInfo) msg.obj;
+                            if (result != null) {
+                                for (st_LanSearchInfo info : deviceList) {
+                                    if (btsCmp(info.UID, result.UID, 20)) {
+                                        return;
+                                    }
+                                }
+                                deviceList.add(result);
+                                _listener.onReceiveSearchResult(result, 1);
+                            }
                         }
                     }
                     break;
@@ -88,6 +110,23 @@ public class SearchLanAsync {
         searchCount = 0;
         maxWaitTime = 5000;
         state = SearchState.Stopped;
+        searchSDK = new HiSearchSDK(new HiSearchSDK.ISearchResult() {
+            @Override
+            public void onReceiveSearchResult(HiSearchResult hiSearchResult) {
+                if(SearchLanAsync.this.state == SearchState.Searching && (System.currentTimeMillis() - SearchLanAsync.this.beginTime) < SearchLanAsync.this.maxWaitTime){
+                    String temp = hiSearchResult.uid.substring(0, 4);
+                    if (!TextUtils.isEmpty(temp)) {
+                        Message msg = handler.obtainMessage();
+                        msg.obj = hiSearchResult;
+                        msg.what = HANDLE_MESSAGE_SCAN_RESULT;
+                        SearchLanAsync.this.handler.sendMessage(msg);
+                    }
+                }
+                else{
+                    SearchLanAsync.this.searchSDK.stop();
+                }
+            }
+        });
     }
 
     public synchronized void beginSearch() {
@@ -98,6 +137,7 @@ public class SearchLanAsync {
             deviceList.clear();
             searchThread = new ThreadSearch();
             searchThread.startThread();
+            searchSDK.search2();
         }
     }
 
@@ -113,6 +153,7 @@ public class SearchLanAsync {
         if (state == SearchState.Searching) {
             state = SearchState.Stopping;
         }
+        searchSDK.stop();
     }
 
     public SearchState getState() {

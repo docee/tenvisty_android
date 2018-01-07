@@ -2,18 +2,14 @@ package com.tws.commonlib.activity;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
-import android.content.Context;
-import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.ImageView;
@@ -26,27 +22,25 @@ import android.widget.Toast;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.AVIOCTRLDEFs.STimeDay;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.ICameraPlayStateCallback;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.L;
-import com.tutk.IOTC.Monitor;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IIOTCListener;
+import com.tws.commonlib.bean.IMyCamera;
+import com.tws.commonlib.bean.IPlayStateListener;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListener, View.OnTouchListener, ICameraPlayStateCallback {
+public class PlaybackActivity extends BaseActivity implements IIOTCListener, View.OnTouchListener, IPlayStateListener {
 
     private static final int Build_VERSION_CODES_ICE_CREAM_SANDWICH = 14;
     private static final int STS_CHANGE_CHANNEL_STREAMINFO = 99;
@@ -108,11 +102,11 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
         super.onCreate(savedInstanceState);
         // instance = ScreenSwitchUtils.init(this.getApplicationContext());
         mDevUID = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-        for (NSCamera _camera : TwsDataValue.cameraList()) {
-            if (_camera.uid.equalsIgnoreCase(mDevUID)) {
+        for (IMyCamera _camera : TwsDataValue.cameraList()) {
+            if (_camera.getUid().equalsIgnoreCase(mDevUID)) {
                 mCamera = (MyCamera) _camera;
                 mCamera.registerIOTCListener(this);
-                mCamera.resetEventCount();
+                mCamera.clearEventNum(this);
                 break;
             }
         }
@@ -206,7 +200,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     protected void initView() {
         final NavigationBar title = (NavigationBar) findViewById(R.id.title_top);
         if (title != null) {
-            title.setTitle(mCamera.name);
+            title.setTitle(mCamera.getNickName());
             title.setButton(NavigationBar.NAVIGATION_BUTTON_LEFT);
             title.setNavigationBarButtonListener(new NavigationBar.NavigationBarButtonListener() {
 
@@ -551,7 +545,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveFrameData(final NSCamera camera, int sessionChannel, Bitmap bmp) {
+    public void receiveFrameData(final IMyCamera camera, int sessionChannel, Bitmap bmp) {
         System.out.println("receiveFrameData");
         if (mCamera == camera && sessionChannel == mPlaybackChannel && bmp != null) {
             mVideoWidth = bmp.getWidth();
@@ -571,7 +565,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveSessionInfo(final NSCamera camera, int resultCode) {
+    public void receiveSessionInfo(final IMyCamera camera, int resultCode) {
         Bundle bundle = new Bundle();
         Message msg = handler.obtainMessage();
         msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
@@ -581,7 +575,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveChannelInfo(final NSCamera camera, int sessionChannel, int resultCode) {
+    public void receiveChannelInfo(final IMyCamera camera, int sessionChannel, int resultCode) {
 
         if (mCamera == camera) {
             Bundle bundle = new Bundle();
@@ -595,7 +589,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveFrameInfo(final NSCamera camera, int sessionChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
+    public void receiveFrameInfo(final IMyCamera camera, int sessionChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
 
         if (mCamera == camera && sessionChannel == mPlaybackChannel) {
             Bundle bundle = new Bundle();
@@ -613,7 +607,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveIOCtrlData(final NSCamera camera, int sessionChannel, int avIOCtrlMsgType, byte[] data) {
+    public void receiveIOCtrlData(final IMyCamera camera, int sessionChannel, int avIOCtrlMsgType, byte[] data) {
 
         if (mCamera == camera) {
             Bundle bundle = new Bundle();
@@ -676,7 +670,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
                                 mMediaState = MEDIA_STATE_PLAYING;
 
                                 if (mCamera != null) {
-                                    mCamera.startChannel(mPlaybackChannel, mCamera.user, mCamera.getPassword());
+                                    ((MyCamera)mCamera).startChannel(mPlaybackChannel, mCamera.getAccount(), mCamera.getPassword());
                                 }
                                 refreshButton();
                                 handler.removeMessages(PLAY_TIMEOUT);
@@ -763,12 +757,12 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
                     mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_RECORD_PLAYCONTROL, AVIOCTRLDEFs.SMsgAVIoctrlPlayRecord.parseContent(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.AVIOCTRL_RECORD_PLAY_STOP, 0, mEvtTime2.toByteArray()));
                     // mCamera.stop(channel);
                     TwsToast.showToast(PlaybackActivity.this, "timeout");
-                    mCamera.asyncStopChannel(channel, new MyCamera.TaskExecute() {
+                    mCamera.asyncStopChannel(mPlaybackChannel,new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(Object data) {
+                        public void onPosted(IMyCamera c,Object data) {
                             mPlaybackChannel = -1;
                             mMediaState = MEDIA_STATE_STOPPED;
-                            mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_RECORD_PLAYCONTROL, AVIOCTRLDEFs.SMsgAVIoctrlPlayRecord.parseContent(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.AVIOCTRL_RECORD_PLAY_START, 0, mEvtTime2.toByteArray()));
+                            c.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_RECORD_PLAYCONTROL, AVIOCTRLDEFs.SMsgAVIoctrlPlayRecord.parseContent(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.AVIOCTRL_RECORD_PLAY_START, 0, mEvtTime2.toByteArray()));
                         }
                     });
                 }
@@ -794,13 +788,13 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     };
 
     @Override
-    public void initSendAudio(Camera paramCamera, boolean paramBoolean) {
+    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void receiveOriginalFrameData(Camera paramCamera, int paramInt1,
+    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1,
                                          byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2,
                                          int paramInt3) {
         // TODO Auto-generated method stub
@@ -808,14 +802,14 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void receiveRGBData(Camera paramCamera, int paramInt1,
+    public void receiveRGBData(IMyCamera paramCamera, int paramInt1,
                                byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
     }
 
@@ -844,7 +838,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void callbackState(Camera camera, int channel, int state, int w, int h) {
+    public void callbackState(IMyCamera IMyCamera, int channel, int state, int w, int h) {
         if (channel == mPlaybackChannel) {
             if (state == 0) {
                 mVideoWidth = w;
@@ -875,7 +869,7 @@ public class PlaybackActivity extends BaseActivity implements IRegisterIOTCListe
     }
 
     @Override
-    public void callbackPlayUTC(Camera var1, int var2) {
+    public void callbackPlayUTC(IMyCamera var1, int var2) {
 
     }
 

@@ -136,7 +136,7 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
 //            local_msg.setContent(strAlarmType[0] + (eventnum > 1 ? (" +" + eventnum) : ""));
 ////            if (type < strAlarmType.length && type >= 0)
 ////                local_msg.setContent(strAlarmType[type]);
-//            XGPushManager.setTag(arg0,((MyCamera) camera).getUID());
+//            XGPushManager.setTag(arg0,((MyCamera) camera).getUid());
 //            XGPushManager.addLocalNotification(arg0, local_msg);
         }
     }

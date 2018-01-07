@@ -14,13 +14,13 @@ import android.widget.Button;
 import android.widget.EditText;
 
 import com.google.zxing.activity.CaptureActivity;
-import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.ConnectionChangeReceiver;
 import com.tws.commonlib.base.ConnectionState;
 import com.tws.commonlib.base.INetworkChangeCallback;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -171,19 +171,10 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
                 String contents = intent.getStringExtra(CaptureActivity.INTENT_EXTRA_KEY_QR_SCAN);
                 // String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
-                if (contents.length() > 20) {
-                    String temp = "";
-
-                    for (int t = 0; t < contents.length(); t++) {
-                        if (contents.substring(t, t + 1).matches("[A-Z0-9]{1}"))
-                            temp += contents.substring(t, t + 1);
-                    }
-                    contents = temp;
-                }
-                uid = contents;
+                uid = TwsTools.takeInnerUid(contents);
                 boolean duplicated = false;
-                for (NSCamera camera_ : TwsDataValue.cameraList()) {
-                    if (uid.equalsIgnoreCase(camera_.uid)) {
+                for (IMyCamera camera_ : TwsDataValue.cameraList()) {
+                    if (uid.equalsIgnoreCase(camera_.getUid())) {
                         duplicated = true;
                         break;
                     }
@@ -203,7 +194,7 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
 //				edtSecurityCode.requestFocus();
 
             } else if (resultCode == CaptureActivity.RESULT_CODE_ADD_MANUALLY) {
-                uid = MyCamera.NO_USE_UID;
+                uid = IMyCamera.NO_USE_UID;
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
                 finish();

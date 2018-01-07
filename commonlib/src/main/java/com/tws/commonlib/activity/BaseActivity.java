@@ -1,17 +1,12 @@
 package com.tws.commonlib.activity;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.AppCompatDelegate;
 import android.text.Spannable;
@@ -29,16 +24,13 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.adapter.PopItemListAdapter;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.base.TwsTools;
-import com.tws.commonlib.bean.MyCamera;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.view.TwsListView;
@@ -48,7 +40,7 @@ public class BaseActivity extends AppCompatActivity {
     protected boolean setStatusBarColor = true;
     private final static int GO_ACTIVITY = 999;
     protected boolean needConnect = true;
-    protected MyCamera camera;
+    protected IMyCamera camera;
     // public SystemBarTintManager tintManager;
 
     @Override
@@ -61,15 +53,15 @@ public class BaseActivity extends AppCompatActivity {
 //        }
 
         if(getIntent() != null && getIntent().getExtras() != null) {
-            for (MyCamera c : TwsDataValue.cameraList()) {
-                if (c.getUID().equals(getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID))) {
+            for (IMyCamera c : TwsDataValue.cameraList()) {
+                if (c.getUid().equals(getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID))) {
                     camera = c;
                     break;
                 }
             }
         }
 
-        if (needConnect && camera != null && !camera.hasChannel()) {
+        if (needConnect && camera != null && camera.isNotConnect()) {
             back2Activity(MainActivity.class);
         }
 

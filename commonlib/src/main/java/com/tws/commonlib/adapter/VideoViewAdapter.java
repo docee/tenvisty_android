@@ -2,7 +2,6 @@ package com.tws.commonlib.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.support.v4.content.ContextCompat;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,10 +12,11 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.SimpleAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
+import com.tws.commonlib.bean.CameraState;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 
 import java.util.List;
@@ -25,27 +25,13 @@ import java.util.Map;
 public class VideoViewAdapter extends SimpleAdapter {
 
     public interface OnButtonClickListener {
-        void onButtonClick(int btnId, MyCamera camera);
+        void onButtonClick(int btnId, IMyCamera camera);
     }
 
     OnButtonClickListener mListener;
     private LayoutInflater mInflater;
     Context context;
-    private String str_state[];
-    private String str_rebootState[];
     OnClickListener clickListener;
-    private int str_state_background[] = new int[]{
-            R.drawable.shape_state_connecting,
-            R.drawable.shape_state_connecting,
-            R.drawable.shape_state_online,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_pwderror,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_offline,
-            R.drawable.shape_state_pwderror,
-            R.drawable.shape_state_connecting};
 
     public VideoViewAdapter(Context context,
                             List<? extends Map<String, ?>> data, int resource, String[] from,
@@ -54,19 +40,11 @@ public class VideoViewAdapter extends SimpleAdapter {
         super(context, data, resource, from, to);
         this.mInflater = LayoutInflater.from(context);
         this.context = context;
-        str_state = context.getResources().getStringArray(R.array.connect_state);
-        str_rebootState = new String[]{str_state[2], context.getString(R.string.tips_rebooting_wait),
-                context.getString(R.string.tips_rebooting),
-                context.getString(R.string.tips_reseting_wait),
-                context.getString(R.string.tips_reseting),
-                context.getString(R.string.tips_upgrading_wait),
-                context.getString(R.string.tips_upgrading)
-        };
         clickListener = new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
-                    mListener.onButtonClick(view.getId(), (MyCamera) view.getTag());
+                    mListener.onButtonClick(view.getId(), (IMyCamera) view.getTag());
                 }
             }
         };
@@ -81,7 +59,7 @@ public class VideoViewAdapter extends SimpleAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         @SuppressWarnings("unchecked")
         Map<String, ?> data = (Map<String, ?>) this.getItem(position);
-        final MyCamera camera = (MyCamera) data.get("object");
+        final IMyCamera camera = (IMyCamera) data.get("object");
         ViewHolder holder = null;
         if (convertView == null) {
             convertView = this.mInflater.inflate(R.layout.camera_main_item, null);
@@ -132,28 +110,15 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_play.findViewById(R.id.btn_play).setTag(camera);
             holder.ll_tip_disconnected.findViewById(R.id.btn_reconnect).setTag(camera);
             holder.ll_tip_password_wrong.findViewById(R.id.btn_modifyPassword).setTag(camera);
-            Bitmap snap = ((MyCamera) camera).getSnapshot();
+            Bitmap snap = camera.getSnapshot();
             if (snap != null) {
                 holder.img_snapshot.setImageBitmap(snap);
             } else {
                 holder.img_snapshot.setImageResource(R.drawable.videoclip);
             }
-            holder.txt_nikename.setText(camera.getName());
-            int state = camera.connect_state;
-            MyCamera.CameraState rebootState = camera.getState();
-            if (rebootState != MyCamera.CameraState.None) {
-                holder.txt_state.setBackgroundResource(str_state_background[0]);
-                holder.txt_state.setText(str_rebootState[rebootState.ordinal()]);
-            } else {
-                holder.txt_state.setBackgroundResource(str_state_background[state]);
-                //String conType = "";
-//                try {
-//                    conType = (camera.getSessionMode() == 0 ? "P2P" : (camera.getSessionMode() == 1 ? "RELAY" : "LAN"));
-//                } catch (Exception ex) {
-//
-//                }
-                holder.txt_state.setText(str_state[state]);
-            }
+            holder.txt_nikename.setText(camera.getNickName());
+            holder.txt_state.setBackgroundResource(camera.getCameraStateBackgroundColor());
+            holder.txt_state.setText(camera.getCameraStateDesc());
             if(camera.getEventNum() > 0){
                 holder.img_push_alarm.setVisibility(View.VISIBLE);
             }
@@ -165,16 +130,16 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_connecting.setVisibility(View.GONE);
             holder.ll_tip_play.setVisibility(View.GONE);
 
-            if (state == NSCamera.CONNECTION_STATE_CONNECTED && camera.getState() == MyCamera.CameraState.None) {
+            if (camera.isConnected() && camera.getState() == CameraState.None) {
                 holder.ll_tip_play.setVisibility(View.VISIBLE);
                 holder.btn_item_event.setEnabled(true);
                 holder.btn_item_setting.setEnabled(true);
                 holder.ll_mask_image.setEnabled(true);
             } else {
-                if (camera.getState() == MyCamera.CameraState.None) {
-                    if (state == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {
+                if (camera.getState() == CameraState.None) {
+                    if (camera.isPasswordWrong()) {
                         holder.ll_tip_password_wrong.setVisibility(View.VISIBLE);
-                    } else if (state == NSCamera.CONNECTION_STATE_CONNECTING || state == NSCamera.CONNECTION_STATE_NONE) {
+                    } else if (camera.isConnecting() ||camera.isNotConnect()) {
                         holder.ll_tip_connecting.setVisibility(View.VISIBLE);
                     } else {
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);

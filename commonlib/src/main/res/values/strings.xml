@@ -336,4 +336,10 @@
     <string name="option_search_within_a_day">Within a day</string>
     <string name="option_search_within_a_week">Within a week</string>
     <string name="option_search_custom">Custom</string>
+
+
+    <string name="camera_state_connecting">Connecting...</string>
+    <string name="camera_state_connected">Online</string>
+    <string name="camera_state_disconnect">Disconnected</string>
+    <string name="camera_state_passwordWrong">Wrong Password</string>
 </resources>

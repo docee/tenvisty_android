@@ -10,6 +10,7 @@ import android.widget.Toast;
 import com.google.zxing.activity.CaptureActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.ConnectionState;
+import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
@@ -81,7 +82,8 @@ public class AddCameraActivity extends BaseActivity implements View.OnClickListe
                 if (scanResult != null) {
                     scanResult = scanResult.trim();
                 }
-                if (scanResult != null && scanResult.length() == 20) {
+                scanResult = TwsTools.takeInnerUid(scanResult);
+                if (scanResult != null) {
                     Intent intent = new Intent();
                     intent.putExtra(TwsDataValue.EXTRA_KEY_UID, scanResult);
                     intent.setClass(AddCameraActivity.this, SaveCameraActivity.class);

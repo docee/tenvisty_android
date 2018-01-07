@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main"><source path="E:\GitHub\tenvisty_android\push\libs"><file name="alicloud-android-sdk-httpdns-1.0.7.jar" path="E:\GitHub\tenvisty_android\push\libs\alicloud-android-sdk-httpdns-1.0.7.jar"/><file name="umeng-push-3.3.3.jar" path="E:\GitHub\tenvisty_android\push\libs\umeng-push-3.3.3.jar"/></source></dataSet><dataSet config="debug"><source path="E:\GitHub\tenvisty_android\push\build-types\debug\jniLibs"/></dataSet></merger>

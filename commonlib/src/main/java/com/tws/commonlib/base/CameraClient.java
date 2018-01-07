@@ -1,10 +1,8 @@
 package com.tws.commonlib.base;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.Settings;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -12,6 +10,7 @@ import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.App;
 import com.tws.commonlib.R;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.db.DatabaseManager;
@@ -35,9 +34,7 @@ import java.io.InputStreamReader;
 import java.net.SocketTimeoutException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Locale;
 
 public class CameraClient {
     static final String HOST_URL_second = "https://home.tenvis.com";
@@ -131,7 +128,7 @@ public class CameraClient {
     }
 
     //添加摄像机
-    public void addCamera(MyCamera camera) {
+    public void addCamera(IMyCamera camera) {
         saveToDatabase(camera);
     }
 
@@ -141,36 +138,7 @@ public class CameraClient {
         deleteCamera(uidString);
     }
 
-    //修改摄像机的名称和密码
-    public void modefiyCamera(String serverDatabaseId, String cameraName,
-                              String oldPassword, String newPassword) {
-        if (serverDatabaseId == null || serverDatabaseId.length() == 0) {
-            System.out.println("modefiyCamera camera fail,serverDatabaseId is null");
-            return;
-        }
-        for (int i = 0; i < TwsDataValue.cameraList().size(); i++) {
-            MyCamera camera = TwsDataValue.cameraList().get(i);
-            if (camera.databaseId == serverDatabaseId) {
-                camera.name = cameraName;
-                camera.pwd = newPassword;
-                modifyCameraDb(camera);
-                break;
-            }
-        }
 
-
-    }
-
-    public void modefiyCameraByUid(String uid, String cameraName, String newPassword) {
-        for (MyCamera camera : TwsDataValue.cameraList()) {
-            if (camera.uid.equalsIgnoreCase(uid)) {
-                camera.name = cameraName;
-                camera.pwd = newPassword;
-                modifyCameraDb(camera);
-                break;
-            }
-        }
-    }
 
     private String getString(byte[] b) {
         StringBuffer sb = new StringBuffer();
@@ -694,33 +662,24 @@ public class CameraClient {
                         String pushStateString = jsonObject.getString(
                                 CAMERA_PUSH_STATE).toString();
 
-                        MyCamera myCamera = new MyCamera(namesString, uidString, cameraUserString, passwordString);
-                        myCamera.cameraModel = NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264;
-                        myCamera.databaseId = serverDatabaseIdString;
-                        myCamera.camera_own_status = statusString;
-                        if (pushStateString == null) {
-                            myCamera.pushNotificationStatus = 1;
-                        } else {
-                            myCamera.pushNotificationStatus = 0;
+                        IMyCamera myCamera = IMyCamera.MyCameraFactory.shareInstance().createCamera(namesString, uidString, cameraUserString, passwordString);
+                        myCamera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
+                        if(serverDatabaseIdString == null) {
+                            myCamera.setDatabaseId(Long.parseLong(serverDatabaseIdString));
                         }
+                        myCamera.setPushOpen(pushStateString == null);
 
-                        myCamera.shareFrom = cameraShareFormString;
                         TwsDataValue.cameraList.add(myCamera);
                     } else if (cameraModelString.equals(CAMERA_MODEL_SJ)) {
                         String pushStateString = jsonObject.getString(
                                 CAMERA_PUSH_STATE).toString();
 
-                        MyCamera myCamera = new MyCamera(namesString, uidString, cameraUserString, passwordString);
-                        myCamera.cameraModel = NSCamera.CAMERA_MODEL.CAMERA_MODEL_SJ;
-                        myCamera.databaseId = serverDatabaseIdString;
-                        myCamera.camera_own_status = statusString;
-                        if (pushStateString == null) {
-                            myCamera.pushNotificationStatus = 0;
-                        } else {
-                            myCamera.pushNotificationStatus = 1;
+                        IMyCamera myCamera = IMyCamera.MyCameraFactory.shareInstance().createCamera(namesString, uidString, cameraUserString, passwordString);
+                        myCamera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
+                        if(serverDatabaseIdString == null) {
+                            myCamera.setDatabaseId(Long.parseLong(serverDatabaseIdString));
                         }
-
-                        myCamera.shareFrom = cameraShareFormString;
+                        myCamera.setPushOpen(pushStateString == null);
                         TwsDataValue.cameraList.add(myCamera);
                     }
                 } else {
@@ -768,19 +727,13 @@ public class CameraClient {
         }
     }
 
-    private void saveToDatabase(MyCamera camera) {
+    private void saveToDatabase(IMyCamera camera) {
         JSONArray data = new JSONArray();
         try {
             DatabaseManager manager = new DatabaseManager(App.getContext());
-            long db_id = manager.addDevice(camera.name, camera.uid, "", "", "admin", camera.pwd, 0, 0, "0", camera.getVideoQuality(), "", 0);
-
-            //MyCamera mcamera = new MyCamera(camera.name, camera.uid, "admin", camera.pwd);
-            camera.pushNotificationStatus = 0;
-//			VideoList.myCameraList.add(camera);
-//			DeviceInfo dev = new DeviceInfo(db_id, mcamera.getUUID(), camera.name, camera.uid, "admin", camera.pwd, "", 0, 0, null);
-//			VideoList.DeviceList.add(dev);
+            long db_id = manager.addDevice(camera.getAccount(), camera.getUid(), "", "", "admin", camera.getPassword(), 0, 0, "0", camera.getVideoQuality(), "", 0);
             JSONObject obj = new JSONObject();
-            obj.put(CameraClient.CAMERA_UID, camera.uid);
+            obj.put(CameraClient.CAMERA_UID, camera.getUid());
             obj.put(CameraClient.OWNER_CAMERA_ID, db_id);
             data.put(1, obj);
         } catch (JSONException e) {
@@ -810,21 +763,5 @@ public class CameraClient {
                 serverResultListener.serverResult("DELETE_FAIL", new JSONArray());
             }
         }
-    }
-
-    public void modifyCameraDb(MyCamera camera) {
-        try {
-            DatabaseManager manager = new DatabaseManager(App.getContext());
-            //manager.updateDeviceInfoByDBID(mDevice.DBID, mCamera.uid, mCamera.name, "", "", "admin", mCamera.pwd, evtNotify, 0);
-            manager.updateDeviceInfoByDBUID(camera.uid, camera.name, "", "", "admin", camera.pwd, camera.pushNotificationStatus, 0, 0, camera.getVideoQuality());
-            if (serverResultListener != null) {
-                serverResultListener.serverResult("UPDATE_OK", new JSONArray());
-            }
-        } catch (Exception e) {
-            if (serverResultListener != null) {
-                serverResultListener.serverResult("UPDATE_FAIL", new JSONArray());
-            }
-        }
-        //manager.updateDeviceInfoByDBID( Integer.parseInt(camera.databaseId), camera.uid, camera.name, "", "", "admin", camera.pwd,  Integer.parseInt(camera.pushNotificationStatus), 0,0);
     }
 }
