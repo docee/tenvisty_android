@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+    <LinearLayout    
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/white"
+        xmlns:android="http://schemas.android.com/apk/res/android">   
+        <LinearLayout 
+            android:id="@+id/none_record_ll"
+            style="@style/line_item_style"
+        	android:orientation="horizontal">
+            <LinearLayout style="@style/line_subitem_style"
+        android:orientation="vertical">
+	        <TextView 
+		    style="@style/line_subitem_textview_title_style"
+            android:id="@+id/none_title_textview"
+	        android:text="@string/tips_recordtime_none_title" />
+	        <TextView 
+		    style="@style/line_subitem_textview_desc_style"
+            android:id="@+id/none_desc_textview"
+	        android:text="@string/tips_recordtime_none_desc" />
+        </LinearLayout>
+        <ImageView style="@style/line_subitem_img_style"></ImageView>"
+        </LinearLayout>
+        <View  android:layout_width="match_parent" style="@style/split_long_thin_style"></View>
+        <LinearLayout style="@style/line_item_style"
+        android:id="@+id/allday_record_ll"
+        android:orientation="horizontal">
+            <LinearLayout style="@style/line_subitem_style"
+        android:orientation="vertical">
+	        <TextView 
+		    style="@style/line_subitem_textview_title_style"
+            android:id="@+id/allday_title_textview"
+	        android:text="@string/tips_recordtime_allday_title" />
+	        <TextView 
+		    style="@style/line_subitem_textview_desc_style"
+            android:id="@+id/allday_desc_textview"
+	        android:text="@string/tips_recordtime_allday_desc" />
+        </LinearLayout>
+        <ImageView style="@style/line_subitem_img_style"></ImageView>
+        </LinearLayout> 
+        <View android:layout_width="match_parent" style="@style/split_long_thin_style"></View>
+                <LinearLayout style="@style/line_item_style"
+        android:id="@+id/manually_record_ll"
+        android:orientation="horizontal">
+            <LinearLayout style="@style/line_subitem_style"
+        android:orientation="vertical">
+	        <TextView 
+		    style="@style/line_subitem_textview_title_style"
+            android:id="@+id/custom_title_textview"
+	        android:text="@string/tips_recordtime_custom_title" />
+	        <TextView 
+		    style="@style/line_subitem_textview_desc_style"
+            android:id="@+id/custom_desc_textview"
+	        android:text="@string/tips_recordtime_custom_desc" />
+        </LinearLayout>
+        <ImageView style="@style/line_subitem_img_style" ></ImageView>
+        </LinearLayout> 
+    
+        <View  android:layout_width="match_parent" style="@style/split_long_thin_style"></View>
+</LinearLayout>

@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.umeng.commonsdk.UMConfigure;
@@ -44,7 +45,9 @@ public class App extends Application {
         //注册推送
         MyCamera.initPushSDK(this);
         MyCamera.initP2P();
+        HichipCamera.initP2P();
     }
+
 
     public static Context getContext() {
         return mContext;

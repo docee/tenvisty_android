@@ -5,15 +5,18 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
+import com.tws.commonlib.activity.hichip.EventSetting_HichipActivity;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -64,10 +67,16 @@ public class DeviceSettingActivity extends BaseActivity implements IIOTCListener
 
     void getSetting() {
         if (camera != null) {
-            showLoadingView(R.id.txt_camera_record);
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETRECORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetMotionDetectReq.parseContent(0));
-            showLoadingView(R.id.txt_camera_wifi);
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetWifiReq.parseContent());
+            if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
+                showLoadingView(R.id.txt_camera_record);
+                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETRECORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetMotionDetectReq.parseContent(0));
+                showLoadingView(R.id.txt_camera_wifi);
+                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetWifiReq.parseContent());
+            }
+            else{
+                showLoadingView(R.id.txt_camera_wifi);
+                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, HiChipDefines.HI_P2P_GET_WIFI_PARAM, null);
+            }
         }
     }
 
@@ -88,7 +97,12 @@ public class DeviceSettingActivity extends BaseActivity implements IIOTCListener
         } else if (view.getId() == R.id.ll_setCameraNetwork) {
             intent.setClass(this, WiFiListActivity.class);
         } else if (view.getId() == R.id.ll_setCameraEvent) {
-            intent.setClass(this, EventSettingActivity.class);
+            if(camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
+                intent.setClass(this, EventSetting_HichipActivity.class);
+            }
+            else{
+                intent.setClass(this, EventSettingActivity.class);
+            }
         } else if (view.getId() == R.id.ll_setCameraOther) {
             intent.setClass(this, OtherSettingActivity.class);
         } else if (view.getId() == R.id.ll_setCameraSystem) {
@@ -118,38 +132,38 @@ public class DeviceSettingActivity extends BaseActivity implements IIOTCListener
             switch (msg.what) {
 
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETRECORD_RESP:
-                    hideLoadingView(R.id.txt_camera_record);
-                    int recordType = Packet.byteArrayToInt_Little(data, 4);
-                    if (recordTypes != null && recordTypes.length >= recordType) {
-                        txt_camera_record.setText(recordTypes[recordType]);
+                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
+                        hideLoadingView(R.id.txt_camera_record);
+                        int recordType = Packet.byteArrayToInt_Little(data, 4);
+                        if (recordTypes != null && recordTypes.length >= recordType) {
+                            txt_camera_record.setText(recordTypes[recordType]);
+                        }
                     }
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_RESP:
                     hideLoadingView(R.id.txt_camera_wifi);
-                    byte[] ssid = new byte[32];
-                    System.arraycopy(data, 0, ssid, 0, 32);
-                    int connectStatus = data[67];
-                    if (connectStatus == 1 || connectStatus == 3 || connectStatus == 4) {
-                        final String connctedSsid = TwsTools.getString(ssid);
+                    String connectedSsid = "";
+                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
+                        byte[] ssid = new byte[32];
+                        System.arraycopy(data, 0, ssid, 0, 32);
+                        int connectStatus = data[67];
+                        if (connectStatus == 1 || connectStatus == 3 || connectStatus == 4) {
+                            connectedSsid = TwsTools.getString(ssid);
+                        }
+                    }
+                    else if(msg.arg1 == 0){
+                        HiChipDefines.HI_P2P_S_WIFI_PARAM wifi_param = new HiChipDefines.HI_P2P_S_WIFI_PARAM(data);
 
-                        // byte mode = data[64];
-                        // byte enctype = data[65];
-                        // byte signal = data[66];
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                txt_camera_wifi.setText(connctedSsid);
-                            }
-                        });
+                        connectedSsid = TwsTools.getString(wifi_param.strSSID);
                     }
-                    else{
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                txt_camera_wifi.setText("");
-                            }
-                        });
-                    }
+                    final String fssid = connectedSsid;
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            txt_camera_wifi.setText(fssid);
+                        }
+                    });
+
                     break;
             }
             super.handleMessage(msg);
@@ -184,6 +198,7 @@ public class DeviceSettingActivity extends BaseActivity implements IIOTCListener
 
         Message msg = new Message();
         msg.what = avIOCtrlMsgType;
+        msg.arg1 = avChannel;
         msg.setData(bundle);
         handler.sendMessage(msg);
     }

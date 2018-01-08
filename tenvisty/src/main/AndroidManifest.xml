@@ -203,8 +203,50 @@
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name="com.tws.commonlib.activity.LiveView_HichipActivity"
+            android:name="com.tws.commonlib.activity.hichip.LiveView_HichipActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.WiFiSet_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.EventSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.SensitivitySetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.DeviceSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.TimingRecord_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.OtherSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.AudioSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.SdCardSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.TimeSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.TimezoneSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+
+
 
 
         <activity

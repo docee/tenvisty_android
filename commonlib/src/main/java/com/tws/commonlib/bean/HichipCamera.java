@@ -11,8 +11,11 @@ import android.widget.Toast;
 import com.hichip.base.HiLog;
 import com.hichip.callback.ICameraIOSessionCallback;
 import com.hichip.callback.ICameraPlayStateCallback;
+import com.hichip.content.HiChipDefines;
 import com.hichip.control.HiCamera;
+import com.hichip.sdk.HiChipP2P;
 import com.hichip.sdk.HiChipSDK;
+import com.hichip.tools.Packet;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.App;
 import com.tws.commonlib.R;
@@ -23,9 +26,11 @@ import com.tws.commonlib.db.DatabaseManager;
 import com.tws.commonlib.fragment.CameraFragment;
 
 import java.io.File;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.Vector;
 
 /**
@@ -42,6 +47,9 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
     private Bitmap snapshot;
     private  long lastPushTime;
     private int videoQuality;
+    private com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE timezone = null;
+    private com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE_EXT timezone_ext = null;
+    private boolean isInitTime = false;
 
     private float videoRatio = 0;
     public HichipCamera(Context context, String nikename, String uid, String username, String password) {
@@ -745,7 +753,7 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
         }
         for (int i = 0; i < mIOTCListeners.size(); i++) {
             IIOTCListener listener = mIOTCListeners.get(i);
-            listener.receiveIOCtrlData(HichipCamera.this,-999,accType,bytes);
+            listener.receiveIOCtrlData(HichipCamera.this,state,accType,bytes);
         }
     }
 
@@ -774,6 +782,9 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
             }
         }
     }
+    public  CameraP2PType getP2PType(){
+        return CameraP2PType.HichipP2P;
+    }
 
     @Override
     public void callbackPlayUTC(HiCamera hiCamera, int state) {
@@ -783,6 +794,78 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
         }
     }
 
+    public  static boolean IsP2PInited;
+    public static void initP2P() {
+        HiChipSDK.init(new HiChipSDK.HiChipInitCallback() {
+
+            @Override
+            public void onSuccess() {
+                HiLog.e("SDK INIT success");
+                IsP2PInited = true;
+            }
+
+            @Override
+            public void onFali(int arg0, int arg1) {
+                HiLog.e("SDK INIT fail");
+                IsP2PInited = false;
+            }
+        });
+
+    }
+    public boolean syncPhoneTime() {
+        if (timezone != null || timezone_ext != null) {
+            TimeZone tz = null;
+            long offset = 0;
+            if (timezone != null && (timezone.u32DstMode == 1 || timezone.u32DstMode == 0)) {
+                int dstMode = timezone.u32DstMode;
+                if (dstMode == 1) {
+                    String[] specifiedIDs = TimeZone.getAvailableIDs(timezone.s32TimeZone * 60 * 60 * 1000);
+                    for (int i = 0; i < specifiedIDs.length; i++) {
+                        if (TimeZone.getTimeZone(specifiedIDs[i]).useDaylightTime()) {
+                            tz = TimeZone.getTimeZone(specifiedIDs[i]);
+                            break;
+                        }
+                    }
+                }
+                if (tz == null) {
+                    tz = TimeZone.getTimeZone("GMT" + (timezone.s32TimeZone > 0 ? "+" : (timezone.s32TimeZone == 0 ? " " : "")) + timezone.s32TimeZone);
+                }
+            } else if (timezone_ext != null && (timezone_ext.u32DstMode == 1 || timezone_ext.u32DstMode == 0)) {
+                tz = TimeZone.getTimeZone(Packet.getString(timezone_ext.sTimeZone));
+                if (tz.useDaylightTime() && timezone_ext.u32DstMode == 0) {
+                    offset = -60 * 60 * 1000;
+                }
+            }
+            if (tz != null) {
+                Calendar cal = Calendar.getInstance(tz);
+                cal.setTimeInMillis(System.currentTimeMillis() + offset);
+
+                byte[] time = HiChipDefines.HI_P2P_S_TIME_PARAM.parseContent(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH) + 1, cal.get(Calendar.DAY_OF_MONTH),
+                        cal.get(Calendar.HOUR_OF_DAY), cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+
+                this.sendIOCtrl(HiChipDefines.HI_P2P_SET_TIME_PARAM, time);
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    public HiChipDefines.HI_P2P_S_TIME_ZONE_EXT getTimezoneExt() {
+        return timezone_ext;
+    }
+
+    public void setTimezoneExt(com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE_EXT timezone) {
+        this.timezone_ext = timezone;
+    }
+
+    public HiChipDefines.HI_P2P_S_TIME_ZONE getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE timezone) {
+        this.timezone = timezone;
+    }
     public static HashMap IOTCHashMap;
     public static HashMap SessionStateHashMap;
     static {
@@ -797,6 +880,15 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
         SessionStateHashMap.put(HiCamera.CAMERA_CONNECTION_STATE_UIDERROR,TwsSessionState.CAMERA_CONNECTION_STATE_UIDERROR);
         SessionStateHashMap.put(HiCamera.CAMERA_CHANNEL_STREAM_ERROR,TwsSessionState.CAMERA_CHANNEL_STREAM_ERROR);
         SessionStateHashMap.put(HiCamera.CAMERA_CHANNEL_CMD_ERROR,TwsSessionState.CAMERA_CHANNEL_CMD_ERROR);
+
+        IOTCHashMap.put(HiChipDefines.HI_P2P_SET_USER_PARAM,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_RESP);
+        IOTCHashMap.put( HiChipDefines.HI_P2P_GET_WIFI_PARAM,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_RESP);
+        IOTCHashMap.put(HiChipDefines.HI_P2P_GET_WIFI_LIST,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_RESP);
+        IOTCHashMap.put(HiChipDefines.HI_P2P_GET_MD_PARAM,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_GETMOTIONDETECT_RESP);
+        IOTCHashMap.put(HiChipDefines.HI_P2P_SET_MD_PARAM,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_SETMOTIONDETECT_RESP);
+      //  IOTCHashMap.put(HiChipDefines.HI_P2P_GET_SD_INFO,TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_RESP);
+
+
     }
 
 }

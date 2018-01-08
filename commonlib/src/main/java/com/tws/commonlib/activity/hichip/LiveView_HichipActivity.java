@@ -1,4 +1,4 @@
-package com.tws.commonlib.activity;
+package com.tws.commonlib.activity.hichip;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
@@ -35,16 +35,16 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import com.hichip.base.HiLog;
-import com.hichip.control.HiCamera;
 import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.St_SInfo;
 import com.tws.commonlib.R;
+import com.tws.commonlib.activity.BaseActivity;
+import com.tws.commonlib.activity.CameraFolderActivity;
+import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.base.HiLiveViewGLMonitor;
 import com.tws.commonlib.base.MyConfig;
-import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
@@ -52,7 +52,6 @@ import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.IPlayStateListener;
-import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
 import java.io.File;

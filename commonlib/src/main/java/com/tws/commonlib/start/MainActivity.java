@@ -40,22 +40,6 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
-				case HANDLE_MESSAGE_INIT_END:
-					long spendingTime = System.currentTimeMillis() - initSdkTime;
-					if (spendingTime < 2000 && spendingTime > 0) {
-						this.postDelayed(new Runnable() {
-							@Override
-							public void run() {
-								// requestEnd();
-								AppUpdateView updateView  = new AppUpdateView(MainActivity.this.context,MainActivity.this);
-								updateView.checkNewVersion();
-							}
-						}, 2000 - spendingTime);
-
-					} else {
-					}
-					break;
-
 			}
 		}
 	};
@@ -96,33 +80,18 @@ public class MainActivity extends AppCompatActivity {
 
 		//Activity鐣岄潰鍒囨崲鍔ㄧ敾
 		overridePendingTransition(R.anim.mainfadein, R.anim.splashfadeout);
-		this.initP2P();
+		handler.postDelayed(new Runnable() {
+			@Override
+			public void run() {
+				// requestEnd();
+				AppUpdateView updateView  = new AppUpdateView(MainActivity.this.context,MainActivity.this);
+				updateView.checkNewVersion();
+			}
+		}, 2000);
 
 
 	}
 
-	private void initP2P() {
-		initSdkTime = System.currentTimeMillis();
-		HiChipSDK.init(new HiChipSDK.HiChipInitCallback() {
-
-			@Override
-			public void onSuccess() {
-				Message msg = handler.obtainMessage();
-				msg.what = HANDLE_MESSAGE_INIT_END;
-				handler.sendMessage(msg);
-				HiLog.e("SDK INIT success");
-			}
-
-			@Override
-			public void onFali(int arg0, int arg1) {
-				Message msg = handler.obtainMessage();
-				msg.what = HANDLE_MESSAGE_INIT_END;
-				handler.sendMessage(msg);
-				HiLog.e("SDK INIT fail");
-			}
-		});
-
-	}
 
 
 	@Override

@@ -13,6 +13,10 @@ import com.tws.commonlib.base.TwsTools;
  */
 
 public interface IMyCamera {
+    public enum CameraP2PType{
+        TutkP2P ,
+        HichipP2P
+    }
     public interface TaskExecute {
         void onPosted(IMyCamera camera,Object data);
     }
@@ -105,6 +109,7 @@ public interface IMyCamera {
     public void unregisterIOTCListener(IIOTCListener listener);
     public  void registerPlayStateListener(IPlayStateListener listener);
     public  void unregisterPlayStateListener(IPlayStateListener listener);
+    public  CameraP2PType getP2PType();
 
     public class MyCameraFactory{
         public  static MyCameraFactory instance;

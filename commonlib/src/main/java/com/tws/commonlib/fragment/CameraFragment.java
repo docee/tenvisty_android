@@ -31,18 +31,15 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.NSCamera;
-import com.tutk.IOTC.NSCamera.CAMERA_MODEL;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.AddCameraActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
-import com.tws.commonlib.activity.LiveView_HichipActivity;
+import com.tws.commonlib.activity.hichip.DeviceSetting_HichipActivity;
+import com.tws.commonlib.activity.hichip.LiveView_HichipActivity;
 import com.tws.commonlib.activity.setting.DeviceSettingActivity;
 import com.tws.commonlib.activity.setting.EditDeviceActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraPasswordActivity;
@@ -467,7 +464,12 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                 if (btnId == R.id.btn_item_delete) {
                     CameraFragment.this.deleteCamera(camera);
                 } else if (btnId == R.id.btn_item_setting) {
-                    intent.setClass(CameraFragment.this.getActivity(), DeviceSettingActivity.class);
+                    if(camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
+                        intent.setClass(CameraFragment.this.getActivity(), DeviceSetting_HichipActivity.class);
+                    }
+                    else{
+                        intent.setClass(CameraFragment.this.getActivity(), DeviceSettingActivity.class);
+                    }
                     startActivity(intent);
                 }  else if (btnId == R.id.btn_item_event) {
                     intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);

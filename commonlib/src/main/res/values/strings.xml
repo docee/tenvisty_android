@@ -70,7 +70,8 @@
     <string name="title_privacy_policy">Privacy Policy</string>
     <string name="title_sub_device_time">Device Time</string>
     <string name="title_sub_device_timezone">Device Time Zone</string>
-
+    <string name="title_camera_setting_record_timing">Timing Record</string>
+    <string name="title_camera_setting_audio">Audiio Setting</string>
 
     <string name="lab_first_add_camera">tap to add camera</string>
     <string name="lab_password_old">Old</string>
@@ -90,9 +91,14 @@
     <string name="lab_searchevent_from_date">From Date</string>
     <string name="lab_searchevent_to_date">To Date</string>
     <string name="lab_camera_setting_push">Alarm Push</string>
+    <string name="lab_camera_setting_event_sdrecord">SD-Card Recording</string>
+    <string name="lab_camera_setting_event_email">Email Alarm</string>
+    <string name="lab_camera_setting_event_ftp_pic">Save Picture to FTP Server</string>
+    <string name="lab_camera_setting_event_ftp_video">Save Video to FTP Server</string>
     <string name="lab_camera_setting_sens">Sensitivity Setting</string>
     <string name="lab_camera_setting_mail">Mail Setting</string>
     <string name="lab_camera_setting_record">Record</string>
+    <string name="lab_camera_setting_record_timing">Timing Record</string>
     <string name="lab_mail_alert_enable">Enable Email Alert</string>
     <string name="lab_mail_setting_sender">Email</string>
     <string name="lab_mail_setting_sender_pwd">Password</string>
@@ -120,7 +126,7 @@
     <string name="lab_skip_scanqrcode">No QR Code</string>
     <string name="lab_setting_camera_name">Camera Name</string>
     <string name="lab_setting_modify_password">Change Password</string>
-    <string name="lab_setting_network">Network</string>
+    <string name="lab_setting_network">Wi-Fi</string>
     <string name="lab_setting_event">Event Setting</string>
     <string name="lab_setting_record">Record Setting</string>
     <string name="lab_setting_other">Other Setting</string>
@@ -133,6 +139,13 @@
     <string name="lab_time_setting_dst">Clock for daylight saving time</string>
     <string name="lab_camera_password_reenter">Re-enter password</string>
     <string name="lab_share_email_chooseClient">Choose Email Client</string>
+    <string name="lab_record_timing_duration">Duration</string>
+    <string name="lab_record_timing_seconds">seconds</string>
+    <string name="lab_record_timing_time">Video Time</string>
+    <string name="lab_volumn_input">Input volume</string>
+    <string name="lab_volumn_output">Output volume</string>
+    <string name="lab_other_setting_audio">Audio Setting</string>
+
 
     <string name="lab_sd_card_setting_storage_size">Total size</string>
     <string name="lab_sd_card_setting_available_size">Free size</string>
@@ -180,7 +193,14 @@
     <string name="tips_wifi_wrong_password">Wrong Password</string>
     <string name="tips_wifi_saved">Saved</string>
     <string name="tips_wifi_connecting">Connecting</string>
-
+    <string name="tips_recordtime_none_title">NONE</string>
+    <string name="tips_recordtime_none_desc">Device will stop recording on SD Card</string>
+    <string name="tips_recordtime_allday_title">ALL DAY</string>
+    <string name="tips_recordtime_allday_desc">24/7 Continous Record</string>
+    <string name="tips_recordtime_custom_title">CUSTOM SETTING</string>
+    <string name="tips_recordtime_custom_desc">Set your own recording time</string>
+    <string name="tips_recordtime_bigger">End time should be after start time</string>
+    <string name="tips_device_time_setting_reboot_camera">Notice: Change timezone will reboot device</string>
 
     <string name="dialog_msg_strict_modify_pwd">Your camera [%s] uses default password, please change the password for security.</string>
     <!-- 分享 -->
@@ -264,6 +284,9 @@
     <string name="alert_wifi_password_wrong">Wi-Fi password wrong</string>
     <string name="alert_wifi_connect_fail">Fail to connect Wi-Fi, please try again later.</string>
     <string name="alert_wifi_config_fail">Wi-Fi config failed, please check your password and try again</string>
+
+
+    <string name="alert_recording_time_range">15&#8211;%d seconds time range </string>
     <!--<string name="alert_all_field_can_not_empty">All fields can not be empty.</string>-->
     <!--<string name="alert_old_password_is_wrong">The old password is wrong.</string>-->
     <!--<string name="alert_new_passwords_do_not_match">New passwords do not match.</string>-->
@@ -285,6 +308,7 @@
     <string name="tips_setting_wifi_wait">Configuring Wi-Fi, please wait...</string>
     <string name="tips_search_lan">Camera On LAN</string>
     <string name="tips_setting_succ">setting successfully </string>
+    <string name="tips_fotmat_succ">format successfully </string>
     <string name="tips_mail_send_success">Send Successfully</string>
     <string name="tips_preset_set_succ">Setting successfully</string>
     <string name="tips_preset_set_fail">Preset setting failed</string>
@@ -298,6 +322,7 @@
     <string name="tips_upgrading_wait">Upgrading...</string>
     <string name="tips_upgrading_percent">Upgrading %s%%</string>
 
+    <string name="tips_device_time_setting_synchroned_time">Synchronization Time Successfully </string>
     <string name="hint_mail_setting_sender">Email</string>
     <string name="hint_mail_setting_sender_pwd">Password</string>
     <string name="hint_mail_setting_smtp_server">SMTP Server Host</string>

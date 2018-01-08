@@ -401,7 +401,7 @@ public class CameraFolderActivity extends BaseActivity {
                 File[] files = folder.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
-                        return file.isDirectory() ||  (file.getName().length() == (mCamera instanceof HichipCamera?36:39));
+                        return file.isDirectory() ||  (file.getName().length() == (mCamera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P?36:39));
                     }
                 });
                 if (files != null) {
@@ -410,7 +410,7 @@ public class CameraFolderActivity extends BaseActivity {
                             File[] pics = f.listFiles(new FileFilter() {
                                 @Override
                                 public boolean accept(File file) {
-                                    return (file.getName().length() == (mCamera instanceof HichipCamera?36:39));
+                                    return (file.getName().length() == (mCamera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P?36:39));
                                 }
                             });
                             for (File pic : pics) {

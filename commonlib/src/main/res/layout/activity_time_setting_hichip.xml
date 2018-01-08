@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/white"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        style="@style/editbox_container_ll"
+        android:layout_width="match_parent"
+        android:layout_marginTop="35dp"
+        android:layout_below="@+id/title_top"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left|top"
+            android:background="@color/lightgray"
+            android:paddingLeft="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:textSize="16dp"
+                android:textColor="@color/black"
+                android:text="@string/title_sub_device_time"/>
+        </LinearLayout>
+        <View
+            style="@style/split_long_thin_style"
+            android:layout_width="match_parent" />
+
+
+        <LinearLayout
+            android:id="@+id/ll_time_ajust"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/list_item_bg"
+            android:clickable="true"
+            android:paddingLeft="10dp"
+            android:onClick="goSetting"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:background="@null"
+                android:textSize="14dp"
+                android:textColor="@color/colorPrimary"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center"
+                android:text="@string/btn_time_adjust"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="left|top"
+            android:background="@color/lightgray"
+            android:paddingLeft="10dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:textSize="16dp"
+                android:textColor="@color/black"
+                android:text="@string/title_sub_device_timezone"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            android:gravity="center_vertical"
+            android:orientation="vertical">
+
+            <View
+                style="@style/split_long_thin_style"
+                android:layout_width="match_parent" />
+
+
+            <LinearLayout
+                android:id="@+id/ll_select_time_zone"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/list_item_bg"
+                android:clickable="true"
+                android:paddingLeft="10dp"
+                android:gravity="center_vertical"
+                android:onClick="goSetting">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingLeft="8dp"
+                    android:text="@string/lab_time_setting_select_time_zone"
+                    android:textColor="#434343"
+                    android:textSize="16dp" />
+                <TextView
+                    android:id="@+id/txt_timezone_loading"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:text="@string/loading"
+                    android:visibility="invisible"
+                    android:textColor="@color/gray"
+                    android:textSize="14dp" />
+                <TextView
+                    android:id="@+id/txt_timezone"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:maxLength="20"
+                    android:text=""
+                    android:gravity="right"
+                    android:textColor="@color/darkgray"
+                    android:textSize="14dp" />
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:tint="@color/gray"
+                    app:srcCompat="@drawable/ic_keyboard_arrow_right_black_24dp" />
+            </LinearLayout>
+
+            <View
+                style="@style/split_short_thin_style"
+                android:layout_width="match_parent" />
+            <LinearLayout
+                android:id="@+id/ll_setdst"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/list_item_bg"
+                android:clickable="true"
+                android:paddingLeft="10dp"
+                android:gravity="center_vertical"
+                android:onClick="goSetting">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:paddingTop="12dp"
+                    android:paddingBottom="12dp"
+                    android:paddingLeft="8dp"
+                    android:text="@string/lab_time_setting_dst"
+                    android:textColor="#434343"
+                    android:textSize="16dp" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:text="@string/loading"
+                    android:visibility="invisible"
+                    android:textColor="@color/gray"
+                    android:textSize="14dp" />
+                <ToggleButton
+                    android:id="@+id/togbtn_dst"
+                    style="@style/btn_toggle_style"
+                    android:layout_width="50dp"
+                    android:layout_height="30dp"
+                    android:background="@android:color/transparent"
+                    android:button="@drawable/toggle_btn_style"
+                    android:gravity="right|center"
+                    android:layout_marginRight="8dp"
+                    android:text=""
+                    android:textOff=""
+                    android:textOn="" />
+
+            </LinearLayout>
+
+            <View
+                style="@style/split_short_thin_style"
+                android:layout_width="match_parent" />
+
+
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

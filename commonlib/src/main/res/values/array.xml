@@ -32,31 +32,31 @@
         <item>Line in</item>
         <item>Mic</item>
     </string-array>
-    <string-array name="device_timezone">
-        <item>GMT-11 Midway Islands;Samoa</item>
-        <item>GMT-10 Hawaii;</item>
-        <item>GMT-9 Alaska;</item>
-        <item>GMT-8 Pacific Time(USA or Canada);</item>
-        <item>GMT-7 Mountain Time(USA or Canada);</item>
-        <item>GMT-6 Central Time(USA or Canada);</item>
-        <item>GMT-5 Eastern Time(USA or Canada);</item>
-        <item>GMT-4 Atlantic Time(Canada);</item>
-        <item>GMT-3 Brazilia;Buenos Aires;</item>
-        <item>GMT-2 Mid-Atlantic;</item>
-        <item>GMT-1 Azores;Cape Verde;</item>
-        <item>GMT 0 London;Iceland;Lisbon;</item>
-        <item>GMT+1 Paris;Rome;Berlin;Madrid;</item>
-        <item>GMT+2 Israel;Athens;Cairo;Jerusalem;</item>
-        <item>GMT+3 Moscow;Nairobi;Riyadh;</item>
-        <item>GMT+4 Baku;Tbilisi;Abu Dhabi;Mascot;</item>
-        <item>GMT+5 New Delhi;Islamabad;Karachi;</item>
-        <item>GMT+6 Dakar;Alma Ata;Novosibirsk;Astana;</item>
-        <item>GMT+7 Bangkok;Hanoi;Jakarta;</item>
-        <item>GMT+8 Beijing;Singapore;Hongkong;Taipei;</item>
-        <item>GMT+9 Tokyo;Seoul;Yakutsk;</item>
-        <item>GMT+10 Guam;Melbourne;Sydney;</item>
-        <item>GMT+11 Magadan;New Caledonia;Solomon Islands;</item>
-        <item>GMT+12 Wellington;Auckland;fiji</item>
+    <string-array name="device_timezone_old">
+        <item>(GMT-11)Midway Islands;Samoa</item>
+        <item>(GMT-10) Hawaii;</item>
+        <item>(GMT-9)Alaska;</item>
+        <item>(GMT-8)Pacific Time(USA or Canada);</item>
+        <item>(GMT-7)Mountain Time(USA or Canada);</item>
+        <item>(GMT-6)Central Time(USA or Canada);</item>
+        <item>(GMT-5)Eastern Time(USA or Canada);</item>
+        <item>(GMT-4)Atlantic Time(Canada);</item>
+        <item>(GMT-3)Brazilia;Buenos Aires;</item>
+        <item>(GMT-2)Mid-Atlantic;</item>
+        <item>(GMT-1)Azores;Cape Verde;</item>
+        <item>(GMT 0)London;Iceland;Lisbon;</item>
+        <item>(GMT+1)Paris;Rome;Berlin;Madrid;</item>
+        <item>(GMT+2)Israel;Athens;Cairo;Jerusalem;</item>
+        <item>(GMT+3)Moscow;Nairobi;Riyadh;</item>
+        <item>(GMT+4)Baku;Tbilisi;Abu Dhabi;Mascot;</item>
+        <item>(GMT+5)New Delhi;Islamabad;Karachi;</item>
+        <item>(GMT+6)Dakar;Alma Ata;Novosibirsk;Astana;</item>
+        <item>(GMT+7)Bangkok;Hanoi;Jakarta;</item>
+        <item>(GMT+8)Beijing;Singapore;Hongkong;Taipei;</item>
+        <item>(GMT+9)Tokyo;Seoul;Yakutsk;</item>
+        <item>(GMT+10) Guam;Melbourne;Sydney;</item>
+        <item>(GMT+11) Magadan;New Caledonia;Solomon Islands;</item>
+        <item>(GMT+12) Wellington;Auckland;fiji</item>
     </string-array>
     <string-array name="net_work_style">
         <item>CABLE</item>

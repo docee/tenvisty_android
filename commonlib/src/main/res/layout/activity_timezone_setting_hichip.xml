@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/lightestgray">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    <RelativeLayout
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/listLayout"
+        android:layout_below="@+id/title_top" >
+       <LinearLayout
+           android:id="@+id/ll_notice"
+           android:layout_width="match_parent"
+           android:layout_height="30dp">
+           <TextView
+               android:layout_marginLeft="15dp"
+               android:layout_marginTop="10dp"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:text="@string/tips_device_time_setting_reboot_camera"
+               />
+       </LinearLayout>
+            <ListView
+                android:layout_below="@+id/ll_notice"
+                android:layout_marginTop="10dp"
+                android:id="@+id/listview_itemlist"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:choiceMode="singleChoice"
+                android:padding="5dip" >
+            </ListView>
+        </RelativeLayout>
+
+</RelativeLayout>

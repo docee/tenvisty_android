@@ -14,6 +14,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
+import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.NSCamera;
@@ -27,6 +28,7 @@ import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
+import com.tws.commonlib.bean.TwsIOCTRLDEFs;
 import com.tws.commonlib.controller.NavigationBar;
 
 
@@ -155,7 +157,13 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
         if (true || TwsTools.isUserPwdLegal(newPwd)) {
             if (camera != null) {
                 newPassword = newPwd;
-                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetPasswdReq.parseContent(oldPwd, newPwd));
+                if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
+                    byte[] old_auth = HiChipDefines.HI_P2P_S_AUTH.parseContent(0, camera.getAccount(), camera.getPassword());
+                    byte[] new_auth = HiChipDefines.HI_P2P_S_AUTH.parseContent(0, camera.getAccount(), newPassword);
+                    camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, HiChipDefines.HI_P2P_SET_USER_PARAM, HiChipDefines.HI_P2P_SET_AUTH.parseContent(new_auth, old_auth));
+                } else {
+                    camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetPasswdReq.parseContent(oldPwd, newPwd));
+                }
                 isModifying = true;
                 if (maxRetryCount > 0) {
                     handler.sendEmptyMessageDelayed(Reconnect, 10000);
@@ -209,6 +217,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
 
         Message msg = new Message();
         msg.what = avIOCtrlMsgType;
+        msg.arg1 = avChannel;
         msg.setData(bundle);
         handler.sendMessage(msg);
     }
@@ -248,15 +257,20 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
 
             switch (msg.what) {
 
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_RESP://设置密码返回值
+                case TwsIOCTRLDEFs.IOTYPE_USER_IPCAM_SETPASSWORD_RESP://设置密码返回值
                     dismissLoadingProgress();
-                    if (data[0] == 0x00) {
+                    if ((camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P && msg.arg1 == 0) || camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P && data[0] == 0x00) {
 
                         camera.setPassword(newPassword);
                         camera.sync2Db(ModifyCameraPasswordActivity.this);
                         Toast.makeText(ModifyCameraPasswordActivity.this, getText(R.string.tips_modify_security_code_succ).toString(), Toast.LENGTH_SHORT).show();
                         camera.stop();
-                        camera.start();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                camera.start();
+                            }
+                        }, 1000);
                         back2Activity(MainActivity.class);
 
                     } else {
@@ -273,7 +287,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
                 case Reconnect:
                     camera.asyncStop(new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(IMyCamera c,Object data) {
+                        public void onPosted(IMyCamera c, Object data) {
                             c.start();
                         }
                     });

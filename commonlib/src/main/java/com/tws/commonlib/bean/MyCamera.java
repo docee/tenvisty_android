@@ -1598,6 +1598,9 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         }
         return true;
     }
+    public  CameraP2PType getP2PType(){
+        return CameraP2PType.TutkP2P;
+    }
 
     public static HashMap IOTCHashMap;
     public static HashMap SessionStateHashMap;
