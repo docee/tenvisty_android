@@ -274,6 +274,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     break;
                 case HiChipDefines.HI_P2P_SET_REBOOT:
                     dismissLoadingProgress();
+                    TwsToast.showToast(TimeSetting_HichipActivity.this,getString(R.string.reboot));
                     TimeSetting_HichipActivity.this.back2Activity(MainActivity.class);
                     break;
 

@@ -18,6 +18,7 @@ import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.adapter.TimezoneItemListAdapter;
+import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -211,6 +212,7 @@ public class TimezoneSetting_HichipActivity extends BaseActivity implements IIOT
                     break;
                 case HiChipDefines.HI_P2P_SET_REBOOT:
                     dismissLoadingProgress();
+                    TwsToast.showToast(TimezoneSetting_HichipActivity.this,getString(R.string.reboot));
                     TimezoneSetting_HichipActivity.this.back2Activity(MainActivity.class);
                     break;
 
