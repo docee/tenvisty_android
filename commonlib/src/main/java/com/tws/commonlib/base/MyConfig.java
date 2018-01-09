@@ -92,6 +92,14 @@ public class MyConfig {
         return apkName;
     }
 
+    private static  byte[] defaultCameraFunction;
+    public static byte[] getDefaultCameraFunction(){
+        if(defaultCameraFunction == null){
+            defaultCameraFunction = new byte[]{49, 49, 48, 48, 49};
+        }
+        return defaultCameraFunction;
+    }
+
     public static void setApkName(String apkName) {
         MyConfig.apkName = apkName;
     }

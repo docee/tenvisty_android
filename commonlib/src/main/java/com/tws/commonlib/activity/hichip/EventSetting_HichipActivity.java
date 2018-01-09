@@ -39,6 +39,7 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
     ToggleButton togbtn_push;
     ToggleButton togbtn_sdrecord;
     ToggleButton togbtn_email;
+    TextView txt_email;
     ToggleButton togbtn_ftp_pic;
     ToggleButton togbtn_ftp_video;
     private HiChipDefines.HI_P2P_S_ALARM_PARAM param;
@@ -89,18 +90,16 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                 case HiChipDefines.HI_P2P_GET_ALARM_PARAM:
                     dismissLoadingProgress();
                     hideLoadingView(R.id.togbtn_sdrecord);
-                    hideLoadingView(R.id.togbtn_email);
                     hideLoadingView(R.id.togbtn_ftp_pic);
                     hideLoadingView(R.id.togbtn_ftp_video);
                     togbtn_sdrecord.setEnabled(true);
-                    togbtn_email.setEnabled(true);
                     togbtn_ftp_pic.setEnabled(true);
                     togbtn_ftp_video.setEnabled(true);
                     param = new HiChipDefines.HI_P2P_S_ALARM_PARAM(data);
-//						alarm_push_push_tgbtn.setChecked(mCamera.getPushState()==1?true:false);
-                    //	alarm_push_push_tgbtn.setChecked(param.u32Svr==1?true:false);
+
                     togbtn_sdrecord.setChecked(param.u32SDRec == 1 ? true : false);
-                    togbtn_email.setChecked(param.u32EmailSnap == 1 ? true : false);
+                    txt_email.setText(param.u32EmailSnap == 1 ? getString(R.string.on) :  getString(R.string.off));
+                    txt_email.setSelected(param.u32EmailSnap == 1 ? true : false);
                     togbtn_ftp_pic.setChecked(param.u32FtpSnap == 1 ? true : false);
                     togbtn_ftp_video.setChecked(param.u32FtpRec == 1 ? true : false);
                     break;
@@ -141,10 +140,10 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
     protected void initView() {
         super.initView();
         togbtn_push = (ToggleButton) findViewById(R.id.togbtn_push);
-        togbtn_email = (ToggleButton) findViewById(R.id.togbtn_email);
         togbtn_sdrecord = (ToggleButton) findViewById(R.id.togbtn_sdrecord);
         togbtn_ftp_pic = (ToggleButton) findViewById(R.id.togbtn_ftp_pic);
         togbtn_ftp_video = (ToggleButton) findViewById(R.id.togbtn_ftp_video);
+        txt_email = (TextView)findViewById(R.id.txt_email);
         togbtn_push.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -157,7 +156,6 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                 setEventSetting();
             }
         };
-        togbtn_email.setOnClickListener(clickListener);
 
         togbtn_sdrecord.setOnClickListener(clickListener);
 
@@ -167,18 +165,44 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
         hideLoadingView(R.id.togbtn_push);
         togbtn_push.setEnabled(true);
         togbtn_push.setChecked(camera.isPushOpen());
+    }
+
+    public  void onResume(){
+        super.onResume();
+        camera.registerIOTCListener(this);
         getEventSetting();
     }
 
     public void getEventSetting() {
         showLoadingProgress();
+        txt_email.setText(getString(R.string.loading));
+        togbtn_sdrecord.setEnabled(false);
+        togbtn_ftp_pic.setEnabled(false);
+        togbtn_ftp_video.setEnabled(false);
         camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_ALARM_PARAM, null);
+    }
+
+    public void clickLine(View view){
+        if(param != null) {
+            Intent intent = new Intent();
+            intent.putExtras(this.getIntent());
+            if (view.getId() == R.id.ll_ftpSetting) {
+                camera.unregisterIOTCListener(this);
+                intent.setClass(this, FTPSetting_HichipActivity.class);
+                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
+            } else if (view.getId() == R.id.ll_emailSetting) {
+                camera.unregisterIOTCListener(this);
+                intent.putExtra("enabel", param.u32EmailSnap);
+                intent.setClass(this, MailSetting_HichipActivity.class);
+                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
+            }
+        }
     }
 
     public void setEventSetting() {
         if (param != null) {
             param.u32SDRec = togbtn_sdrecord.isChecked() ? 1 : 0;
-            param.u32EmailSnap = togbtn_email.isChecked() ? 1 : 0;
+            //param.u32EmailSnap = txt_email.isSelected() ? 1 : 0;
             param.u32FtpSnap = togbtn_ftp_pic.isChecked() ? 1 : 0;
             param.u32FtpRec = togbtn_ftp_video.isChecked() ? 1 : 0;
 

@@ -1,5 +1,6 @@
 package com.tws.commonlib.activity.hichip;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -78,9 +79,21 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
         //adapter.notifyDataSetChanged();
         togbtn_dst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+            public void onCheckedChanged(CompoundButton compoundButton,final boolean b) {
                 if (compoundButton.isPressed()) {
-                    setDst(b);
+                    showYesNoDialog(R.string.alert_device_time_setting_reboot_camera, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int which) {
+                            switch (which) {
+                                case DialogInterface.BUTTON_POSITIVE:
+                                    setDst(b);
+                                    break;
+                                case DialogInterface.BUTTON_NEGATIVE:
+                                    togbtn_dst.setChecked(!b);
+                                    break;
+                            }
+                        }
+                    });
                 }
             }
         });

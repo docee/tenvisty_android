@@ -1,0 +1,122 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/playback_view_screen"
+    android:layout_width="match_parent"
+    android:background="#000000"
+    android:layout_height="match_parent" >
+
+    <com.tws.commonlib.base.MyPlaybackGLMonitor
+        android:id="@+id/monitor_playback_view"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+    <ImageView
+        android:id="@+id/img_shade"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:contentDescription="@null" />
+
+    <ProgressBar
+        android:id="@+id/prs_loading"
+        android:layout_width="218dp"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true" />
+
+    <LinearLayout
+        android:id="@+id/rl_play"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_alignParentBottom="true"
+        android:background="@drawable/shape_gradient_live_buttom"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="visible" >
+
+        <ImageView
+            android:id="@+id/play_btn_playback_online"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:clickable="false"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/playback_play_btn_bg" />
+
+        <TextView
+            android:id="@+id/tv_start_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginLeft="2dp"
+            android:textColor="#eeeeee"
+            android:layout_toRightOf="@+id/play_btn_playback_online"
+            android:text="00:00:00" />
+
+        <SeekBar
+            android:id="@+id/prs_playing"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toRightOf="@+id/tv_start_time"
+            android:clickable="true"
+            android:maxHeight="2dp"
+            android:minHeight="2dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
+            android:layout_weight="1"
+            android:progressDrawable="@drawable/po_seekbar"
+            android:thumb="@drawable/shape_seekbar_thumb" />
+
+        <TextView
+            android:id="@+id/tv_end_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginRight="2dp"
+            android:textColor="#eeeeee"
+            android:layout_toRightOf="@+id/prs_playing"
+            android:text="00:00:00" />
+
+        <ImageView
+            android:id="@+id/play_btn_playback_exit"
+            android:layout_width="38dp"
+            android:layout_height="35dp"
+            android:layout_centerVertical="true"
+            android:background="@drawable/btn_live_box_bg"
+            android:layout_marginRight="8dp"
+            android:src="@drawable/power_button"  />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/ll_cureent_progress"
+        android:layout_width="wrap_content"
+        android:padding="10dp"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:background="@drawable/click_btn_bg"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone" >
+
+        <TextView
+            android:id="@+id/tv_current_pro"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="@string/tips_play_progress"
+            android:singleLine="true"
+            android:textColor="#666666"
+            android:textSize="17sp" />
+        <TextView
+            android:id="@+id/tv_precent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textColor="#666666"
+            android:textSize="17sp" />
+    </LinearLayout>
+
+</RelativeLayout>

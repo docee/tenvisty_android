@@ -818,7 +818,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
 //                showAlert(getString(R.string.alert_camera_connected_failed));
 //                return;
 //            }
-            goActivity(EventListActivity.class);
+            goActivity(EventList_HichipActivity.class);
         } else if (view.getId() == R.id.btn_folder) {
             Intent intent = new Intent(LiveView_HichipActivity.this,
                     CameraFolderActivity.class);
@@ -875,7 +875,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         extras.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.getUid());
 
         intent.putExtras(extras);
-        intent.setClass(LiveView_HichipActivity.this, EventListActivity.class);
+        intent.setClass(LiveView_HichipActivity.this, EventList_HichipActivity.class);
         startActivity(intent);
     }
 

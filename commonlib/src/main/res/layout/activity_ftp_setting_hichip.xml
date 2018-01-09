@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="@color/lightestgray"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title_top">
+
+        <LinearLayout
+            style="@style/editbox_container_ll"
+            android:orientation="vertical">
+
+
+            <LinearLayout
+                android:id="@+id/ll_setmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="visible">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="0.7dp"
+                        android:background="#cacaca" />
+
+                    <LinearLayout style="@style/editbox_item_ll">
+
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_server" />
+
+                        <EditText
+                            android:id="@+id/ftp_setting_server_edt"
+                            style="@style/editbox_item_edittext"
+                            android:hint="@string/hint_ftp_setting_server"
+                            android:textColorHint="@color/lightgray"
+                            android:maxLines="1"/>
+                    </LinearLayout>
+
+                    <View
+                        style="@style/split_short_thin_style"
+                        android:layout_width="match_parent" />
+
+                    <LinearLayout style="@style/editbox_item_ll">
+
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_port" />
+
+                        <EditText
+                            android:id="@+id/ftp_setting_port_edt"
+                            style="@style/editbox_item_edittext"
+                            android:hint="21"
+                            android:textColorHint="@color/lightgray"
+                            android:inputType="number" />
+                    </LinearLayout>
+
+                    <View
+                        style="@style/split_short_thin_style"
+                        android:layout_width="match_parent" />
+
+                    <LinearLayout style="@style/editbox_item_ll">
+
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_username" />
+
+                        <EditText
+                            android:id="@+id/ftp_setting_username_edt"
+                            style="@style/editbox_item_edittext"
+                            android:hint="@string/hint_ftp_setting_username"
+                            android:textColorHint="@color/lightgray" />
+                    </LinearLayout>
+                    <View
+                        style="@style/split_short_thin_style"
+                        android:layout_width="match_parent" />
+
+                    <LinearLayout style="@style/editbox_item_ll">
+
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_password" />
+
+                        <EditText
+                            android:id="@+id/ftp_setting_psw_edt"
+                            style="@style/editbox_item_edittext"
+                            android:hint="@string/hint_ftp_setting_password"
+                            android:textColorHint="@color/lightgray" />
+                    </LinearLayout>
+                    <View
+                        style="@style/split_short_thin_style"
+                        android:layout_width="match_parent" />
+                    <LinearLayout
+                        style="@style/editbox_item_ll">
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_passive_mode"/>
+
+                        <ToggleButton
+                            android:id="@+id/ftp_setting_mode_tgbtn"
+                            style="@style/btn_toggle_style"
+                            android:layout_width="60dp"
+                            android:layout_height="30dp"
+                            android:background="@android:color/transparent"
+                            android:gravity="right|center"
+                            android:text=""
+                            android:textOff=""
+                            android:enabled="false"
+                            android:textOn="" />
+                    </LinearLayout>
+                    <View
+                        style="@style/split_short_thin_style"
+                        android:layout_width="match_parent" />
+                    <LinearLayout style="@style/editbox_item_ll">
+
+                        <TextView
+                            style="@style/editbox_item_textview"
+                            android:text="@string/lab_ftp_setting_path" />
+
+                        <EditText
+                            android:id="@+id/ftp_setting_path_edt"
+                            style="@style/editbox_item_edittext"
+                            android:hint="@string/hint_ftp_setting_path"
+                            android:textColorHint="@color/lightgray"/>
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    style="@style/split_short_thin_style"
+                    android:layout_width="match_parent" />
+            </LinearLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+</RelativeLayout>

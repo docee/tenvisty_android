@@ -102,7 +102,7 @@ public class DeviceSetting_HichipActivity extends BaseActivity implements IIOTCL
         } else if (view.getId() == R.id.ll_setCameraOther) {
             intent.setClass(this, OtherSetting_HichipActivity.class);
         } else if (view.getId() == R.id.ll_setCameraSystem) {
-            intent.setClass(this, SystemSettingActivity.class);
+            intent.setClass(this, SystemSetting_HichipActivity.class);
         } else if (view.getId() == R.id.ll_setCameraRecord) {
             intent.setClass(this, TimingRecord_HichipActivity.class);
             startActivityForResult(intent, getRequestCode(R.id.ll_setCameraRecord));

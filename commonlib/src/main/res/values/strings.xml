@@ -39,6 +39,9 @@
     <string name="reboot">Reboot</string>
     <string name="check_firmware">Check New Firmware</string>
     <string name="prompt">Prompt</string>
+    <string name="on">ON</string>
+    <string name="off">OFF</string>
+    <string name="finish">Finish</string>
 
 
     <string name="title_camera_list">Camera List</string>
@@ -57,6 +60,7 @@
     <string name="title_camera_setting_record">Record Setting</string>
     <string name="title_camera_setting_sens">Sensitivity Setting</string>
     <string name="title_mail_setting">Email Setting</string>
+    <string name="title_ftp_setting">FTP Setting</string>
     <string name="title_camera_setting_other">Other Setting</string>
     <string name="title_camera_setting_timezone">Time Zone</string>
     <string name="title_camera_setting_time">Time Setting</string>
@@ -92,9 +96,11 @@
     <string name="lab_searchevent_to_date">To Date</string>
     <string name="lab_camera_setting_push">Alarm Push</string>
     <string name="lab_camera_setting_event_sdrecord">SD-Card Recording</string>
-    <string name="lab_camera_setting_event_email">Email Alarm</string>
+    <string name="lab_camera_setting_event_email">Email Alert</string>
+    <string name="lab_camera_setting_event_email_setting">Email Setting</string>
     <string name="lab_camera_setting_event_ftp_pic">Save Picture to FTP Server</string>
     <string name="lab_camera_setting_event_ftp_video">Save Video to FTP Server</string>
+    <string name="lab_camera_setting_event_ftp_setting">FTP Setting</string>
     <string name="lab_camera_setting_sens">Sensitivity Setting</string>
     <string name="lab_camera_setting_mail">Mail Setting</string>
     <string name="lab_camera_setting_record">Record</string>
@@ -122,6 +128,13 @@
     <string name="lab_other_setting_devinfo">Device Infomation</string>
     <string name="lab_camera_model">Model</string>
     <string name="lab_camera_version">Version</string>
+    <string name="lab_camera_version_soft">Software Version</string>
+    <string name="lab_camera_version_fm">Firmware Version</string>
+    <string name="lab_camera_info_network">Network</string>
+    <string name="lab_camera_info_ip">IP</string>
+    <string name="lab_camera_info_submask">Subnet Mask</string>
+    <string name="lab_camera_info_gateway">Gateway</string>
+    <string name="lab_camera_info_dns">DNS</string>
     <string name="lab_flash">Flash</string>
     <string name="lab_skip_scanqrcode">No QR Code</string>
     <string name="lab_setting_camera_name">Camera Name</string>
@@ -145,7 +158,13 @@
     <string name="lab_volumn_input">Input volume</string>
     <string name="lab_volumn_output">Output volume</string>
     <string name="lab_other_setting_audio">Audio Setting</string>
-
+    <string name="lab_ftp_setting_server">Server</string>
+    <string name="lab_ftp_setting_port">Server Port</string>
+    <string name="lab_ftp_setting_username">User Name</string>
+    <string name="lab_ftp_setting_password">Password</string>
+    <string name="lab_ftp_setting_passive_mode">Passive mode</string>
+    <string name="lab_ftp_setting_path">Path</string>
+    <string name="lab_ftp_setting_test_ftp">Test FTP Settings</string>
 
     <string name="lab_sd_card_setting_storage_size">Total size</string>
     <string name="lab_sd_card_setting_available_size">Free size</string>
@@ -163,6 +182,7 @@
     <string name="process_upgrading_check">checking...</string>
     <string name="process_connecting">Connecting&#8230;</string>
     <string name="process_setting">Setting&#8230;</string>
+    <string name="process_testting">Testing&#8230;</string>
 
     <string name="tips_add_camera_duplicated">This camera already exists, please enter another one.</string>
     <string name="tips_add_camera_duplicated_search">this camera is in your camera list, please tap other camera.</string>
@@ -201,6 +221,7 @@
     <string name="tips_recordtime_custom_desc">Set your own recording time</string>
     <string name="tips_recordtime_bigger">End time should be after start time</string>
     <string name="tips_device_time_setting_reboot_camera">Notice: Change timezone will reboot device</string>
+    <string name="tips_play_progress">Play progress: </string>
 
     <string name="dialog_msg_strict_modify_pwd">Your camera [%s] uses default password, please change the password for security.</string>
     <!-- 分享 -->
@@ -222,6 +243,7 @@
 
     <string name="dialog_msg_delete_local_pic_confirm">Confirm to delete?</string>
     <string name="dialog_msg_new_firmware">new firmware is available, update?</string>
+    <string name="dialog_msg_new_firmware_update">The camera is upgrading, please do not power off and keep the network available</string>
     <string name="dialog_msg_new_firmware_already_latest">It is the latest version already</string>
     <string name="dialog_msg_new_firmware_getaccinfo_failed">Get firmware info failed, please try again later.</string>
     <string name="dialog_msg_new_firmware_updating">Updating</string>
@@ -229,6 +251,8 @@
     <string name="dialog_msg_new_firmware_updating_succ_finish">update firmware complete</string>
     <string name="dialog_msg_new_firmware_updating_fail">update firmware failed</string>
     <string name="dialog_msg_no_network">The phone network is disconnected. Please check the network settings.</string>
+    <string name="dialog_msg_emailtest_falied">Test failed, please check your email settings.</string>
+    <string name="dialog_msg_ftptest_falied">Test failed, please check your FTP settings.</string>
 
     <string name="btn_config_wifi">Configure Wi-Fi</string>
     <string name="btn_manually_add_camera">Manually add</string>
@@ -284,6 +308,7 @@
     <string name="alert_wifi_password_wrong">Wi-Fi password wrong</string>
     <string name="alert_wifi_connect_fail">Fail to connect Wi-Fi, please try again later.</string>
     <string name="alert_wifi_config_fail">Wi-Fi config failed, please check your password and try again</string>
+    <string name="alert_device_time_setting_reboot_camera">Change timezone daylight setting will reboot device</string>
 
 
     <string name="alert_recording_time_range">15&#8211;%d seconds time range </string>
@@ -308,6 +333,7 @@
     <string name="tips_setting_wifi_wait">Configuring Wi-Fi, please wait...</string>
     <string name="tips_search_lan">Camera On LAN</string>
     <string name="tips_setting_succ">setting successfully </string>
+    <string name="tips_setting_failed">setting failed </string>
     <string name="tips_fotmat_succ">format successfully </string>
     <string name="tips_mail_send_success">Send Successfully</string>
     <string name="tips_preset_set_succ">Setting successfully</string>
@@ -335,6 +361,13 @@
     <string name="hint_mail_setting_sending_address">Sender</string>
     <string name="hint_mail_setting_theme">Subject</string>
     <string name="hint_mail_setting_message">Message</string>
+    <string name="hint_ftp_setting_server">Ftp Server Address</string>
+    <string name="hint_ftp_setting_port">Ftp Service Port</string>
+    <string name="hint_ftp_setting_username">Ftp Account</string>
+    <string name="hint_ftp_setting_password">Ftp Password</string>
+    <string name="hint_ftp_setting_passive_mode">Passive mode</string>
+    <string name="hint_ftp_setting_path">Path</string>
+    <string name="hint_ftp_setting_test_ftp">Test FTP Settings</string>
 
     <string name="toast_connect_timeout">&quot;Connection timeout,please try again.&quot;</string>
     <string name="toast_connect_drop">connection dropped</string>
@@ -343,10 +376,13 @@
     <string name="toast_updating_succ_finish">Firmware update succeed</string>
     <string name="toast_stop_record">recording stopped</string>
     <string name="tip_not_switch_quality">Can\'t change quality while recording</string>
+    <string name="toast_test_success">Test Succeed</string>
+    <string name="toast_test_failed">Test Failed</string>
 
     <!-- Event type -->
     <string name="evttype_all">All</string>
     <string name="evttype_motion_detection">Motion detection</string>
+    <string name="evttype_plan">Timing recording</string>
     <string name="evttype_video_lost">Video Lost</string>
     <string name="evttype_io_alarm">IO Alarm</string>
     <string name="evttype_motion_pass">Motion Pass</string>

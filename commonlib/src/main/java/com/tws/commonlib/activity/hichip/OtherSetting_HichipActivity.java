@@ -8,6 +8,7 @@ import android.os.Message;
 import android.view.View;
 import android.widget.ToggleButton;
 
+import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tws.commonlib.R;
@@ -15,6 +16,7 @@ import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.setting.DeviceInfoActivity;
 import com.tws.commonlib.activity.setting.SdCardSettingActivity;
 import com.tws.commonlib.activity.setting.TimeSettingActivity;
+import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
@@ -28,9 +30,10 @@ import com.tws.commonlib.bean.TwsDataValue;
 public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCListener,View.OnClickListener {
 
     private String dev_uid;
-    private IMyCamera camera;
+    private HichipCamera camera;
     ToggleButton togbtn_reverse;
     ToggleButton togbtn_inverse;
+    HiChipDefines.HI_P2P_S_DISPLAY display_param = null;
     //ToggleButton togbtn_alarm_led;
 
     @Override
@@ -41,7 +44,7 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
         for (IMyCamera _camera : TwsDataValue.cameraList()) {
             if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
-                camera = _camera;
+                camera = (HichipCamera) _camera;
                 break;
             }
         }
@@ -59,6 +62,8 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
         //togbtn_alarm_led = (ToggleButton) findViewById(R.id.togbtn_alarm_led);
         togbtn_inverse.setOnClickListener(this);
         togbtn_reverse.setOnClickListener(this);
+        togbtn_reverse.setEnabled(false);
+        togbtn_inverse.setEnabled(false);
         //togbtn_alarm_led.setOnClickListener(this);
     }
 
@@ -70,23 +75,19 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
     void getSetting() {
         showLoadingProgress();
         if (camera != null) {
-            showLoadingView(R.id.txt_timezone);
             showLoadingView(R.id.togbtn_reverse);
             showLoadingView(R.id.togbtn_inverse);
-           // showLoadingView(R.id.togbtn_alarm_led);
-
-            //camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ALARMLED_CONTRL_REQ, AVIOCTRLDEFs.SMsgAVIOCtrlGetAlarmLedReq.parseContent(0));
-           // camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEZONE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlTimeZone.parseContent());
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_VIDEOMODE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetVideoModeReq.parseContent(0));
-            //camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ENVIRONMENT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetEnvironmentReq.parseContent(0));
+            camera.sendIOCtrl(0,HiChipDefines.HI_P2P_GET_DISPLAY_PARAM, null);
         }
     }
 
 
     void setVideoMode() {
-        // showLoadingProgress();
-        int videoMode = (togbtn_inverse.isChecked() ? 1 : 0) + (togbtn_reverse.isChecked() ? 2 : 0);
-        camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_VIDEOMODE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetVideoModeReq.parseContent(0, (byte) videoMode));
+        if(display_param != null) {
+            display_param.u32Mirror = togbtn_reverse.isChecked() ? 1 : 0;
+            display_param.u32Flip = togbtn_inverse.isChecked() ? 1 : 0;
+            camera.sendIOCtrl(HiChipDefines.HI_P2P_SET_DISPLAY_PARAM, display_param.parseContent());
+        }
     }
 
     void setInverse(boolean inverse) {
@@ -161,18 +162,20 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
             dismissLoadingProgress();
             switch (msg.what) {
 
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_VIDEOMODE_RESP://视频翻转
+                case HiChipDefines.HI_P2P_GET_DISPLAY_PARAM://视频翻转
                     dismissLoadingProgress();
 
-                    int videoMode = data[4];
+                    display_param = new HiChipDefines.HI_P2P_S_DISPLAY(data);
 
-                    togbtn_reverse.setChecked((videoMode & 0x2) > 0);
-                    togbtn_inverse.setChecked((videoMode & 0x1) > 0);
+                    togbtn_reverse.setChecked(display_param.u32Mirror > 0);
+                    togbtn_inverse.setChecked(display_param.u32Flip > 0);
 
+                    togbtn_reverse.setEnabled(true);
+                    togbtn_inverse.setEnabled(true);
                     hideLoadingView(R.id.togbtn_reverse);
                     hideLoadingView(R.id.togbtn_inverse);
                     break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_VIDEOMODE_REQ://视频翻转
+                case HiChipDefines.HI_P2P_SET_DISPLAY_PARAM://视频翻转
                     dismissLoadingProgress();
 
                     break;
@@ -220,7 +223,7 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
             startActivityForResult(intent,getRequestCode(R.id.ll_setSDCard));
 
         } else if (view.getId() == R.id.ll_setDeviceInfo) {
-            intent.setClass(this, DeviceInfoActivity.class);
+            intent.setClass(this, DeviceInfo_HichipActivity.class);
             startActivityForResult(intent, getRequestCode(R.id.ll_setDeviceInfo));
         }
         else if(view.getId() == R.id.ll_setAudio){

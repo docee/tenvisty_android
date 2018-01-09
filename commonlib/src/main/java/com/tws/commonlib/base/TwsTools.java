@@ -28,6 +28,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.content.PermissionChecker;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.telephony.TelephonyManager;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -62,6 +63,30 @@ import java.util.regex.Pattern;
  */
 
 public class TwsTools {
+    public static String getBase64(String str) {
+        String result = "";
+        if (str != null) {
+            try {
+                result = new String(Base64.encode(str.getBytes("utf-8"), Base64.NO_WRAP), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
+
+    // 解密
+    public static String getFromBase64(String str) {
+        String result = "";
+        if (str != null) {
+            try {
+                result = new String(Base64.decode(str, Base64.NO_WRAP), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+        }
+        return result;
+    }
     public static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);

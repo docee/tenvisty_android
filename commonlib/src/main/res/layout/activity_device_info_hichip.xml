@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/lightestgray"
+    android:orientation="vertical" >
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:background="@color/lightgray"
+        android:orientation="vertical"
+        android:layout_marginTop="40dp"
+        android:layout_height="wrap_content">
+
+        <ImageView
+            android:layout_width="fill_parent"
+            style="@style/split_short_thin_style" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_uid"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_uid"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_uid"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_uid"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_version"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_version_soft"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_version"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_version"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:id="@+id/ll_fmversion"
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_fmversion"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_version_fm"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_fmversion"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_fmversion"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/img_splitline"
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+            <ImageView
+                android:layout_width="fill_parent"
+                android:layout_marginTop="20dp"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_network"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_info_network"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_network"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_network"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_ip"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_info_ip"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_ip"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_network"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_submask"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_info_submask"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_submask"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/lab_camera_info_network"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_gateway"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_info_gateway"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_gateway"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_network"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+            <LinearLayout
+                android:layout_width="fill_parent"
+                android:paddingLeft="15dp"
+                android:paddingRight="15dp"
+                android:clickable="true"
+                android:background="@color/white"
+                android:gravity="center_vertical"
+                android:layout_height="45dp">
+
+                <TextView
+                    android:id="@+id/txt_dns"
+                    android:layout_width="0dp"
+                    android:layout_weight="2"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lab_camera_info_dns"
+                    android:textSize="14dp"
+                    android:textColor="#333333" />
+
+                <EditText
+                    android:id="@+id/edt_dns"
+                    android:layout_width="0dp"
+                    android:layout_weight="3"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/txt_network"
+                    android:background="@null"
+                    android:cursorVisible="true"
+                    android:textCursorDrawable="@null"
+                    android:enabled="false"
+                    android:gravity="right"
+                    android:maxLines="1"
+                    android:textSize="14dp"
+                    android:focusable="false"
+                    android:focusableInTouchMode="true"
+                    android:layout_marginRight="10dp"
+                    android:textColor="#333333"  />
+            </LinearLayout>
+            <ImageView
+                android:layout_width="fill_parent"
+                style="@style/split_long_thin_style" />
+
+        </LinearLayout>
+    </LinearLayout>
+
+
+</LinearLayout>

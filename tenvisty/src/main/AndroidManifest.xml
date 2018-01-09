@@ -245,7 +245,31 @@
             android:name="com.tws.commonlib.activity.hichip.TimezoneSetting_HichipActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.DeviceInfo_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.SystemSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.MailSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.FTPSetting_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.EventList_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
 
+        <activity
+            android:name="com.tws.commonlib.activity.hichip.Playback_HichipActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="landscape"></activity>
 
 
 

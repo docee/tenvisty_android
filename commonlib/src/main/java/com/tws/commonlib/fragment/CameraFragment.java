@@ -39,6 +39,7 @@ import com.tws.commonlib.activity.AddCameraActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
 import com.tws.commonlib.activity.hichip.DeviceSetting_HichipActivity;
+import com.tws.commonlib.activity.hichip.EventList_HichipActivity;
 import com.tws.commonlib.activity.hichip.LiveView_HichipActivity;
 import com.tws.commonlib.activity.setting.DeviceSettingActivity;
 import com.tws.commonlib.activity.setting.EditDeviceActivity;
@@ -472,7 +473,12 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     }
                     startActivity(intent);
                 }  else if (btnId == R.id.btn_item_event) {
-                    intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);
+                    if(camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
+                        intent.setClass(CameraFragment.this.getActivity(), EventList_HichipActivity.class);
+                    }
+                    else {
+                        intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);
+                    }
                     startActivity(intent);
                 }
                 else if(btnId == R.id.btn_play){
