@@ -50,6 +50,8 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
     private com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE timezone = null;
     private com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE_EXT timezone_ext = null;
     private boolean isInitTime = false;
+    private long beginRebootTime;
+    private long rebootTimeout = 120000;
 
     private float videoRatio = 0;
     public HichipCamera(Context context, String nikename, String uid, String username, String password) {
@@ -110,6 +112,10 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
     @Override
     public CameraState getState() {
         return cameraState == null?CameraState.None : cameraState;
+    }
+
+    private void  setState(CameraState state){
+        cameraState = state;
     }
 
     @Override
@@ -734,11 +740,32 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
     }
 
     @Override
-    public void receiveSessionState(HiCamera hiCamera, int state) {
-        int accState = state;
-        if(SessionStateHashMap.containsKey(state)){
-            accState = (int)SessionStateHashMap.get(state);
+    public void receiveSessionState(HiCamera hiCamera, int connect_state) {
+        int accState = connect_state;
+        if(SessionStateHashMap.containsKey(connect_state)){
+            accState = (int)SessionStateHashMap.get(connect_state);
         }
+        if ((accState == NSCamera.CONNECTION_STATE_CONNECTED) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
+            cameraState = CameraState.None;
+        }
+        else if(accState == NSCamera.CONNECTION_STATE_DISCONNECTED){
+            if (cameraState == CameraState.WillRebooting) {
+                cameraState = CameraState.Rebooting;
+                beginRebootTime = System.currentTimeMillis();
+                rebootTimeout = 120000;
+            } else if (cameraState == CameraState.WillReseting) {
+                cameraState = CameraState.Reseting;
+                beginRebootTime = System.currentTimeMillis();
+                rebootTimeout = 120000;
+            }
+            //重启，复位，升级固件超时处理
+            if (System.currentTimeMillis() - beginRebootTime > rebootTimeout) {
+                if (cameraState != CameraState.None) {
+                    cameraState = CameraState.None;
+                }
+            }
+        }
+
         for (int i = 0; i < mIOTCListeners.size(); i++) {
             IIOTCListener listener = mIOTCListeners.get(i);
             listener.receiveSessionInfo(HichipCamera.this,accState);
@@ -754,6 +781,12 @@ public class HichipCamera extends HiCamera implements IMyCamera,ICameraIOSession
         for (int i = 0; i < mIOTCListeners.size(); i++) {
             IIOTCListener listener = mIOTCListeners.get(i);
             listener.receiveIOCtrlData(HichipCamera.this,state,accType,bytes);
+        }
+        if(type == HiChipDefines.HI_P2P_SET_REBOOT){
+            setState(CameraState.WillRebooting);
+        }
+        else if(type == HiChipDefines.HI_P2P_SET_RESET){
+            setState(CameraState.WillReseting);
         }
     }
 
