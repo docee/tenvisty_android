@@ -4,16 +4,21 @@ import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.media.Image;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.content.res.AppCompatResources;
+import android.util.EventLog;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +35,7 @@ import android.widget.ListView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import com.hichip.content.HiChipDefines;
 import com.hichip.tools.Packet;
@@ -48,6 +54,7 @@ import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
+import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
 
 import java.io.File;
@@ -104,13 +111,15 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     private Calendar mStopSearchCalendar;
     TextView txt_event_day_top;
     int accSelect = -1;
+    boolean checkMode = false;
+    NavigationBar title;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON, WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-        setContentView(R.layout.activity_event_list);
+        setContentView(R.layout.activity_event_list_hichip);
         arrSearchTimes = new String[]{getString(R.string.option_search_within_an_hour), getString(R.string.option_search_within_half_a_day)
                 , getString(R.string.option_search_within_a_day)
                 , getString(R.string.option_search_within_a_week)
@@ -138,7 +147,30 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
     @Override
     protected void initView() {
-        super.initView();
+        View barView = findViewById(R.id.title_top);
+        if (barView != null) {
+            title = (NavigationBar) barView;
+            title.setTitle(this.getTitle().toString());
+            title.setButton(NavigationBar.NAVIGATION_BUTTON_LEFT);
+            title.setButton(NavigationBar.NAVIGATION_BUTTON_RIGHT);
+            title.setRightBtnText(getString(R.string.edit));
+            title.setRightBtnBackground(0);
+            title.setNavigationButtonLeftListner(new NavigationBar.NavigationBarButtonListener() {
+
+                @Override
+                public void OnNavigationButtonClick(int which) {
+                    switch (which) {
+                        case NavigationBar.NAVIGATION_BUTTON_LEFT:
+                            finish();
+
+                            break;
+                        case NavigationBar.NAVIGATION_BUTTON_RIGHT:
+                            setToolBarVisible();
+                            break;
+                    }
+                }
+            });
+        }
 
         eventListView = (ListView) findViewById(R.id.lstEventList);
         eventListView.setAdapter(adapter);
@@ -255,13 +287,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_EVENT_DETAIL) {
-
-            if (data != null) {
-                Bundle extras = data.getExtras();
-                if (extras != null) {
-                    adapter.notifyDataSetChanged();
-                }
-            }
+            adapter.notifyDataSetChanged();
         }
     }
 
@@ -308,29 +334,119 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 return;
 
             TWS_HI_P2P_FILE_INFO file_info = list.get(position);
-            Bundle extras = new Bundle();
-            extras.putString(TwsDataValue.EXTRA_KEY_UID, dev_uid);
-            byte[] b_startTime = file_info.sStartTime.parseContent();
-            // byte[] b_startTime = STimeDay.parseContent(file_info.sStartTime.year,
-            // file_info.sStartTime.month, file_info.sStartTime.day,
-            // file_info.sStartTime.wday, file_info.sStartTime.hour,
-            // file_info.sStartTime.minute, file_info.sStartTime.second);
-            extras.putByteArray("st", b_startTime);
+            if (checkMode) {
+                file_info.isSelected = !file_info.isSelected;
+                v.findViewById(R.id.img_select).setSelected(file_info.isSelected);
+            } else {
+                Bundle extras = new Bundle();
+                extras.putString(TwsDataValue.EXTRA_KEY_UID, dev_uid);
+                byte[] b_startTime = file_info.sStartTime.parseContent();
+                // byte[] b_startTime = STimeDay.parseContent(file_info.sStartTime.year,
+                // file_info.sStartTime.month, file_info.sStartTime.day,
+                // file_info.sStartTime.wday, file_info.sStartTime.hour,
+                // file_info.sStartTime.minute, file_info.sStartTime.second);
+                extras.putByteArray("st", b_startTime);
 
-            long startTimeLong = file_info.sStartTime.getTimeInMillis();
-            long endTimeLong = file_info.sEndTime.getTimeInMillis();
+                long startTimeLong = file_info.sStartTime.getTimeInMillis();
+                long endTimeLong = file_info.sEndTime.getTimeInMillis();
 
-            long pbtime = startTimeLong - endTimeLong;
-            extras.putLong("pb_time", pbtime);
-            extras.putLong(VIDEO_PLAYBACK_START_TIME, startTimeLong);
-            extras.putLong(VIDEO_PLAYBACK_END_TIME, endTimeLong);
+                long pbtime = startTimeLong - endTimeLong;
+                extras.putLong("pb_time", pbtime);
+                extras.putInt("event_type", file_info.EventType);
+                extras.putLong(VIDEO_PLAYBACK_START_TIME, startTimeLong);
+                extras.putLong(VIDEO_PLAYBACK_END_TIME, endTimeLong);
 
-            Intent intent = new Intent();
-            intent.putExtras(extras);
-            intent.setClass(EventList_HichipActivity.this, Playback_HichipActivity.class);
-            startActivityForResult(intent, REQUEST_CODE_EVENT_DETAIL);
+                Intent intent = new Intent();
+                intent.putExtras(extras);
+                intent.setClass(EventList_HichipActivity.this, Playback_HichipActivity.class);
+                startActivityForResult(intent, REQUEST_CODE_EVENT_DETAIL);
+            }
         }
     };
+
+    public void toolbar_click(View view) {
+        if (view.getId() == R.id.img_selectall) {
+            view.setSelected(!view.isSelected());
+            if (view.isSelected()) {
+                ((TextView) findViewById(R.id.txt_selectall)).setTextColor(AppCompatResources.getColorStateList(EventList_HichipActivity.this, R.color.colorPrimary));
+            } else {
+                ((TextView) findViewById(R.id.txt_selectall)).setTextColor(AppCompatResources.getColorStateList(EventList_HichipActivity.this, R.color.darkergray));
+            }
+            boolean select = view.isSelected();
+            for(int i=0;i<list.size();i++){
+                list.get(i).isSelected = select;
+            }
+            adapter.notifyDataSetChanged();
+        } else if (view.getId() == R.id.img_download) {
+
+        }
+    }
+//    private void downloadRecording(int position, final HiChipDefines.HI_P2P_FILE_INFO file_infos) {
+//        // HiChipDefines.HI_P2P_FILE_INFO file_infos = file_list.get(position);
+//
+//        if ( TwsTools.isSDCardValid()) {
+//
+//            File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
+//            File downloadFolder = new File(TwsTools.ONLINE_VIDEO_PATH);
+//            File uidFolder = new File(downloadFolder.getAbsolutePath() + "/" + mCamera.getUid() + "");
+//            if (!rootFolder.exists()) {
+//                rootFolder.mkdirs();
+//            }
+//            if (!downloadFolder.exists()) {
+//                downloadFolder.mkdirs();
+//            }
+//            if (!uidFolder.exists()) {
+//                uidFolder.mkdirs();
+//            }
+//
+//            download_path = uidFolder.getAbsoluteFile() + "/";
+//
+//            // String[] time=file_info.sStartTime.toString().split(" ");
+//
+//            // 创建UID文件夹
+//            fileName = splitFileName(file_infos.sStartTime.toString());
+//
+//			/*
+//			 * if(oldFile.exists()){ HiToast.showToast(VideoOnlineActivity.this,
+//			 * str); return; }
+//			 */
+//            File file = new File(download_path + fileName + ".avi");
+//            File file2 = new File(download_path + fileName + ".mp4");
+//
+//            if (file.exists() || file2.exists()) {// 文件已下载过
+//                // HiToast.showToast(VideoOnlineActivity.this,
+//                // getString(R.string.tip_alear_dowm));
+//                showPrompt(getString(R.string.tip_alear_dowm));
+////                View view = View.inflate(VideoOnlineActivity.this, R.layout.popuwindow_aleary_down, null);
+////                AlertDialog.Builder builder = new AlertDialog.Builder(VideoOnlineActivity.this);
+////                final AlertDialog dialog = builder.create();
+////                dialog.show();
+////                dialog.setCancelable(false);
+////                dialog.getWindow().setContentView(view);
+////                TextView tvKnow = (TextView) dialog.findViewById(R.id.item_tv_know);
+////                tvKnow.setOnClickListener(new OnClickListener() {
+////                    @Override
+////                    public void onClick(View v) {
+////                        dialog.dismiss();
+////                    }
+////                });
+//                return;
+//            }
+//            showLoadingProgress();
+////			//因为下载SDK加了耗时操作,所以放在要放在异步里处理
+//            new Thread() {
+//                public void run() {
+//                    mCamera.startDownloadRecording(file_infos.sStartTime, download_path, fileName);
+//                }
+//
+//                ;
+//            }.start();
+//            //mCamera.startDownloadRecording(file_infos.sStartTime, download_path, fileName);
+//        } else {
+//            Toast.makeText(EventList_HichipActivity.this, getText(R.string.tips_no_sdcard).toString(), Toast.LENGTH_SHORT)
+//                    .show();
+//        }
+//    }
 
     private void quit() {
         if (mCamera != null) {
@@ -518,7 +634,12 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     public void receiveIOCtrlData(IMyCamera camera, int succ, int avIOCtrlMsgType, byte[] data) {
         if (succ == -1) {// IO的错误码
             dismissLoadingProgress();
-            TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.toast_connect_drop));
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.toast_connect_drop));
+                }
+            });
             return;
         }
         Bundle bundle = new Bundle();
@@ -646,11 +767,17 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 holder.txt_event_type = (TextView) convertView.findViewById(R.id.txt_event_type);
                 holder.img_event_image = (ImageView) convertView.findViewById(R.id.img_event_image);
                 holder.img_event_type_image = (ImageView) convertView.findViewById(R.id.img_event_type_image);
+                holder.img_select = (ImageView) convertView.findViewById(R.id.img_select);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
             }
-
+            if (!checkMode) {
+                holder.img_select.setVisibility(View.GONE);
+            } else {
+                holder.img_select.setSelected(evt.isSelected);
+                holder.img_select.setVisibility(View.VISIBLE);
+            }
             holder.txt_event_type.setText(evt.EventType == HiChipDefines.HI_P2P_EVENT_ALARM ? getString(R.string.evttype_motion_detection) : getString(R.string.evttype_plan));
             if (mCamera != null) {
                 holder.txt_event_title.setText(mCamera.getNickName());
@@ -689,9 +816,13 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                     + "/Remote/");
             File targetFolder = new File(rootFolder1.getAbsolutePath()
                     + "/" + dev_uid);
-            String filenameString = dev_uid + "_" + evt.EventType + evt.sStartTime.year + evt.sStartTime.month + evt.sStartTime.day + evt.sStartTime.wday + evt.sStartTime.hour + evt.sStartTime.minute + evt.sStartTime.second + ".jpg";
-            String fullFileNamePath = targetFolder.getAbsolutePath() + "/" + filenameString;
-            bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+            String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
+            String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
+            try {
+                bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+            }catch (OutOfMemoryError error){
+
+            }
             if (bitmap != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     holder.img_event_image.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bitmap));
@@ -732,6 +863,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             public TextView txt_event_type;
             public ImageView img_event_image;
             public ImageView img_event_type_image;
+            public ImageView img_select;
         }
     }// EventListAdapter
 
@@ -835,6 +967,60 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         }
     };
 
+    private void downloadRecording(int position, final HiChipDefines.HI_P2P_FILE_INFO file_infos) {
+        // HiChipDefines.HI_P2P_FILE_INFO file_infos = file_list.get(position);
+
+        if (TwsTools.isSDCardValid()) {
+
+            final String filePath = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND);
+            final String fileName = TwsTools.getFileNameWithTime(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND, list.get(position).sStartTime.getTimeInMillis(), list.get(position).EventType);
+            File file = new File(filePath + fileName + ".avi");
+            File file2 = new File(filePath + fileName + ".mp4");
+
+            if (file.exists() || file2.exists()) {// 文件已下载过
+                // HiToast.showToast(VideoOnlineActivity.this,
+                // getString(R.string.tip_alear_dowm));
+                showPrompt(getString(R.string.tip_alear_dowm));
+//                View view = View.inflate(VideoOnlineActivity.this, R.layout.popuwindow_aleary_down, null);
+//                AlertDialog.Builder builder = new AlertDialog.Builder(VideoOnlineActivity.this);
+//                final AlertDialog dialog = builder.create();
+//                dialog.show();
+//                dialog.setCancelable(false);
+//                dialog.getWindow().setContentView(view);
+//                TextView tvKnow = (TextView) dialog.findViewById(R.id.item_tv_know);
+//                tvKnow.setOnClickListener(new OnClickListener() {
+//                    @Override
+//                    public void onClick(View v) {
+//                        dialog.dismiss();
+//                    }
+//                });
+                return;
+            }
+            showLoadingProgress();
+//			//因为下载SDK加了耗时操作,所以放在要放在异步里处理
+            new Thread() {
+                public void run() {
+                    mCamera.startDownloadRecording(file_infos.sStartTime, filePath, fileName);
+                }
+            }.start();
+            //mCamera.startDownloadRecording(file_infos.sStartTime, download_path, fileName);
+        } else {
+            Toast.makeText(EventList_HichipActivity.this, getText(R.string.tips_setting_failed).toString(), Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+    public void showPrompt(CharSequence message) {
+
+        AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+        dlgBuilder.setIcon(android.R.drawable.ic_dialog_info);
+        dlgBuilder.setTitle(R.string.prompt);
+        dlgBuilder.setMessage(message);
+        dlgBuilder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+            }
+        }).show();
+    }
 
     private void setListDate() {
         for (int i = 0; i < list.size(); i++) {
@@ -1052,6 +1238,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         public String strDate;
         public String strTime;
         public boolean isDateFirstItem;
+        public boolean isSelected;
 
         public static int sizeof() {
             return 24;
@@ -1065,5 +1252,18 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 isDateFirstItem = false;
             }
         }
+    }
+
+    void setToolBarVisible() {
+        checkMode = !checkMode;
+        if (!checkMode && list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).isSelected = false;
+            }
+        }
+
+        title.setRightBtnText(getString(checkMode ? R.string.done : R.string.edit));
+        EventList_HichipActivity.this.findViewById(R.id.ll_toolbar_bottom).setVisibility(checkMode ? View.VISIBLE : View.GONE);
+        adapter.notifyDataSetChanged();
     }
 }

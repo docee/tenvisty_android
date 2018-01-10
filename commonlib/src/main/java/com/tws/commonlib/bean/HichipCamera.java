@@ -1,22 +1,27 @@
 package com.tws.commonlib.bean;
 
+import android.Manifest;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.hichip.base.HiLog;
+import com.hichip.base.SharePreUtils;
 import com.hichip.callback.ICameraIOSessionCallback;
 import com.hichip.callback.ICameraPlayStateCallback;
 import com.hichip.content.HiChipDefines;
 import com.hichip.control.HiCamera;
+import com.hichip.push.HiPushSDK;
 import com.hichip.sdk.HiChipP2P;
 import com.hichip.sdk.HiChipSDK;
 import com.hichip.tools.Packet;
+import com.tencent.android.tpush.XGPushConfig;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.App;
 import com.tws.commonlib.R;
@@ -74,6 +79,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     public void setInitTime(boolean isInitTime) {
         this.isInitTime = isInitTime;
     }
+
     public void setSummerTimer(boolean hasSummerTimer) {
         this.hasSummerTimer = hasSummerTimer;
     }
@@ -81,6 +87,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     public boolean getSummerTimer() {
         return this.hasSummerTimer;
     }
+
     @Override
     public String getNickName() {
         return nickName;
@@ -477,18 +484,77 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public void openPush(CameraClient.ServerResultListener2 succListner, CameraClient.ServerResultListener2 errorListner) {
+    public void openPush(final CameraClient.ServerResultListener2 succListner,final CameraClient.ServerResultListener2 errorListner) {
+        OnBindPushResult bindPushResult_open = new OnBindPushResult() {
+            @Override
+            public void onBindSuccess(HichipCamera camera) {
 
+                if (!camera.handSubXYZ()) {
+                    camera.setServerData(TwsDataValue.CAMERA_ALARM_ADDRESS);
+                } else {
+                    camera.setServerData(TwsDataValue.CAMERA_ALARM_ADDRESS_THERE);
+                }
+                pushState = 1;
+                HichipCamera.this.sync2Db(App.getContext());
+                sendRegister();
+                if(succListner != null){
+                    succListner.serverResult("succ",null);
+                }
+            }
+
+            @Override
+            public void onBindFail(HichipCamera camera) {
+                if(errorListner != null){
+                    errorListner.serverResult("fail",null);
+                }
+            }
+
+            @Override
+            public void onUnBindSuccess(HichipCamera camera) {
+
+            }
+
+            @Override
+            public void onUnBindFail(HichipCamera camera) {
+            }
+
+        };
+
+        this.bindPushState(true, bindPushResult_open);
     }
 
     @Override
     public void closePush(Context context) {
+        OnBindPushResult bindPushResult_close = new OnBindPushResult() {
+            @Override
+            public void onBindSuccess(HichipCamera camera) {
 
+            }
+
+            @Override
+            public void onBindFail(HichipCamera camera) {
+
+            }
+
+            @Override
+            public void onUnBindSuccess(HichipCamera camera) {
+
+            }
+
+            @Override
+            public void onUnBindFail(HichipCamera camera) {
+
+            }
+
+        };
+        this.bindPushState(false, bindPushResult_close);
+        setPushState(0);
+        sync2Db(App.getContext());
     }
 
     @Override
     public boolean isPushOpen() {
-        return false;
+        return this.pushState > 0;
     }
 
     @Override
@@ -562,38 +628,24 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public void saveSnapShot(int channel, final String subFolder, final String fileName, final TaskExecute te) {
+    public void saveSnapShot(int channel, final String filePath, final String fileName, final TaskExecute te) {
         this.asyncSnapshot(new TaskExecute() {
             @Override
             public void onPosted(IMyCamera c, Object bmp) {
                 boolean isErr = false;
 
-                String filePath = null;
+                String fullFilePath = null;
                 if (bmp != null) {
                     try {
-                        File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "");
-                        File targetFolder = null;
-                        if (subFolder == null) {
-                            targetFolder = new File(rootFolder.getAbsolutePath() + "/android/data/" + MyConfig.getFolderName());
-                        } else {
-                            targetFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + subFolder + "/" + c.getUid());
-                        }
-
-                        if (!rootFolder.exists()) {
-                            rootFolder.mkdir();
-                        }
-                        if (!targetFolder.exists()) {
-                            targetFolder.mkdirs();
-                        }
-                        filePath = targetFolder.getAbsolutePath() + "/" + fileName;
-                        File ff = new File(filePath);
+                        fullFilePath = filePath + "/" + fileName;
+                        File ff = new File(fullFilePath);
 
                         if (fileName.equalsIgnoreCase(HichipCamera.this.getUid()) || !ff.exists()) {
-                            isErr = !TwsTools.saveBitmap((Bitmap) bmp, filePath);
+                            isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
                             if (isErr) {
                                 Thread.sleep(100);
                                 bmp = HichipCamera.super.getSnapshot();
-                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, filePath);
+                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
                             }
                             if (!isErr && fileName.equalsIgnoreCase(c.getUid())) {
                                 c.setSnapshot((Bitmap) bmp);
@@ -764,7 +816,23 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             mPlayStateListeners.remove(listener);
         }
     }
+    protected void setServer(HichipCamera mCamera) {
 
+        if (!mCamera.getCommandFunction(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET)) {
+            return;
+        }
+        //如果数据库保存的还是老地址就解绑并绑定新的地址
+        if (mCamera.getServerData() != null && !mCamera.getServerData().equals(TwsDataValue.CAMERA_ALARM_ADDRESS)) {
+            if (mCamera.getPushState() > 1) {
+                mCamera.bindPushState(false, bindPushResult);
+                return;
+            }
+        }
+
+        sendServer(mCamera);
+        sendRegisterToken(mCamera);
+
+    }
     @Override
     public void receiveSessionState(HiCamera hiCamera, int connect_state) {
         int accState = connect_state;
@@ -785,8 +853,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
                 cameraState = CameraState.Reseting;
                 beginRebootTime = System.currentTimeMillis();
                 rebootTimeout = 120000;
-            }
-            else if(cameraState ==  CameraState.WillUpgrading){
+            } else if (cameraState == CameraState.WillUpgrading) {
                 cameraState = CameraState.Upgrading;
                 beginRebootTime = System.currentTimeMillis();
                 rebootTimeout = 120000;
@@ -819,8 +886,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             setState(CameraState.WillRebooting);
         } else if (type == HiChipDefines.HI_P2P_SET_RESET) {
             setState(CameraState.WillReseting);
-        }
-        else if(type == HiChipDefines.HI_P2P_SET_DOWNLOAD){
+        } else if (type == HiChipDefines.HI_P2P_SET_DOWNLOAD) {
             setState(cameraState.WillUpgrading);
         }
 
@@ -866,7 +932,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             } catch (Exception ex) {
 
             }
-            if(!hasSetFunctionFlag()){
+            if (!hasSetFunctionFlag()) {
                 this.sendIOCtrl(HiChipDefines.HI_P2P_GET_NET_PARAM, new byte[0]);
             }
         } else if (type == HiChipDefines.HI_P2P_GET_NET_PARAM) {
@@ -883,7 +949,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
                 }
             }
         }
-        if(type == HiChipDefines.HI_P2P_GET_TIME_ZONE_EXT){
+        if (type == HiChipDefines.HI_P2P_GET_TIME_ZONE_EXT) {
             if (data != null && data.length >= 36) {
                 HiChipDefines.HI_P2P_S_TIME_ZONE_EXT time_ZONE_EXT = new HiChipDefines.HI_P2P_S_TIME_ZONE_EXT(data);
                 this.setTimezoneExt(time_ZONE_EXT);
@@ -894,7 +960,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
                 }
             }
         }
-        if(type == HiChipDefines.HI_P2P_GET_TIME_ZONE){
+        if (type == HiChipDefines.HI_P2P_GET_TIME_ZONE) {
             HiChipDefines.HI_P2P_S_TIME_ZONE timezone = new HiChipDefines.HI_P2P_S_TIME_ZONE(data);
             this.setTimezone(timezone);
 
@@ -904,7 +970,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             }
         }
 
-        if(type == HiChipDefines.HI_P2P_GET_TIME_PARAM){
+        if (type == HiChipDefines.HI_P2P_GET_TIME_PARAM) {
             if (data != null && data.length >= 24) {
                 HiChipDefines.HI_P2P_S_TIME_PARAM dt = new HiChipDefines.HI_P2P_S_TIME_PARAM(data);
                 //濡傛灉鎽勫儚鏈烘椂闂存槸鍒濆鏃堕棿锛屽垯鍚屾鎵嬫満鏃堕棿銆�
@@ -915,7 +981,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             }
         }
 
-        if(type == HiChipDefines.HI_P2P_SET_TIME_PARAM){
+        if (type == HiChipDefines.HI_P2P_SET_TIME_PARAM) {
             this.setInitTime(false);
         }
     }
@@ -928,6 +994,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             this.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_ZONE, new byte[0]);
         }
     }
+
     @Override
     public void callbackState(HiCamera hiCamera, int state, int w, int h) {
         if (state >= 3 && state <= 5) {
@@ -983,6 +1050,187 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         });
 
     }
+    public static void unInitP2P() {
+        HiChipSDK.uninit();
+    }
+
+    private String serverData;
+
+    public void setServerData(String serverData) {
+        this.serverData = serverData;
+        DatabaseManager db = new DatabaseManager(App.getContext());
+        db.updateDeviceServerData(this.getUid(), serverData);
+    }
+
+    public String getServerData() {
+        if (this.serverData == null) {
+            DatabaseManager db = new DatabaseManager(App.getContext());
+            this.serverData = db.getDeviceServerData(this.getUid());
+        }
+        return this.serverData;
+    }
+
+    public interface OnBindPushResult {
+        public void onBindSuccess(HichipCamera camera);
+
+        public void onBindFail(HichipCamera camera);
+
+        public void onUnBindSuccess(HichipCamera camera);
+
+        public void onUnBindFail(HichipCamera camera);
+    }
+
+    public void bindPushState(boolean isBind, OnBindPushResult bindPushResult) {
+        if (TwsDataValue.XGToken == null) {
+            return;
+        }
+        /* 地址变更 解绑时 用旧的服务器 */
+        if (!isBind && this.getServerData() != null && !this.getServerData().equals(TwsDataValue.CAMERA_ALARM_ADDRESS)) {
+            push = new HiPushSDK(TwsDataValue.XGToken, getUid(), TwsDataValue.company(), pushResult, this.getServerData());
+        } else if (this.getCommandFunction(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET) && !handSubXYZ()) {
+            push = new HiPushSDK(TwsDataValue.XGToken, getUid(), TwsDataValue.company(), pushResult, TwsDataValue.CAMERA_ALARM_ADDRESS);
+        } else if (this.getCommandFunction(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET) && handSubXYZ()) {
+            push = new HiPushSDK(TwsDataValue.XGToken, getUid(), TwsDataValue.company(), pushResult, TwsDataValue.CAMERA_ALARM_ADDRESS_THERE);
+        } else {// old device
+            push = new HiPushSDK(TwsDataValue.XGToken, getUid(), TwsDataValue.company(), pushResult, TwsDataValue.CAMERA_OLD_ALARM_ADDRESS);
+        }
+        onBindPushResult = bindPushResult;
+        if (isBind) {
+            push.bind();
+        } else {
+            push.unbind(getPushState());
+        }
+    }
+
+    private int pushState = TwsDataValue.DEFAULT_PUSH_STATE;
+
+    public int getPushState() {
+        return pushState;
+    }
+
+    public void setPushState(int pushState) {
+        this.pushState = pushState;
+    }
+
+    public HiPushSDK push;
+    private OnBindPushResult onBindPushResult;
+    private boolean isSetValueWithoutSave = false;
+    private HiPushSDK.OnPushResult pushResult = new HiPushSDK.OnPushResult() {
+        @Override
+        public void pushBindResult(int subID, int type, int result) {
+            isSetValueWithoutSave = true;
+
+            if (type == HiPushSDK.PUSH_TYPE_BIND) {
+                if (HiPushSDK.PUSH_RESULT_SUCESS == result) {
+                    pushState = subID;
+                    if (onBindPushResult != null)
+                        onBindPushResult.onBindSuccess(HichipCamera.this);
+                } else if (HiPushSDK.PUSH_RESULT_FAIL == result || HiPushSDK.PUSH_RESULT_NULL_TOKEN == result) {
+                    if (onBindPushResult != null)
+                        onBindPushResult.onBindFail(HichipCamera.this);
+                }
+            } else if (type == HiPushSDK.PUSH_TYPE_UNBIND) {
+                if (HiPushSDK.PUSH_RESULT_SUCESS == result) {
+                    if (onBindPushResult != null)
+                        onBindPushResult.onUnBindSuccess(HichipCamera.this);
+                } else if (HiPushSDK.PUSH_RESULT_FAIL == result) {
+                    if (onBindPushResult != null)
+                        onBindPushResult.onUnBindFail(HichipCamera.this);
+                }
+
+            }
+
+        }
+    };
+
+    protected void sendServer(HichipCamera mCamera) {
+        // //测试
+        // mCamera.sendIOCtrl(CamHiDefines.HI_P2P_ALARM_ADDRESS_GET, null);
+        if (mCamera.getServerData() == null) {
+            mCamera.setServerData(TwsDataValue.CAMERA_ALARM_ADDRESS);
+        }
+        if (!mCamera.getCommandFunction(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET)) {
+            return;
+        }
+        if (mCamera.push != null) {
+            byte[] info = CamHiDefines.HI_P2P_ALARM_ADDRESS.parseContent(mCamera.push.getPushServer());
+            mCamera.sendIOCtrl(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET, info);
+        }
+    }
+
+    OnBindPushResult bindPushResult = new OnBindPushResult() {
+        @Override
+        public void onBindSuccess(HichipCamera camera) {
+
+            if (!camera.handSubXYZ()) {
+                camera.setServerData(TwsDataValue.CAMERA_ALARM_ADDRESS);
+            } else {
+                camera.setServerData(TwsDataValue.CAMERA_ALARM_ADDRESS_THERE);
+            }
+            sendServer(camera);
+            sendRegisterToken(camera);
+        }
+
+        @Override
+        public void onBindFail(HichipCamera camera) {
+        }
+
+        @Override
+        public void onUnBindSuccess(HichipCamera camera) {
+            camera.bindPushState(true, bindPushResult);
+        }
+
+        @Override
+        public void onUnBindFail(HichipCamera camera) {
+            // 把SubId存放到sharePrefence
+            if (camera.isPushOpen()) {
+                SharePreUtils.putInt("subId", App.getContext(), camera.getUid(), camera.getPushState());
+            }
+
+        }
+
+    };
+    private void sendRegister() {
+        if (this.getPushState() == 1) {
+            return;
+        }
+        if (!this.getCommandFunction(CamHiDefines.HI_P2P_ALARM_TOKEN_REGIST)) {
+            return;
+        }
+
+        byte[] info = CamHiDefines.HI_P2P_ALARM_TOKEN_INFO.parseContent(0, this.getPushState(), (int) (System.currentTimeMillis() / 1000 / 3600), this.getPushState() > 0 ? 1 : 0);
+        this.sendIOCtrl(CamHiDefines.HI_P2P_ALARM_TOKEN_REGIST, info);
+    }
+
+    protected void sendRegisterToken(HichipCamera mCamera) {
+        if (mCamera.getPushState() == 1 || mCamera.getPushState() == 0) {
+
+            return;
+        }
+
+        if (!mCamera.getCommandFunction(CamHiDefines.HI_P2P_ALARM_TOKEN_REGIST)) {
+            return;
+        }
+
+        byte[] info = CamHiDefines.HI_P2P_ALARM_TOKEN_INFO.parseContent(0, mCamera.getPushState(), (int) (System.currentTimeMillis() / 1000 / 3600), 1);
+
+        mCamera.sendIOCtrl(CamHiDefines.HI_P2P_ALARM_TOKEN_REGIST, info);
+    }
+
+    /**
+     * 处理UID前缀为XXX YYYY ZZZ
+     *
+     * @return 如果是则返回 true
+     */
+    public boolean handSubXYZ() {
+        String subUid = this.getUid().substring(0, 4);
+        for (String str : TwsDataValue.SUBUID) {
+            if (str.equalsIgnoreCase(subUid)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private void cameraLogin() {
         HiLog.v("mainactivity cameraLogin:" + this.getUid());
@@ -991,8 +1239,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         if (mIsSupportZoneExt) {
             // 支持新时区
             this.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_ZONE_EXT, new byte[0]);
-        }
-        else{
+        } else {
             this.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_ZONE, new byte[0]);
         }
         if (!this.hasSetFunctionFlag()) {
@@ -1000,6 +1247,9 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         }
 
         this.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_PARAM, null);
+        if (getPushState() > 0) {
+            setServer(this);
+        }
     }
 
     private byte[] defaultFunctionFlag() {

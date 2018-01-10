@@ -27,6 +27,7 @@ import com.tutk.IOTC.L;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.MyConfig;
+import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
@@ -226,7 +227,7 @@ public class AppUpdateView {
                     public void onClick(DialogInterface dialog, int which) {//濡傛灉閫夋嫨涓嶆洿鏂板垯璺宠繃鐩存帴杩涘叆涓嬩竴涓猘ctivity
                         // TODO Auto-generated method stub
                     /*Message msglogin=new Message();
-					msglogin.what=0x101;*/
+                    msglogin.what=0x101;*/
                         preHandler.sendMessage(msgtologin);
                         dialog.dismiss();
                     }
@@ -441,12 +442,9 @@ public class AppUpdateView {
         //是否SD卡可用
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
             //检查是或有保存图片的文件夹，没有就创建一个
-            String FileUrl = Environment.getExternalStorageDirectory() + "/android/data/" + MyConfig.getFolderName() + "/";
-            File folder = new File(FileUrl);
-            if (!folder.exists()) {
-                folder.mkdir();
-            }
-            File f = new File(FileUrl + camera.getUid());
+            String FileUrl = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB);
+            File f = new File(FileUrl + "/" + camera.getUid());
+
             //SD卡中是否有该文件，有则直接读取返回
             if (f.exists()) {
                 FileInputStream fis = null;
@@ -456,9 +454,12 @@ public class AppUpdateView {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-
-                Bitmap b = BitmapFactory.decodeStream(fis);
-                return b;
+                try {
+                    Bitmap b = BitmapFactory.decodeStream(fis);
+                    return b;
+                }catch (OutOfMemoryError error){
+                    return null;
+                }
             }
         }
 

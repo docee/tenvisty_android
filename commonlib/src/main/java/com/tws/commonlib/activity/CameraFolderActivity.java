@@ -58,8 +58,7 @@ public class CameraFolderActivity extends BaseActivity {
     private String getImagesPath() {
         if (imagesPath == null) {
             dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-            File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.SNAP_DIR + "/" + dev_uid);// 鍥剧墖鏂囦欢鐩綍
-            imagesPath = folder.getAbsolutePath();
+            imagesPath = TwsTools.getFilePath(dev_uid,TwsTools.PATH_SNAPSHOT_MANUALLY);
         }
         return imagesPath;
     }
@@ -67,8 +66,7 @@ public class CameraFolderActivity extends BaseActivity {
     private String getVideosPath() {
         if (videosPath == null) {
             dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-            File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + dev_uid);// 鍥剧墖鏂囦欢鐩綍
-            videosPath = folder.getAbsolutePath();
+            videosPath = TwsTools.getFilePath(dev_uid,TwsTools.PATH_RECORD_MANUALLY);
         }
         return videosPath;
     }

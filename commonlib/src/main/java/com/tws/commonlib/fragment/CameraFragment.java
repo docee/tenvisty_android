@@ -482,7 +482,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     startActivity(intent);
                 }
                 else if(btnId == R.id.btn_play){
-                    camera.asyncStartVideo(null);
+                    //camera.asyncStartVideo(null);
                     if (camera.getEventNum() > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         int eventnum = camera.clearEventNum(CameraFragment.this.getContext());

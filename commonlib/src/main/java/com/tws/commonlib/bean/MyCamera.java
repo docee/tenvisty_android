@@ -158,7 +158,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
                 return App.getContext().getString(R.string.camera_state_connected);
             } else if (this.connect_state == CONNECTION_STATE_DISCONNECTED || this.connect_state == CONNECTION_STATE_UNKNOWN_DEVICE || this.connect_state == CONNECTION_STATE_TIMEOUT || this.connect_state == CONNECTION_STATE_UNSUPPORTED || this.connect_state == CONNECTION_STATE_CONNECT_FAILED) {
-                return App.getContext().getString(R.string.camera_state_connected);
+                return App.getContext().getString(R.string.camera_state_disconnect);
             } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD) {
                 return App.getContext().getString(R.string.camera_state_passwordWrong);
             }
@@ -350,6 +350,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         this.user = acc;
         this.pwd = pwd;
         this.registerIOTCListener(this);
+        this.registerPlayStateListener(this);
         setPlaying(false);
     }
 
@@ -1509,38 +1510,24 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         return this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED;
     }
 
-    public void saveSnapShot(final int channel, final String subFolder, final String fileName, final TaskExecute te) {
+    public void saveSnapShot(final int channel, final String filePath, final String fileName, final TaskExecute te) {
         this.asyncSnapshot(new TaskExecute() {
             @Override
             public void onPosted(IMyCamera c, Object bmp) {
                 boolean isErr = false;
 
-                String filePath = null;
+                String fullFilePath = null;
                 if (bmp != null) {
                     try {
-                        File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "");
-                        File targetFolder = null;
-                        if (subFolder == null) {
-                            targetFolder = new File(rootFolder.getAbsolutePath() + "/android/data/" + MyConfig.getFolderName());
-                        } else {
-                            targetFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + subFolder + "/" + c.getUid());
-                        }
-
-                        if (!rootFolder.exists()) {
-                            rootFolder.mkdir();
-                        }
-                        if (!targetFolder.exists()) {
-                            targetFolder.mkdirs();
-                        }
-                        filePath = targetFolder.getAbsolutePath() + "/" + fileName;
-                        File ff = new File(filePath);
+                        fullFilePath = filePath + "/" + fileName;
+                        File ff = new File(fullFilePath);
 
                         if (fileName.equalsIgnoreCase(MyCamera.this.getUid()) || !ff.exists()) {
-                            isErr = !TwsTools.saveBitmap((Bitmap) bmp, filePath);
+                            isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
                             if (isErr) {
                                 Thread.sleep(100);
                                 bmp = MyCamera.super.Snapshot(channel);
-                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, filePath);
+                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
                             }
                             if (!isErr && fileName.equalsIgnoreCase(c.getUid())) {
                                 c.setSnapshot((Bitmap) bmp);

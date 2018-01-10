@@ -22,6 +22,7 @@ import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.L;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
@@ -129,7 +130,7 @@ public class MainActivity extends AppCompatActivity {
                     camera.stop();
                 }
                 MyCamera.uninit();
-                HiChipSDK.uninit();
+                HichipCamera.unInitP2P();
                 //杀死该应用进程
                 android.os.Process.killProcess(android.os.Process.myPid());
             } else {

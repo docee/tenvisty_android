@@ -27,7 +27,7 @@
                     <EditText
                         android:id="@+id/edit_duration"
                         style="@style/editbox_item_edittext"
-                        android:text="600"/>
+                        android:text="@string/loading"/>
                     <TextView
                         style="@style/editbox_item_textview"
                         android:text="@string/lab_record_timing_seconds"

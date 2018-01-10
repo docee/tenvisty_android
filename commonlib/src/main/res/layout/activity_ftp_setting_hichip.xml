@@ -101,7 +101,8 @@
                             android:id="@+id/ftp_setting_psw_edt"
                             style="@style/editbox_item_edittext"
                             android:hint="@string/hint_ftp_setting_password"
-                            android:textColorHint="@color/lightgray" />
+                            android:textColorHint="@color/lightgray"
+                            android:inputType="textPassword"/>
                     </LinearLayout>
                     <View
                         style="@style/split_short_thin_style"

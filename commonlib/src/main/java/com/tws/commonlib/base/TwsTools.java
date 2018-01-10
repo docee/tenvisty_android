@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.v4.app.ActivityCompat;
@@ -52,8 +53,10 @@ import java.security.NoSuchAlgorithmException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
@@ -63,6 +66,12 @@ import java.util.regex.Pattern;
  */
 
 public class TwsTools {
+    public static boolean isSDCardValid() {
+
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED);
+    }
+
     public static String getBase64(String str) {
         String result = "";
         if (str != null) {
@@ -87,6 +96,7 @@ public class TwsTools {
         }
         return result;
     }
+
     public static int dip2px(Context context, float dpValue) {
         final float scale = context.getResources().getDisplayMetrics().density;
         return (int) (dpValue * scale + 0.5f);
@@ -402,7 +412,7 @@ public class TwsTools {
         return getString(m);
     }
 
-    public  static  String takeInnerUid(String contents){
+    public static String takeInnerUid(String contents) {
         if (contents.length() > 20) {
             String temp = "";
 
@@ -415,49 +425,36 @@ public class TwsTools {
         return contents;
     }
 
-    public static String getFileNameWithTime(int type) {
-        return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
-//        Calendar c = Calendar.getInstance();
-//        int mYear = c.get(Calendar.YEAR);
-//        int mMonth = c.get(Calendar.MONTH) + 1;
-//        int mDay = c.get(Calendar.DAY_OF_MONTH);
-//        int mHour = c.get(Calendar.HOUR_OF_DAY);
-//        int mMinute = c.get(Calendar.MINUTE);
-//        int mSec = c.get(Calendar.SECOND);
-//        //		int mMilliSec = c.get(Calendar.MILLISECOND);
-//
-//        StringBuffer sb = new StringBuffer();
-//        if (type == 0) {
-//            sb.append("IMG_");
-//        }
-//        sb.append(mYear);
-//        if (mMonth < 10)
-//            sb.append('0');
-//        sb.append(mMonth);
-//        if (mDay < 10)
-//            sb.append('0');
-//        sb.append(mDay);
-//        sb.append('_');
-//        if (mHour < 10)
-//            sb.append('0');
-//        sb.append(mHour);
-//        if (mMinute < 10)
-//            sb.append('0');
-//        sb.append(mMinute);
-//        if (mSec < 10)
-//            sb.append('0');
-//        sb.append(mSec);
-//
-//
-//        if (type == 0) {
-//            sb.append(".jpg");
-//        } else if (type == 1) {
-//            sb.append(".mp4");
-//        } else {
-//
-//        }
-//
-//        return sb.toString();
+    public static String getFileNameWithTime(String uid, int type) {
+        String result = null;
+        if (type == PATH_SNAPSHOT_MANUALLY) {
+            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ".jpg";
+        } else if (type == PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) {
+            result = uid;
+        } else if (type == PATH_RECORD_MANUALLY) {
+            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ".mp4";
+        }
+        return result;
+        //return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
+    }
+
+    public static String getFileNameWithTime(String uid, int type, long time, int eventType) {
+        String result = null;
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
+        calendar.setTimeInMillis(time);
+        // calendar.add(Calendar.MONTH, -1);
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddhhmmss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
+
+        String strTime = dateFormat.format(calendar.getTime());
+        if (type == PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) {
+            result = uid + "_" + eventType + strTime + ".jpg";
+        } else if (type == PATH_RECORD_DOWNLAND) {
+            result = uid + "_" + eventType + strTime + ".mp4";
+        }
+        return result;
+        //return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
     }
 
 
@@ -480,7 +477,7 @@ public class TwsTools {
                 out.close();
             }
             long l = tmpFile.length();
-            if (l < 10000) {
+            if ((l < 20000 && bitmap.getWidth() > 1800) || (l < 10000 && bitmap.getWidth() > 1000) || (l < 1000 && bitmap.getWidth() > 500) || l < 200) {
                 result = false;
                 tmpFile.delete();
             } else {
@@ -552,7 +549,7 @@ public class TwsTools {
     }
 
     public static void showShare(Context context, boolean silent, String platform, boolean captureView, String imagePath, String[] imageArray) {
-        shareByEmail(context,"#" + MyConfig.getAppName() + "#",MyConfig.getAppName(),imageArray);
+        shareByEmail(context, "#" + MyConfig.getAppName() + "#", MyConfig.getAppName(), imageArray);
 //        OnekeyShare oks = new OnekeyShare();
 //        //关闭sso授权
 //        oks.disableSSOWhenAuthorize();
@@ -645,23 +642,23 @@ public class TwsTools {
         return id * 200;
     }
 
-    public static void showAlarmNotification(Context context, String uid, int evtType, long evtTime) {
+    public static int showAlarmNotification(Context context, String uid, int evtType, long evtTime) {
 
         try {
             IMyCamera camera = null;
             for (IMyCamera _caemra : TwsDataValue.cameraList()) {
-                if (uid!=null && uid.equals(_caemra.getUid())) {
+                if (uid != null && uid.equals(_caemra.getUid())) {
                     camera = _caemra;
                     break;
                 }
             }
 
             if (camera == null) {
-                return;
+                return -2;
             }
 
             if (!camera.shouldPush()) {
-                return;
+                return -1;
             }
             String[] alarmList = context.getResources().getStringArray(R.array.tips_alarm_list_array);
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
@@ -680,7 +677,7 @@ public class TwsTools {
             intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUid());
             intent.putExtra("eventTime", evtTime);
             int notificationId = camera.getIntId();
-            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId+evtType, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId + evtType, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             builder.setContentIntent(pendingIntent);
 
             int eventnum = camera.refreshEventNum(context);
@@ -689,9 +686,9 @@ public class TwsTools {
             builder.setContentTitle(camera.getNickName() + " [" + camera.getUid() + "]");
             Notification notification = builder.build();
 
-            manager.notify(camera.getUid(), notificationId+evtType, notification);
+            manager.notify(camera.getUid(), notificationId + evtType, notification);
             Intent newIntent = new Intent();
-            newIntent.putExtra(TwsDataValue.EXTRA_KEY_UID,uid);
+            newIntent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
             newIntent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
             context.sendBroadcast(newIntent);
 
@@ -714,6 +711,7 @@ public class TwsTools {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return 0;
     }
 
 
@@ -739,7 +737,7 @@ public class TwsTools {
             WifiManager wifi = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
             WifiInfo info = wifi.getConnectionInfo();
             String wifiMac = info.getMacAddress();
-            if(wifiMac != null && !wifiMac.isEmpty()){
+            if (wifiMac != null && !wifiMac.isEmpty()) {
                 deviceId.append("wifi");
                 deviceId.append(wifiMac);
                 L.e("getDeviceId : ", deviceId.toString());
@@ -748,7 +746,7 @@ public class TwsTools {
             //IMEI（imei）
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
             String imei = tm.getDeviceId();
-            if(imei!= null && !imei.isEmpty()){
+            if (imei != null && !imei.isEmpty()) {
                 deviceId.append("imei");
                 deviceId.append(imei);
                 L.e("getDeviceId : ", deviceId.toString());
@@ -756,7 +754,7 @@ public class TwsTools {
             }
             //序列号（sn）
             String sn = tm.getSimSerialNumber();
-            if(sn!= null && !sn.isEmpty()){
+            if (sn != null && !sn.isEmpty()) {
                 deviceId.append("sn");
                 deviceId.append(sn);
                 L.e("getDeviceId : ", deviceId.toString());
@@ -764,7 +762,7 @@ public class TwsTools {
             }
             //如果上面都没有， 则生成一个id：随机码
             String uuid = getUUID(context);
-            if(uuid!= null && !uuid.isEmpty()){
+            if (uuid != null && !uuid.isEmpty()) {
                 deviceId.append("id");
                 deviceId.append(uuid);
                 L.e("getDeviceId : ", deviceId.toString());
@@ -777,18 +775,18 @@ public class TwsTools {
         L.e("getDeviceId : ", deviceId.toString());
         return deviceId.toString();
     }
+
     /**
      * 得到全局唯一UUID
      */
-    public static String getUUID(Context context){
+    public static String getUUID(Context context) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        String uuid = sp.getString("phone_uuid",null);
-        if(uuid != null && !uuid.isEmpty()){
+        String uuid = sp.getString("phone_uuid", null);
+        if (uuid != null && !uuid.isEmpty()) {
 
-        }
-        else{
+        } else {
             uuid = UUID.randomUUID().toString();
-            sp.edit().putString("phone_uuid",uuid).commit();
+            sp.edit().putString("phone_uuid", uuid).commit();
         }
         L.e("getDeviceId", "getUUID : " + uuid);
         return uuid;
@@ -796,11 +794,12 @@ public class TwsTools {
 
     /**
      * 字符串转换成日期
+     *
      * @param str
      * @return date
      */
     public static Date Str2Date(String str, String pattern) {
-        if(pattern == null){
+        if (pattern == null) {
             pattern = "yyyyMMddhhmmss";
         }
         SimpleDateFormat format = new SimpleDateFormat(pattern);
@@ -812,16 +811,17 @@ public class TwsTools {
         }
         return date;
     }
-    public static String Date2Str(Date date,String pattern) {
-        if(pattern == null){
+
+    public static String Date2Str(Date date, String pattern) {
+        if (pattern == null) {
             pattern = "yyyyMMddhhmmss";
         }
         SimpleDateFormat format = new SimpleDateFormat(pattern);
-        return  format.format(date);
+        return format.format(date);
     }
 
-    public  static  void  shareByEmail(Context context,String title,String body,String[] paths){
-        if(paths.length > 1) {
+    public static void shareByEmail(Context context, String title, String body, String[] paths) {
+        if (paths.length > 1) {
             Intent intent = new Intent(Intent.ACTION_SEND_MULTIPLE);
             intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.putExtra(Intent.EXTRA_TEXT, body);
@@ -835,33 +835,76 @@ public class TwsTools {
                 imageUris.add(contentUri);
             }
             intent.putParcelableArrayListExtra(Intent.EXTRA_STREAM, imageUris);
-            if(paths[0].indexOf(".jpg") >-1 || paths[0].indexOf(".png") >-1|| paths[0].indexOf(".bmp")>-1 ) {
+            if (paths[0].indexOf(".jpg") > -1 || paths[0].indexOf(".png") > -1 || paths[0].indexOf(".bmp") > -1) {
                 intent.setType("image/*");
-            }
-            else{
+            } else {
                 intent.setType("video/*");
             }
             intent.setType("message/rfc882");
             Intent.createChooser(intent, context.getString(R.string.lab_share_email_chooseClient));
             context.startActivity(intent);
-        }
-        else{
+        } else {
             Intent intent = new Intent(Intent.ACTION_SEND);
             intent.putExtra(Intent.EXTRA_TEXT, body);
             intent.putExtra(Intent.EXTRA_SUBJECT, title);
             File file = new File(paths[0]);
             Uri contentUri = FileProvider.getUriForFile(context, context.getApplicationContext().getPackageName() + ".FileProvider",
                     file);
-            intent.putExtra(Intent.EXTRA_STREAM,contentUri);
-            if(paths[0].indexOf(".jpg") >-1 || paths[0].indexOf(".png") >-1|| paths[0].indexOf(".bmp")>-1 ) {
+            intent.putExtra(Intent.EXTRA_STREAM, contentUri);
+            if (paths[0].indexOf(".jpg") > -1 || paths[0].indexOf(".png") > -1 || paths[0].indexOf(".bmp") > -1) {
                 intent.setType("image/*");
-            }
-            else{
+            } else {
                 intent.setType("video/*");
             }
             intent.setType("message/rfc882");
             Intent.createChooser(intent, context.getString(R.string.lab_share_email_chooseClient));
             context.startActivity(intent);
         }
+    }
+
+    public final static int PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB = 0;
+    public final static int PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB = 1;
+    public final static int PATH_SNAPSHOT_MANUALLY = 2;
+    public final static int PATH_RECORD_MANUALLY = 3;
+    public final static int PATH_RECORD_DOWNLAND = 4;
+
+
+    public static String getFilePath(String uid, int type) {
+        String result = null;
+        File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
+        //自动抓拍
+        if (type == PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) {
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid);
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+            result = cameraFolder.getAbsoluteFile().toString();
+        } else if (type == PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) {
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.Remte_RECORDING_DIR);
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+            result = cameraFolder.getAbsoluteFile().toString();
+        } else if (type == PATH_SNAPSHOT_MANUALLY) {
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.SNAP_DIR);
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+            result = cameraFolder.getAbsoluteFile().toString();
+
+        } else if (type == PATH_RECORD_MANUALLY) {
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.RECORDING_DIR);
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+            result = cameraFolder.getAbsoluteFile().toString();
+        } else if (type == PATH_RECORD_DOWNLAND) {
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.Remte_RECORDING_DIR + "/download");
+            if (!cameraFolder.exists()) {
+                cameraFolder.mkdirs();
+            }
+            result = cameraFolder.getAbsoluteFile().toString();
+        }
+        return result;
     }
 }

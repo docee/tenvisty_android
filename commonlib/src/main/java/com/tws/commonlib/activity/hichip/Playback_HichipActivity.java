@@ -2,6 +2,7 @@ package com.tws.commonlib.activity.hichip;
 
 import android.Manifest;
 import android.animation.ValueAnimator;
+import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -47,6 +48,7 @@ import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
+import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.MyPlaybackGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
@@ -60,13 +62,17 @@ import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
+
 import android.widget.AdapterView.OnItemClickListener;
 
-public class Playback_HichipActivity extends BaseActivity implements IIOTCListener,  IPlayStateListener,View.OnTouchListener, View.OnClickListener {
+public class Playback_HichipActivity extends BaseActivity implements IIOTCListener, IPlayStateListener, View.OnTouchListener, View.OnClickListener {
 
     private final static int HANDLE_MESSAGE_PROGRESSBAR_RUN = 0x90000002;
     private final static int HANDLE_MESSAGE_SEEKBAR_RUN = 0x90000003;
@@ -113,7 +119,9 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
     private LinearLayout mLlCurrPro;
     private TextView mTvCurrPro, mTvPrecent;
     private boolean mIsEnd = false;
-    private boolean mFlag=false;
+    private boolean mFlag = false;
+    int eventType = 0;
+    boolean hasSaveSnapshot = false;
 
     @Override
     protected void onStart() {
@@ -139,13 +147,13 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
         oldStartTime = new byte[8];
         System.arraycopy(b_startTime, 0, oldStartTime, 0, 8);
         playback_time = bundle.getLong("pb_time");
-
+        eventType = bundle.getInt("event_type");
         startTimeLong = bundle.getLong(EventList_HichipActivity.VIDEO_PLAYBACK_START_TIME);
         endTimeLong = bundle.getLong(EventList_HichipActivity.VIDEO_PLAYBACK_END_TIME);
 
         for (IMyCamera camera : TwsDataValue.cameraList()) {
             if (camera.getUid().equals(uid)) {
-                mCamera = (HichipCamera)camera;
+                mCamera = (HichipCamera) camera;
                 break;
             }
         }
@@ -221,7 +229,7 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
                 int count = seekBar.getProgress();
                 int pre = count * 100 / progressTime;
                 if (pre < 1) {   //1.文件的时长的1%  （0-6） 秒重头开始播放   下面要的是整数
-                    if(!mIsEnd){
+                    if (!mIsEnd) {
                         mCamera.stopPlayback();
                         mCamera.startPlayback(new HiChipDefines.STimeDay(startTime, 0), mMonitor);
                     }
@@ -527,7 +535,10 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
                         prs_playing.setProgress(msg.arg1);
                     }
                     mTvStartTime.setText(sdf.format(new Date(msg.arg1 * 1000)));
-
+                    if (!hasSaveSnapshot) {
+                        hasSaveSnapshot = true;
+                        saveSnap();
+                    }
                     break;
                 case HiChipDefines.HI_P2P_PB_POS_SET:
                     // try {
@@ -608,7 +619,7 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
     }
 
     @Override
-    public void callbackState(IMyCamera camera,int channel, int state, int w, int h){
+    public void callbackState(IMyCamera camera, int channel, int state, int w, int h) {
         if (mCamera != camera)
             return;
 
@@ -665,6 +676,25 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
             }
         }
     }
+
+    private static boolean isSDCardValid() {
+
+        return Environment.getExternalStorageState().equals(
+                Environment.MEDIA_MOUNTED);
+    }
+
+    void saveSnap() {
+        if (mCamera != null) {
+            if (isSDCardValid()) {// 濡傛灉sd鍗″彲鐢�
+                if (!TwsTools.checkPermission(Playback_HichipActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
+                    return;
+                }
+                String filenameString = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, startTimeLong, eventType);// mCamera.getUid() + "_" + eventType + startCal.get(Calendar.YEAR) + (startCal.get(Calendar.MONTH) + 1) + startCal.get(Calendar.DAY_OF_MONTH) + "0" + startCal.get(Calendar.HOUR_OF_DAY) + startCal.get(Calendar.MINUTE) + startCal.get(Calendar.SECOND) + ".jpg";
+                mCamera.saveSnapShot(0, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, null);
+            }
+        }
+    }
+
 
     private float action_down_x;
     private float action_down_y;

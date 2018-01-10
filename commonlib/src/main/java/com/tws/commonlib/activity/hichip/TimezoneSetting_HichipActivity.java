@@ -101,7 +101,7 @@ public class TimezoneSetting_HichipActivity extends BaseActivity implements IIOT
                     desMode = enableDst;
                 }
                 else {
-                    desMode = TimeZone.getDefault().inDaylightTime(new Date())?1:0;
+                    desMode = 1;
                 }
                 camera.sendIOCtrl(HiChipDefines.HI_P2P_SET_TIME_ZONE, HiChipDefines.HI_P2P_S_TIME_ZONE.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, tz, desMode));
             }

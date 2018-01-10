@@ -187,7 +187,7 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
                 return -s.compareTo(t1);
             }
         });
-       // Collections.reverse(pathsrcs);
+        // Collections.reverse(pathsrcs);
     }
 
 
@@ -201,7 +201,11 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
             //Bitmap bitmap = BitmapFactory.decodeFile(path) ;
             Bitmap bitmap = null;
             if (path.endsWith(".jpg")) {
-                bitmap = BitmapFactory.decodeFile(path);
+                try {
+                    bitmap = BitmapFactory.decodeFile(path);
+                } catch (OutOfMemoryError error) {
+
+                }
             } else if (path.endsWith(".avi")) {
                 bitmap = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MICRO_KIND);
                 bitmap = ThumbnailUtils.extractThumbnail(bitmap, 60, 60);
@@ -348,22 +352,40 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
             Bitmap bmp = null;
 
             if (pathsrcs.get(position % (pathsrcs.size())).endsWith(".jpg")) {
-                bmp = BitmapFactory.decodeFile(pathsrcs.get(position % (pathsrcs.size())));
+                try {
+                    bmp = BitmapFactory.decodeFile(pathsrcs.get(position % (pathsrcs.size())));
+                } catch (OutOfMemoryError error) {
+
+                }
             } else if (pathsrcs.get(position % (pathsrcs.size())).endsWith(".avi")) {
-                bmp = ThumbnailUtils.createVideoThumbnail(pathsrcs.get(position % (pathsrcs.size())), MediaStore.Images.Thumbnails.MINI_KIND);
+                try {
+                    bmp = ThumbnailUtils.createVideoThumbnail(pathsrcs.get(position % (pathsrcs.size())), MediaStore.Images.Thumbnails.MINI_KIND);
+                }
+                catch (OutOfMemoryError error){
+
+                }
             }
 
             currentposition = (position % (pathsrcs.size()));//获取当前Gallery的位置在pathsrcs中的具体所对应的位置
             String filePath = pathsrcs.get(currentposition);
             String[] paths = filePath.split("/");
             String fileName = paths[paths.length - 1];
-            title.setTitle(fileName.substring((fileName.length() == 36?18:21), fileName.length()) + "(" + (currentposition + 1) + "/" + pathsrcs.size() + ")");
-            MyImageView view = new MyImageView(context, bmp.getWidth(), bmp.getHeight());
+            title.setTitle(fileName.substring((fileName.length() == 36 ? 18 : 21), fileName.length()) + "(" + (currentposition + 1) + "/" + pathsrcs.size() + ")");
+            int imgWidth;
+            int imgHeight;
+            if (bmp != null) {
+                imgHeight = bmp.getHeight();
+                imgWidth = bmp.getWidth();
+            } else {
+                imgHeight = 720;
+                imgWidth = 1280;
+            }
+            MyImageView view = new MyImageView(context, imgWidth, imgHeight);
             view.setLayoutParams(new Gallery.LayoutParams(LayoutParams.FILL_PARENT, LayoutParams.FILL_PARENT));
 
             if (pathsrcs.get(position % (pathsrcs.size())).endsWith(".avi")) {
-                view.setLayoutParams(new Gallery.LayoutParams(bmp.getWidth(), bmp.getHeight()));
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                view.setLayoutParams(new Gallery.LayoutParams(imgWidth, imgHeight));
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN && bmp != null) {
                     view.setBackground(new BitmapDrawable(bmp));
                 }
                 view.setImageResource(R.drawable.ic_menu_play_inverse_background);
@@ -430,7 +452,7 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
      * @param position
      */
     private void deleteImage(final int position) {
-        showYesNoDialog(R.string.dialog_msg_delete_local_pic_confirm,new DialogInterface.OnClickListener() {
+        showYesNoDialog(R.string.dialog_msg_delete_local_pic_confirm, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 switch (which) {

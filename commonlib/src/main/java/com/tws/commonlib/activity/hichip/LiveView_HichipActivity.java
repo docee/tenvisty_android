@@ -35,6 +35,8 @@ import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import com.hichip.base.HiLog;
+import com.hichip.content.HiChipDefines;
+import com.hichip.sdk.HiChipP2P;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
@@ -190,15 +192,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
     protected void onPause() {
         super.onPause();
         if (mCamera != null) {//鍋滄璇煶
-            mCamera.saveSnapShot(mSelectedChannel, null, mCamera.getUid(), new IMyCamera.TaskExecute() {
-                @Override
-                public void onPosted(IMyCamera c, Object data) {
-                    Intent intent = new Intent();
-                    intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
-                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
-                    LiveView_HichipActivity.this.sendBroadcast(intent);
-                }
-            });
+
             delayHandler.removeMessages(0);
             stopRecording();
             mCamera.stopVideo();
@@ -290,6 +284,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
 //            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
 //        }
 
+        setFunctions();
         videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
         lay_live_tools_top = (LinearLayout) findViewById(R.id.lay_live_tools_top);
         lay_live_tools_bottom = (LinearLayout) findViewById(R.id.lay_live_tools_bottom);
@@ -306,6 +301,46 @@ public class LiveView_HichipActivity extends BaseActivity implements
         lay_live_tools_bottom.setVisibility(visible ? View.VISIBLE : View.GONE);
         getBtn_talk().setVisibility((visible && playState.isListening()) ? View.VISIBLE : View.GONE);
         this.toolsVisible = visible;
+    }
+
+
+    private void setFunctions() {
+        if (((HichipCamera) camera).hasListen(LiveView_HichipActivity.this)) {
+            getBtn_listen().setVisibility(View.VISIBLE);
+        } else {
+            getBtn_talk().setVisibility(View.INVISIBLE);
+        }
+        if (findViewById(R.id.ll_talk) != null) {
+            if (((HichipCamera) camera).hasListen(LiveView_HichipActivity.this)) {
+                findViewById(R.id.ll_talk).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_talk).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_preset) != null) {
+            if (((HichipCamera) camera).hasPreset(LiveView_HichipActivity.this)) {
+                findViewById(R.id.ll_preset).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_preset).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_listen) != null) {
+            if (((HichipCamera) camera).hasListen(LiveView_HichipActivity.this)) {
+                findViewById(R.id.ll_listen).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_listen).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_zoom) != null) {
+            if (((HichipCamera) camera).hasZoom(LiveView_HichipActivity.this)) {
+                findViewById(R.id.ll_zoom).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_zoom).setVisibility(View.GONE);
+            }
+        }
     }
 
     /**
@@ -345,6 +380,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
 //            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
 //        }
 
+        setFunctions();
         videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
 
         getBtn_stream().setText(souceList[playState.getVideoQuality()]);
@@ -485,6 +521,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         bundle.putByteArray("data", data);
         Message msg = new Message();
         msg.arg1 = avIOCtrlMsgType;
+        msg.arg2 = avChannel;
         msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
         msg.setData(bundle);
         handler.sendMessage(msg);
@@ -521,7 +558,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
             switch (msg.what) {
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
                     if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
-                        mCamera.startLiveShow(mCamera.getVideoQuality(),monitor);
+                        mCamera.startLiveShow(mCamera.getVideoQuality(), monitor);
                     } else if (requestCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
                             NSCamera.CONNECTION_STATE_DISCONNECTED || requestCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
                         runOnUiThread(new Runnable() {
@@ -548,26 +585,13 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_IO_RESP:
                     switch (requestCode) {
-                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_RESP:
-                            presetList = new AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp(data);
-                            break;
-                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP:
-                            //success
-                            if (data[0] == 0) {
-                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_preset_set_succ));
-                                mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
+                        case HiChipDefines.HI_P2P_SET_PTZ_PRESET:
+                            if (msg.arg2 == 0) {
+                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_setting_succ));
                             } else {
-                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_preset_set_fail));
+                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_setting_failed));
                             }
-                            break;
-                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_RESP:
-                            //success
-                            if (data[0] == 0) {
-                                mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
-                                //TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_call_succ));
-                            } else {
-                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_preset_call_fail));
-                            }
+
                             break;
                     }
                     break;
@@ -737,8 +761,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     showAlert(getString(R.string.dialog_msg_no_permission));
                     return;
                 }
-                final String fileName = mCamera.getUid() + "_" + TwsTools.getFileNameWithTime(0);
-                mCamera.saveSnapShot(mSelectedChannel, TwsDataValue.SNAP_DIR, fileName, new IMyCamera.TaskExecute() {
+                final String fileName = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_MANUALLY);
+                mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_MANUALLY), fileName, new IMyCamera.TaskExecute() {
                     @Override
                     public void onPosted(IMyCamera c, Object data) {
                         String path = (String) data;
@@ -813,6 +837,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
             snap();
         } else if (view.getId() == R.id.btn_live_preset) {
             clickPreset((ImageView) view);
+        } else if (view.getId() == R.id.btn_live_zoom) {
+            clickZoom((ImageView) view);
         } else if (view.getId() == R.id.btn_event) {
 //            if (!isVideoShowing) {
 //                showAlert(getString(R.string.alert_camera_connected_failed));
@@ -1064,26 +1090,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
                 TwsTools.showAlertDialog(LiveView_HichipActivity.this);
                 return;
             }
-            //+appname + "/"
-            File rootFolder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/");
-//            File targetFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName());
-//            File videoFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/VideoRecording/");
-            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + (mCamera).getUid());
-//            if (!rootFolder.exists()) {
-//                rootFolder.mkdir();
-//            }
-//            if (!targetFolder.exists()) {
-//                targetFolder.mkdir();
-//            }
-//            if (!videoFolder.exists()) {
-//                videoFolder.mkdir();
-//            }
-            if (!cameraFolder.exists()) {
-                cameraFolder.mkdirs();
-            }
 
-
-            final String file = cameraFolder.getAbsoluteFile() + "/" + mCamera.getUid() + "_" + TwsTools.getFileNameWithTime(1);
+            String file = TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_RECORD_MANUALLY) + "/" + TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_RECORD_MANUALLY);
             filePath = file;
             setRecodingView();
             mCamera.startRecording(file, mSelectedChannel);
@@ -1133,9 +1141,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
                 }
             });
             isVideoShowing = false;
-        }
-
-        else if(state == 0) {
+        } else if (state == 0) {
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
@@ -1149,14 +1155,28 @@ public class LiveView_HichipActivity extends BaseActivity implements
             } else {
                 playState.setVideoQuality(1);
             }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
+                        @Override
+                        public void onPosted(IMyCamera c, Object data) {
+                            Intent intent = new Intent();
+                            intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+                            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
+                            LiveView_HichipActivity.this.sendBroadcast(intent);
+                        }
+                    });
+                }
+            });
         }
-        if (w != 0 && h != 0 && Math.abs(this.mCamera.getVideoRatio(LiveView_HichipActivity.this) - w / h) > 0.2) {
+        if (w != 0 && h != 0 && Math.abs(this.mCamera.getVideoRatio(LiveView_HichipActivity.this) - (float) w / h) > 0.2) {
             this.mCamera.setVideoRatio(LiveView_HichipActivity.this, (float) w / h);
             if (monitor != null) {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                       monitor.resizeVideoWrapper(LiveView_HichipActivity.this.mCamera);
+                        monitor.resizeVideoWrapper(LiveView_HichipActivity.this.mCamera);
                     }
                 });
             }
@@ -1283,16 +1303,16 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     }
                     setRecodingView();
                     break;
-                    //停止录像
+                //停止录像
                 case 1:
                     setRecodingView();
                     break;
-                    //录像失败
+                //录像失败
                 case 2:
                     showAlert(getString(R.string.alert_record_failed));
                     stopRecording();
                     break;
-                    //开始录像
+                //开始录像
                 case 3:
                     recordingHandler.postDelayed(recordingTask, 1000);
                     break;
@@ -1336,6 +1356,93 @@ public class LiveView_HichipActivity extends BaseActivity implements
 //        }
     }
 
+    //光学变焦
+    private void clickZoom(ImageView iv) {
+        @SuppressLint("InflateParams")
+        View customView = getLayoutInflater().inflate(R.layout.popview_zoom_focus, null, false);
+
+        mPopupWindow = new PopupWindow(customView);
+        ColorDrawable cd = new ColorDrawable(-0000);
+        mPopupWindow.setBackgroundDrawable(cd);
+        mPopupWindow.setOutsideTouchable(true);
+        mPopupWindow.setFocusable(true);
+        mPopupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+        mPopupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+
+        // width = 210 height = 90
+        int offsetx = TwsTools.dip2px(this, 20);
+        int location[] = new int[2];
+        iv.getLocationOnScreen(location);
+        int offsety = TwsTools.dip2px(this, 90);
+
+        mPopupWindow.showAtLocation(iv, 0, location[0] - offsetx, offsety - location[1]);
+
+        // 拉近操作
+        Button btnZoomin = (Button) customView.findViewById(R.id.btn_zoomin);
+        btnZoomin.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View arg0, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_ZOOMIN,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_STOP,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                }
+                return false;
+            }
+        });
+        // 拉远按钮
+        Button btnZoomout = (Button) customView.findViewById(R.id.btn_zoomout);
+        btnZoomout.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View arg0, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_ZOOMOUT,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_STOP,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                }
+                return false;
+            }
+        });
+        // 聚焦+
+        Button btnFocusin = (Button) customView.findViewById(R.id.btn_focusin);
+        btnFocusin.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View arg0, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_FOCUSIN,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_STOP,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                }
+                return false;
+            }
+        });
+        // 聚焦-
+        Button btnFocusout = (Button) customView.findViewById(R.id.btn_focusout);
+        btnFocusout.setOnTouchListener(new View.OnTouchListener() {
+
+            @Override
+            public boolean onTouch(View arg0, MotionEvent event) {
+                if (event.getAction() == MotionEvent.ACTION_DOWN) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_FOCUSOUT,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                } else if (event.getAction() == MotionEvent.ACTION_UP) {
+                    mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_CTRL, HiChipDefines.HI_P2P_S_PTZ_CTRL.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_CTRL_STOP,
+                            HiChipDefines.HI_P2P_PTZ_MODE_RUN, (short) HiLiveViewGLMonitor.PTZ_STEP, (short) 10));
+                }
+                return false;
+            }
+        });
+    }
 
     // 预设位
     private void clickPreset(ImageView iv) {
@@ -1403,7 +1510,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
                         select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
                     }
                 });
-                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp.parseContent(select_preset, "preset" + (select_preset)));
+                mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_PRESET,
+                        HiChipDefines.HI_P2P_S_PTZ_PRESET.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_PRESET_ACT_SET, select_preset));
             }
         });
         ((RadioButton) customView.findViewById(R.id.radio_quality_0)).performClick();
@@ -1413,7 +1521,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
             @Override
             public void onClick(View arg0) {
                 select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
-                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlPointOprReq.parseContent(select_preset, 0));
+                mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_PRESET,
+                        HiChipDefines.HI_P2P_S_PTZ_PRESET.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_PRESET_ACT_CALL, select_preset));
             }
         });
 
@@ -1423,7 +1532,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
             public void onClick(View view) {
                 ((RadioButton) customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).setTextColor(ContextCompat.getColor(LiveView_HichipActivity.this, R.color.lightestgray));
                 select_preset = Integer.parseInt((customView.findViewById(radio_group_preset.getCheckedRadioButtonId())).getTag().toString());
-                mCamera.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_OPR_PRESET_POINT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlPointOprReq.parseContent(select_preset, 1));
+                mCamera.sendIOCtrl(HiChipDefines.HI_P2P_SET_PTZ_PRESET,
+                        HiChipDefines.HI_P2P_S_PTZ_PRESET.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, HiChipDefines.HI_P2P_PTZ_PRESET_ACT_DEL, select_preset));
             }
         });
 

@@ -101,7 +101,10 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
         //lytp.gravity=Gravity.CENTER_VERTICAL;
         //tv.setLayoutParams(lytp);
     }
-
+    public void setRightBtnBackgroundNormal(int res){
+        Button tv = (Button)findViewById(R.id.btn_finish);
+        tv.setBackgroundResource(res);
+    }
     public void setRightBtn2Text(String str){
         TextView tv = (TextView)findViewById(R.id.btn_finish2);
         tv.setText(str);

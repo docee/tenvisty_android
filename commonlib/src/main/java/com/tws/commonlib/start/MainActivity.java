@@ -15,6 +15,8 @@ import android.view.WindowManager;
 import com.hichip.base.HiLog;
 import com.hichip.sdk.HiChipSDK;
 import com.tws.commonlib.R;
+import com.tws.commonlib.bean.HichipCamera;
+import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.push.RedirectAdapter;
 import com.tws.commonlib.view.AppUpdateView;
 
@@ -40,6 +42,22 @@ public class MainActivity extends AppCompatActivity {
 		@Override
 		public void handleMessage(Message msg) {
 			switch (msg.what) {
+				case 0:
+					if(HichipCamera.IsP2PInited){
+						AppUpdateView updateView  = new AppUpdateView(MainActivity.this.context,MainActivity.this);
+						updateView.checkNewVersion();
+					}
+					else{
+						if(System.currentTimeMillis() - initSdkTime > 1000*5){
+							HichipCamera.unInitP2P();
+							HichipCamera.initP2P();
+							this.sendEmptyMessageDelayed(0,2000);
+						}
+						else {
+							this.sendEmptyMessageDelayed(0, 100);
+						}
+					}
+					break;
 			}
 		}
 	};
@@ -50,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
 			this.finish();
 			return;
 		}
+		initSdkTime = System.currentTimeMillis();
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
 				WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		setContentView(R.layout.activity_splash);
@@ -80,14 +99,7 @@ public class MainActivity extends AppCompatActivity {
 
 		//Activity鐣岄潰鍒囨崲鍔ㄧ敾
 		overridePendingTransition(R.anim.mainfadein, R.anim.splashfadeout);
-		handler.postDelayed(new Runnable() {
-			@Override
-			public void run() {
-				// requestEnd();
-				AppUpdateView updateView  = new AppUpdateView(MainActivity.this.context,MainActivity.this);
-				updateView.checkNewVersion();
-			}
-		}, 2000);
+		handler.sendEmptyMessageDelayed(0,300);
 
 
 	}

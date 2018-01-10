@@ -388,6 +388,36 @@ public class DatabaseManager {
         return ratio;
     }
 
+    public long updateDeviceServerData(String dev_uid, String data) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("dev_value", data);
+        long ret = -1;
+        ret = db.update(TABLE_DICTION, values, "dev_uid = '" + dev_uid + "' and dev_key='DEVICE_SERVER_DATA'", null);
+        if (ret <= 0) {
+            values.put("dev_uid", dev_uid);
+            values.put("dev_key", "DEVICE_VIDEO_RATIO");
+            ret = db.insertOrThrow(TABLE_DICTION, null, values);
+        }
+        db.close();
+        return ret;
+    }
+
+    public String getDeviceServerData(String dev_uid) {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+        String[] selectionArgs = {dev_uid, "DEVICE_SERVER_DATA"};
+        Cursor cursor = db.query(DatabaseManager.TABLE_DICTION, new String[]{
+                "dev_value"}, "dev_uid=? and dev_key=?", selectionArgs, null, null, null);
+        String data = null;
+        while (cursor.moveToNext()) {
+            data = cursor.getString(cursor.getColumnIndex("dev_value"));
+            break;
+        }
+        cursor.close();
+        db.close();
+        return data;
+    }
+
     public long updateDeviceFunction(String dev_uid, byte[] function) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();

@@ -1,6 +1,6 @@
 <resources>
     <string name="title_home">Home</string>
-    <string name="filter_vcode">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ</string>
+    <string name="filter_vcode">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-</string>
     <!--App update  -->
     <string name="app_update_have_nonewversion">This is the latest version</string>
     <string name="app_update_current_version">Current version：</string>
@@ -42,6 +42,7 @@
     <string name="on">ON</string>
     <string name="off">OFF</string>
     <string name="finish">Finish</string>
+    <string name="download">Download</string>
 
 
     <string name="title_camera_list">Camera List</string>
@@ -269,6 +270,11 @@
     <string name="btn_preset_8">8</string>
     <string name="btn_time_adjust">Tap to adjust time</string>
 
+    <string name="btn_ptz_zoomin">Zoom in</string>
+    <string name="btn_ptz_zoomout">Zoom out</string>
+    <string name="btn_ptz_focusout">Focus out</string>
+    <string name="btn_ptz_focusin">Focus in</string>
+
     <string name="alert_all_field_can_not_empty">Please complete each password.</string>
     <string name="alert_old_password_is_wrong">The old password is wrong.</string>
     <string name="alert_new_passwords_do_not_match">New Password does not match.</string>
@@ -347,6 +353,8 @@
     <string name="tips_reseting_wait">Resetting...</string>
     <string name="tips_upgrading_wait">Upgrading...</string>
     <string name="tips_upgrading_percent">Upgrading %s%%</string>
+    <string name="tips_no_sdcard">No SDCard found in your device.</string>
+    <string name="tip_alear_dowm">The video has been downloaded yet</string>
 
     <string name="tips_device_time_setting_synchroned_time">Synchronization Time Successfully </string>
     <string name="hint_mail_setting_sender">Email</string>

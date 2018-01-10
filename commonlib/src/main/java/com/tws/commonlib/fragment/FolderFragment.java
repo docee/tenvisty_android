@@ -24,6 +24,7 @@ import com.tws.commonlib.R;
 import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.base.FolderInfoModel;
 import com.tws.commonlib.base.MyConfig;
+import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
@@ -62,8 +63,7 @@ public class FolderFragment extends BaseFragment {
     private String getImagesPath(String dev_uid) {
         String imagesPath = null;
         if (imagesPath == null) {
-            File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.SNAP_DIR + "/" + dev_uid);// 鍥剧墖鏂囦欢鐩綍
-            imagesPath = folder.getAbsolutePath();
+            imagesPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_MANUALLY);
         }
         return imagesPath;
     }
@@ -71,8 +71,7 @@ public class FolderFragment extends BaseFragment {
     private String getVideosPath(String dev_uid) {
         String videosPath = null;
         if (videosPath == null) {
-            File folder = new File(Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + TwsDataValue.RECORDING_DIR + "/" + dev_uid);// 鍥剧墖鏂囦欢鐩綍
-            videosPath = folder.getAbsolutePath();
+            videosPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_MANUALLY);
         }
         return videosPath;
     }
@@ -87,7 +86,7 @@ public class FolderFragment extends BaseFragment {
             photos = photoFolder.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File file) {
-                    return file.isDirectory() || (file.getName().length() == 39);
+                    return file.isDirectory() || ((file.getName().length() == 36) || (file.getName().length() == 39));
                 }
             });
             if (photos != null) {
@@ -104,7 +103,7 @@ public class FolderFragment extends BaseFragment {
             videos = videoFolder.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File file) {
-                    return file.isDirectory() || (file.getName().length() == 39);
+                    return file.isDirectory() || ((file.getName().length() == 36) || (file.getName().length() == 39));
                 }
             });
             if (videos != null) {
@@ -167,12 +166,12 @@ public class FolderFragment extends BaseFragment {
 //                if (m.videoCount + m.photoCount == 0) {
 //                    TwsToast.showToast(FolderFragment.this.getContext(), getString(R.string.tips_no_photo_video));
 //                } else {
-                    Bundle extras = new Bundle();
-                    extras.putString(TwsDataValue.EXTRA_KEY_UID, m.uid);
-                    Intent intent = new Intent();
-                    intent.putExtras(extras);
-                    intent.setClass(getActivity(), CameraFolderActivity.class);
-                    startActivity(intent);
+                Bundle extras = new Bundle();
+                extras.putString(TwsDataValue.EXTRA_KEY_UID, m.uid);
+                Intent intent = new Intent();
+                intent.putExtras(extras);
+                intent.setClass(getActivity(), CameraFolderActivity.class);
+                startActivity(intent);
                 //}
             }
         });
@@ -244,8 +243,14 @@ public class FolderFragment extends BaseFragment {
                 if (model.thumbPath != null) {
                     BitmapFactory.Options bfo = new BitmapFactory.Options();
                     bfo.inSampleSize = 4;// 1/4宽高
-                    Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
-                    holder.img_snap.setImageBitmap(bmp);
+                    try {
+                        Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
+                        holder.img_snap.setImageBitmap(bmp);
+                    }catch (OutOfMemoryError error){
+                        holder.img_snap.setImageResource(R.drawable.default_img);
+                    }
+                } else {
+                    holder.img_snap.setImageResource(R.drawable.default_img);
                 }
             }
 

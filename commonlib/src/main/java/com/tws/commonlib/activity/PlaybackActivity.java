@@ -538,8 +538,8 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                 if (!TwsTools.checkPermission(PlaybackActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)) {
                     return;
                 }
-                String filenameString = mDevUID + "_" + mEvtType + mEvtTime2.year + mEvtTime2.month + mEvtTime2.day + mEvtTime2.wday + mEvtTime2.hour + mEvtTime2.minute + mEvtTime2.second + ".jpg";
-                mCamera.saveSnapShot(mPlaybackChannel, TwsDataValue.Remte_RECORDING_DIR, filenameString, null);
+                String filenameString = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, mEvtTime2.getTimeInMillis(), mEvtType);//  mDevUID + "_" + mEvtType + mEvtTime2.year + mEvtTime2.month + mEvtTime2.day + mEvtTime2.wday + mEvtTime2.hour + mEvtTime2.minute + mEvtTime2.second + ".jpg";
+                mCamera.saveSnapShot(mPlaybackChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, null);
             }
         }
     }
@@ -670,7 +670,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                                 mMediaState = MEDIA_STATE_PLAYING;
 
                                 if (mCamera != null) {
-                                    ((MyCamera)mCamera).startChannel(mPlaybackChannel, mCamera.getAccount(), mCamera.getPassword());
+                                    ((MyCamera) mCamera).startChannel(mPlaybackChannel, mCamera.getAccount(), mCamera.getPassword());
                                 }
                                 refreshButton();
                                 handler.removeMessages(PLAY_TIMEOUT);
@@ -757,9 +757,9 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                     mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_RECORD_PLAYCONTROL, AVIOCTRLDEFs.SMsgAVIoctrlPlayRecord.parseContent(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.AVIOCTRL_RECORD_PLAY_STOP, 0, mEvtTime2.toByteArray()));
                     // mCamera.stop(channel);
                     TwsToast.showToast(PlaybackActivity.this, "timeout");
-                    mCamera.asyncStopChannel(mPlaybackChannel,new IMyCamera.TaskExecute() {
+                    mCamera.asyncStopChannel(mPlaybackChannel, new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(IMyCamera c,Object data) {
+                        public void onPosted(IMyCamera c, Object data) {
                             mPlaybackChannel = -1;
                             mMediaState = MEDIA_STATE_STOPPED;
                             c.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_RECORD_PLAYCONTROL, AVIOCTRLDEFs.SMsgAVIoctrlPlayRecord.parseContent(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.AVIOCTRL_RECORD_PLAY_START, 0, mEvtTime2.toByteArray()));
@@ -846,9 +846,9 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                 if (snap == null && mEvtTime2 != null) {
                     saveSnap();
                 }
-                if (w != 0 && h != 0 &&Math.abs(this.mCamera.getVideoRatio(PlaybackActivity.this) - w / h) > 0.2) {
+                if (w != 0 && h != 0 && Math.abs(this.mCamera.getVideoRatio(PlaybackActivity.this) - (float) w / h) > 0.2) {
                     this.mCamera.setVideoRatio(PlaybackActivity.this, (float) w / h);
-                    if(monitor != null){
+                    if (monitor != null) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {

@@ -57,6 +57,7 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
     @Override
     protected void initView() {
         super.initView();
+        setFunction();
         togbtn_reverse = (ToggleButton) findViewById(R.id.togbtn_reverse);
         togbtn_inverse = (ToggleButton) findViewById(R.id.togbtn_inverse);
         //togbtn_alarm_led = (ToggleButton) findViewById(R.id.togbtn_alarm_led);
@@ -229,6 +230,15 @@ public class OtherSetting_HichipActivity extends BaseActivity implements IIOTCLi
         else if(view.getId() == R.id.ll_setAudio){
             intent.setClass(this, AudioSetting_HichipActivity.class);
             startActivityForResult(intent, getRequestCode(R.id.ll_setAudio));
+        }
+    }
+
+    public  void  setFunction(){
+        if(camera.hasSDSlot(OtherSetting_HichipActivity.this)){
+            findViewById(R.id.ll_setSDCard).setVisibility(View.VISIBLE);
+        }
+        else{
+            findViewById(R.id.ll_setSDCard).setVisibility(View.GONE);
         }
     }
 

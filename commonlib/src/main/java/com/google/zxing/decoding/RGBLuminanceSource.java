@@ -94,7 +94,13 @@ public final class RGBLuminanceSource extends LuminanceSource {
 	}
 
 	private static Bitmap loadBitmap(String path) throws FileNotFoundException {
-		Bitmap bitmap = BitmapFactory.decodeFile(path);
+		Bitmap bitmap = null;
+		try {
+			bitmap = BitmapFactory.decodeFile(path);
+		}
+		catch (OutOfMemoryError error){
+
+		}
 		if (bitmap == null) {
 			throw new FileNotFoundException("Couldn't open " + path);
 		}

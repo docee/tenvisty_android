@@ -5,9 +5,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
+import com.hichip.base.SharePreUtils;
+import com.hichip.push.HiPushSDK;
 import com.tencent.android.tpush.XGLocalMessage;
 import com.tencent.android.tpush.XGPushBaseReceiver;
 import com.tencent.android.tpush.XGPushClickedResult;
+import com.tencent.android.tpush.XGPushConfig;
 import com.tencent.android.tpush.XGPushManager;
 import com.tencent.android.tpush.XGPushRegisterResult;
 import com.tencent.android.tpush.XGPushShowedResult;
@@ -19,6 +22,7 @@ import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 
@@ -105,7 +109,7 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
         String uid = null;
         int type = 0;
         int time = 0;
-        NSCamera camera = null;
+        IMyCamera camera = null;
         if (key != null) {
             try {
                 JSONObject arrJson = new JSONObject(key);
@@ -114,7 +118,26 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
                 uid = conJson.getString("uid");
                 type = conJson.getInt("type");
                 time = conJson.getInt("time");
-                TwsTools.showAlarmNotification(arg0,uid, 1, System.currentTimeMillis());
+                int result = TwsTools.showAlarmNotification(arg0,uid, 1, System.currentTimeMillis());
+                camera = IMyCamera.MyCameraFactory.shareInstance().createCamera("",uid,"admin","admin");
+                if(result == -2 && camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
+                    mContext = arg0;
+                    mUid = uid;
+                    int subId = SharePreUtils.getInt("subId", arg0, uid);
+                    String server = " ";
+                    if (handSubXYZ(uid)) {
+                        server = TwsDataValue.CAMERA_ALARM_ADDRESS_THERE;
+                    } else {
+                        server = TwsDataValue.CAMERA_ALARM_ADDRESS;
+                    }
+                    pushSDK = new HiPushSDK(XGPushConfig.getToken(arg0), uid, TwsDataValue.company(), pushResult, server);
+                    if (subId > 0) {
+                        pushSDK.unbind(subId);
+                    } else {
+                        pushSDK.bind();
+                    }
+                    return;
+                }
             } catch (JSONException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -139,6 +162,45 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
 //            XGPushManager.setTag(arg0,((MyCamera) camera).getUid());
 //            XGPushManager.addLocalNotification(arg0, local_msg);
         }
+    }
+
+    private HiPushSDK pushSDK;
+    private Context mContext;
+    private String mUid;
+
+    private HiPushSDK.OnPushResult pushResult = new HiPushSDK.OnPushResult() {
+
+        @Override
+        public void pushBindResult(int subID, int type, int result) {
+            if (type == HiPushSDK.PUSH_TYPE_BIND) {
+                if (HiPushSDK.PUSH_RESULT_SUCESS == result) {
+                    if (pushSDK != null)
+                        pushSDK.unbind(subID);
+                    SharePreUtils.removeKey("subId", mContext, mUid);
+                } else if (HiPushSDK.PUSH_RESULT_FAIL == result || HiPushSDK.PUSH_RESULT_NULL_TOKEN == result) {
+                }
+            } else if (type == HiPushSDK.PUSH_TYPE_UNBIND) {
+                if (HiPushSDK.PUSH_RESULT_SUCESS == result) {
+                    SharePreUtils.removeKey("subId", mContext, mUid);
+                } else if (HiPushSDK.PUSH_RESULT_FAIL == result) {
+                }
+            }
+        }
+    };
+
+    /**
+     * 处理UID前缀为XXX YYYY ZZZ
+     *
+     * @return 如果是则返回 true
+     */
+    public boolean handSubXYZ(String uid) {
+        String subUid = uid.substring(0, 4);
+        for (String str : TwsDataValue.SUBUID) {
+            if (str.equalsIgnoreCase(subUid)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

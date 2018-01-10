@@ -73,19 +73,24 @@ public class LocalPichumbImgTask extends AsyncTask<String, Void, String> {
                 filePath = thumbPath;
             }
         }
-        final Bitmap bitmap = BitmapFactory.decodeFile(filePath, bfo);
-        if (bitmap != null) {
+        try {
+            final Bitmap bitmap = BitmapFactory.decodeFile(filePath, bfo);
+            if (bitmap != null) {
 //        else {
 //            File file = new File(filePath);
 //            file.delete();
 //        }
 
-            if (itemView != null) {
-                if (te != null) {
-                    te.onCreated(itemView, filePath, bitmap);
+                if (itemView != null) {
+                    if (te != null) {
+                        te.onCreated(itemView, filePath, bitmap);
+                    }
                 }
             }
+        }catch (OutOfMemoryError error){
+
         }
+
         return null;
     }
 

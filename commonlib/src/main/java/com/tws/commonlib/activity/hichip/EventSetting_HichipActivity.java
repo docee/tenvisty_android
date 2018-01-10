@@ -35,6 +35,8 @@ import org.json.JSONObject;
  */
 public class EventSetting_HichipActivity extends BaseActivity implements IIOTCListener {
     private static final int SENSITIVITY_SET = 0xA1;
+    private static final int MAIL_SET = 0xA2;
+    private static final int FTP_SET = 0xA3;
     private String dev_uid;
     ToggleButton togbtn_push;
     ToggleButton togbtn_sdrecord;
@@ -165,12 +167,13 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
         hideLoadingView(R.id.togbtn_push);
         togbtn_push.setEnabled(true);
         togbtn_push.setChecked(camera.isPushOpen());
+        getEventSetting();
     }
 
     public  void onResume(){
         super.onResume();
         camera.registerIOTCListener(this);
-        getEventSetting();
+       //getEventSetting();
     }
 
     public void getEventSetting() {
@@ -180,23 +183,6 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
         togbtn_ftp_pic.setEnabled(false);
         togbtn_ftp_video.setEnabled(false);
         camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_ALARM_PARAM, null);
-    }
-
-    public void clickLine(View view){
-        if(param != null) {
-            Intent intent = new Intent();
-            intent.putExtras(this.getIntent());
-            if (view.getId() == R.id.ll_ftpSetting) {
-                camera.unregisterIOTCListener(this);
-                intent.setClass(this, FTPSetting_HichipActivity.class);
-                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
-            } else if (view.getId() == R.id.ll_emailSetting) {
-                camera.unregisterIOTCListener(this);
-                intent.putExtra("enabel", param.u32EmailSnap);
-                intent.setClass(this, MailSetting_HichipActivity.class);
-                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
-            }
-        }
     }
 
     public void setEventSetting() {
@@ -227,6 +213,22 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
             requestCode = SENSITIVITY_SET;
             intent.setClass(this, SensitivitySetting_HichipActivity.class);
         }
+        else if(view.getId() == R.id.ll_emailSetting){
+            if(param != null) {
+                camera.unregisterIOTCListener(this);
+                requestCode = MAIL_SET;
+                intent.putExtra("enabel", param.u32EmailSnap);
+                intent.setClass(this, MailSetting_HichipActivity.class);
+            }
+        }
+        else if (view.getId() == R.id.ll_ftpSetting) {
+            if(param != null) {
+                camera.unregisterIOTCListener(this);
+                requestCode = FTP_SET;
+                intent.setClass(this, FTPSetting_HichipActivity.class);
+                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
+            }
+        }
         startActivityForResult(intent, requestCode);
         //startActivity(intent);
     }
@@ -240,7 +242,13 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                 txt_sens.setText(sensLevelList[4 - level]);
             }
         }
-
+        else if(requestCode == MAIL_SET){
+            int isEmailOn = data.getIntExtra("intEnable", -1);
+            if(isEmailOn != -1){
+                param.u32EmailSnap = isEmailOn;
+                txt_email.setText(param.u32EmailSnap == 1 ? getString(R.string.on) :  getString(R.string.off));
+            }
+        }
     }
 
     void setPush(boolean push) {

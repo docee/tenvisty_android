@@ -233,6 +233,9 @@ public class MyConfig {
     public static void setUmPushAppSecret(String umPushAppSecret) {
         MyConfig.umPushAppSecret = umPushAppSecret;
     }
+    public static String getXinggeCompanyName(){
+        return "tenvisty";
+    }
     //    /**
 //     * logo图标的资源id
 //     */

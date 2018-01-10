@@ -42,10 +42,10 @@ public class App extends Application {
         CustomCrashHandler mCustomCrashHandler = CustomCrashHandler.getInstance();
         mCustomCrashHandler.setCustomCrashHanler(getApplicationContext());
 
+        HichipCamera.initP2P();
         //注册推送
         MyCamera.initPushSDK(this);
         MyCamera.initP2P();
-        HichipCamera.initP2P();
     }
 
 

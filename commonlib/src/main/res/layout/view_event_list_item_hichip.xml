@@ -114,6 +114,12 @@
 					android:layout_marginRight="15dp"
 					android:background="@drawable/view_event_record" />
 			</LinearLayout>
+			<ImageView
+				android:id="@+id/img_select"
+				android:layout_width="24dp"
+				android:layout_height="24dp"
+				android:layout_marginRight="15dp"
+				android:src="@drawable/checkbox_selector" />
 		</LinearLayout>
 	</LinearLayout>
 </LinearLayout>

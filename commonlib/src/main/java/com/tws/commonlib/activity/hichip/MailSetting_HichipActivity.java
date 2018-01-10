@@ -2,12 +2,14 @@ package com.tws.commonlib.activity.hichip;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
@@ -66,6 +68,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
     boolean preOpen;
     boolean isChecking = false;
     private HiChipDefines.HI_P2P_S_ALARM_PARAM alarmParam;
+    private boolean isSetting = false;
     /**
      * 存放一些默认的邮箱类
      */
@@ -87,6 +90,12 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
         this.setTitle(getString(R.string.title_mail_setting));
         initView();
         camera.registerIOTCListener(this);
+    }
+
+    @Override
+    public void finish(){
+        super.finish();
+        quit();
     }
 
     @Override
@@ -227,7 +236,6 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
             camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_EMAIL_PARAM, new byte[0]);
         }
     }
-
     void setMailSetting(boolean check) {
         if(param != null) {
             if(check){
@@ -236,6 +244,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
             else{
                 showLoadingProgress(getString(R.string.process_setting));
             }
+            isSetting = true;
             if (preOpen != togbtn_open.isChecked()) {
                 camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_ALARM_PARAM, null);
             } else {
@@ -272,6 +281,12 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
         }
     }
 
+
+    private  void  quit(){
+        if (camera != null) {
+            camera.unregisterIOTCListener(this);
+        }
+    }
 
     @Override
     public void onDestroy() {
@@ -343,14 +358,19 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
 
             switch (msg.what) {
                 case HiChipDefines.HI_P2P_GET_ALARM_PARAM: {
-                    alarmParam = new HiChipDefines.HI_P2P_S_ALARM_PARAM(data);
-                    alarmParam.u32EmailSnap = togbtn_open.isChecked() ? 1 : 0;
-                    camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_ALARM_PARAM, alarmParam.parseContent());
+                    if(isSetting) {
+                        alarmParam = new HiChipDefines.HI_P2P_S_ALARM_PARAM(data);
+                        alarmParam.u32EmailSnap = togbtn_open.isChecked() ? 1 : 0;
+                        camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_ALARM_PARAM, alarmParam.parseContent());
+                    }
                 }
                 break;
                 case HiChipDefines.HI_P2P_SET_ALARM_PARAM:
-                    preOpen = alarmParam.u32EmailSnap == 1;
-                    setMailSetting(false);
+                    if(isSetting) {
+                        preOpen = alarmParam.u32EmailSnap == 1;
+                        MailSetting_HichipActivity.this.setResult(RESULT_OK,new Intent().putExtra("intEnable",alarmParam.u32EmailSnap));
+                        setMailSetting(false);
+                    }
                     break;
                 case HiChipDefines.HI_P2P_GET_EMAIL_PARAM:
                     dismissLoadingProgress();
@@ -487,7 +507,20 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
 
         camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USEREX_IPCAM_GET_MAIL_STATUS_REQ, AVIOCTRLDEFs.SMsgAVIoctrlExGetMailStatusReq.parseContent());
     }
+    /**
+     * 提示连续两次点击两次返回则退出应用
+     */
+    int press_exit_num = 2;
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            quit();
+
+        }
+
+        return super.onKeyDown(keyCode, event);
+    }
 
     public static class HI_P2P_S_EMAIL_PARAM_EXT2 {
         public HI_P2P_S_EMAIL_PARAM2 email_param;

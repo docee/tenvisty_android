@@ -44,6 +44,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
     private HichipCamera camera;
     String[] timezoneSourceList;
     TextView txt_timezone;
+    TextView txt_time;
     int accTimezoneIndex = -999;
     ToggleButton togbtn_dst;
     LinearLayout ll_setdst;
@@ -76,10 +77,11 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
         txt_timezone = (TextView) findViewById(R.id.txt_timezone);
         togbtn_dst = (ToggleButton) findViewById(R.id.togbtn_dst);
         ll_setdst = (LinearLayout) findViewById(R.id.ll_setdst);
+        txt_time = (TextView)findViewById(R.id.txt_time);
         //adapter.notifyDataSetChanged();
         togbtn_dst.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onCheckedChanged(CompoundButton compoundButton,final boolean b) {
+            public void onCheckedChanged(CompoundButton compoundButton, final boolean b) {
                 if (compoundButton.isPressed()) {
                     showYesNoDialog(R.string.alert_device_time_setting_reboot_camera, new DialogInterface.OnClickListener() {
                         @Override
@@ -112,7 +114,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
         if (camera != null && accTimezoneIndex != -999) {
             showLoadingProgress();
             if (mIsSupportZoneExt) {
-                int desMode = enable?1:0;
+                int desMode = enable ? 1 : 0;
                 byte[] byte_time = HiDefaultData.TimeZoneField1[accTimezoneIndex][0].getBytes();
 
                 if (byte_time.length <= 32) {
@@ -121,7 +123,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                 }
             } else {
                 int tz = HiDefaultData.TimeZoneField[accTimezoneIndex][0];
-                int desMode = enable?1:0;
+                int desMode = enable ? 1 : 0;
                 camera.sendIOCtrl(HiChipDefines.HI_P2P_SET_TIME_ZONE, HiChipDefines.HI_P2P_S_TIME_ZONE.parseContent(HiChipP2P.HI_P2P_SE_CMD_CHN, tz, desMode));
             }
         }
@@ -140,12 +142,14 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
         showLoadingProgress();
         if (camera != null) {
             showLoadingView(R.id.txt_timezone);
+            showLoadingView(R.id.txt_time);
             showLoadingView(R.id.togbtn_dst);
             if (mIsSupportZoneExt) {// 支持新时区
                 camera.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_ZONE_EXT, new byte[0]);
             } else {
                 camera.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_ZONE, new byte[0]);
             }
+            camera.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_PARAM, null);
         }
     }
 
@@ -219,6 +223,14 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
             byte[] data = bundle.getByteArray("data");
 
             switch (msg.what) {
+                case HiChipDefines.HI_P2P_GET_TIME_PARAM:
+                    dismissLoadingProgress();
+                    hideLoadingView(R.id.txt_time);
+                    if (data != null && data.length >= 24) {
+                        HiChipDefines.HI_P2P_S_TIME_PARAM dt = new HiChipDefines.HI_P2P_S_TIME_PARAM(data);
+                        txt_time.setText(String.format("%d-%d-%d %d:%d:%d", dt.u32Year, dt.u32Month, dt.u32Day, dt.u32Hour, dt.u32Minute, dt.u32Second));
+                    }
+                    break;
                 case HiChipDefines.HI_P2P_GET_TIME_ZONE_EXT:// 新时区
                     dismissLoadingProgress();
                     if (data != null && data.length >= 36) {
@@ -269,9 +281,12 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
 
                     break;
                 case HiChipDefines.HI_P2P_SET_TIME_PARAM:
-
-                    dismissLoadingProgress();
-                    TwsToast.showToast(TimeSetting_HichipActivity.this, getString(R.string.tips_device_time_setting_synchroned_time));
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            camera.sendIOCtrl(HiChipDefines.HI_P2P_GET_TIME_PARAM, null);
+                        }
+                    }, 2000);
 
                     break;
                 case HiChipDefines.HI_P2P_SET_TIME_ZONE_EXT:
@@ -287,7 +302,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     break;
                 case HiChipDefines.HI_P2P_SET_REBOOT:
                     dismissLoadingProgress();
-                    TwsToast.showToast(TimeSetting_HichipActivity.this,getString(R.string.reboot));
+                    TwsToast.showToast(TimeSetting_HichipActivity.this, getString(R.string.reboot));
                     TimeSetting_HichipActivity.this.back2Activity(MainActivity.class);
                     break;
 
@@ -330,8 +345,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                         } else {
                             ll_setdst.setVisibility(View.GONE);
                         }
-                    }
-                    else{
+                    } else {
                         if (HiDefaultData.TimeZoneField[accTimezoneIndex][1] == 1) {
                             ll_setdst.setVisibility(View.VISIBLE);
                         } else {
@@ -345,7 +359,6 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                 break;
         }
     }
-
 
 
 }

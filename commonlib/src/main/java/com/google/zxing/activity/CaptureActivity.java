@@ -261,13 +261,21 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true; // 先获取原大小
-        scanBitmap = BitmapFactory.decodeFile(path, options);
+        try {
+            scanBitmap = BitmapFactory.decodeFile(path, options);
+        }catch (OutOfMemoryError error){
+            return null;
+        }
         options.inJustDecodeBounds = false; // 获取新的大小
         int sampleSize = (int) (options.outHeight / (float) 200);
         if (sampleSize <= 0)
             sampleSize = 1;
         options.inSampleSize = sampleSize;
-        scanBitmap = BitmapFactory.decodeFile(path, options);
+        try {
+            scanBitmap = BitmapFactory.decodeFile(path, options);
+        }catch (OutOfMemoryError error){
+            return null;
+        }
         RGBLuminanceSource source = new RGBLuminanceSource(scanBitmap);
         BinaryBitmap bitmap1 = new BinaryBitmap(new HybridBinarizer(source));
         QRCodeReader reader = new QRCodeReader();

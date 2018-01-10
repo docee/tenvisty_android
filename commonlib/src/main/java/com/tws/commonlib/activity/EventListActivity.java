@@ -461,14 +461,14 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
     @Override
     public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
-            Bundle bundle = new Bundle();
-            bundle.putInt("sessionChannel", avChannel);
-            bundle.putByteArray("data", data);
+        Bundle bundle = new Bundle();
+        bundle.putInt("sessionChannel", avChannel);
+        bundle.putByteArray("data", data);
 
-            Message msg = new Message();
-            msg.what = avIOCtrlMsgType;
-            msg.setData(bundle);
-            handler.sendMessage(msg);
+        Message msg = new Message();
+        msg.what = avIOCtrlMsgType;
+        msg.setData(bundle);
+        handler.sendMessage(msg);
     }
 
     @Override
@@ -622,16 +622,14 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
             //Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_FILES.get(position),bfo) ;
             Bitmap bitmap = null;
-            File rootFolder = new File(Environment
-                    .getExternalStorageDirectory().getAbsolutePath()
-                    + "/" + MyConfig.getFolderName() + "/");
-            File rootFolder1 = new File(rootFolder.getAbsolutePath()
-                    + "/Remote/");
-            File targetFolder = new File(rootFolder1.getAbsolutePath()
-                    + "/" + dev_uid);
-            String filenameString = dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
-            String fullFileNamePath = targetFolder.getAbsolutePath() + "/" + filenameString;
-            bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+
+            String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.EventTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
+            String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
+            try {
+                bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+            } catch (OutOfMemoryError error) {
+
+            }
             if (bitmap != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                     holder.img_event_image.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bitmap));
