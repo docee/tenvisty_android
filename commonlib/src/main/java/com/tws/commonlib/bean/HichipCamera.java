@@ -17,6 +17,7 @@ import com.hichip.callback.ICameraIOSessionCallback;
 import com.hichip.callback.ICameraPlayStateCallback;
 import com.hichip.content.HiChipDefines;
 import com.hichip.control.HiCamera;
+import com.hichip.control.HiGLMonitor;
 import com.hichip.push.HiPushSDK;
 import com.hichip.sdk.HiChipP2P;
 import com.hichip.sdk.HiChipSDK;
@@ -132,10 +133,6 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         return false;
     }
 
-    @Override
-    public boolean isPlaying() {
-        return false;
-    }
 
     @Override
     public CameraState getState() {
@@ -244,6 +241,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public void stop() {
+        setPlaying(false);
         super.disconnect();
     }
 
@@ -277,6 +275,46 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     }
 
+    AsyncTask startVideoTask;
+
+    public void asyncStartVideo(final HiGLMonitor monitor, final TaskExecute te) {
+        if (startVideoTask != null) {
+            startVideoTask.cancel(true);
+        }
+        startVideoTask = new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... arg0) {
+                if (isCancelled()) {
+                    return null;
+                }
+                HichipCamera.this.startLiveShow(HichipCamera.this.getVideoQuality(), monitor);
+                System.out.println("camera video start" + HichipCamera.this.getUid());
+                setPlaying(true);
+                if (te != null) {
+                    te.onPosted(HichipCamera.this, null);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                super.onPostExecute(result);
+            }
+        }.execute();
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return isPlaying;
+    }
+
+    public void setPlaying(boolean playing) {
+        isPlaying = playing;
+    }
+
+    private boolean isPlaying;
+
     @Override
     public void stopRecording(int avChannel) {
         super.stopRecording();
@@ -308,6 +346,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public void stopVideo() {
+
+        setPlaying(false);
         super.stopLiveShow();
     }
 
@@ -484,7 +524,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public void openPush(final CameraClient.ServerResultListener2 succListner,final CameraClient.ServerResultListener2 errorListner) {
+    public void openPush(final CameraClient.ServerResultListener2 succListner, final CameraClient.ServerResultListener2 errorListner) {
         OnBindPushResult bindPushResult_open = new OnBindPushResult() {
             @Override
             public void onBindSuccess(HichipCamera camera) {
@@ -497,15 +537,15 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
                 pushState = 1;
                 HichipCamera.this.sync2Db(App.getContext());
                 sendRegister();
-                if(succListner != null){
-                    succListner.serverResult("succ",null);
+                if (succListner != null) {
+                    succListner.serverResult("succ", null);
                 }
             }
 
             @Override
             public void onBindFail(HichipCamera camera) {
-                if(errorListner != null){
-                    errorListner.serverResult("fail",null);
+                if (errorListner != null) {
+                    errorListner.serverResult("fail", null);
                 }
             }
 
@@ -816,6 +856,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             mPlayStateListeners.remove(listener);
         }
     }
+
     protected void setServer(HichipCamera mCamera) {
 
         if (!mCamera.getCommandFunction(CamHiDefines.HI_P2P_ALARM_ADDRESS_SET)) {
@@ -833,6 +874,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         sendRegisterToken(mCamera);
 
     }
+
     @Override
     public void receiveSessionState(HiCamera hiCamera, int connect_state) {
         int accState = connect_state;
@@ -1050,6 +1092,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         });
 
     }
+
     public static void unInitP2P() {
         HiChipSDK.uninit();
     }
@@ -1190,6 +1233,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         }
 
     };
+
     private void sendRegister() {
         if (this.getPushState() == 1) {
             return;

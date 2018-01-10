@@ -194,6 +194,15 @@ public class LiveView_HichipActivity extends BaseActivity implements
         if (mCamera != null) {//鍋滄璇煶
 
             delayHandler.removeMessages(0);
+            mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
+                @Override
+                public void onPosted(IMyCamera c, Object data) {
+                    Intent intent = new Intent();
+                    intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
+                    LiveView_HichipActivity.this.sendBroadcast(intent);
+                }
+            });
             stopRecording();
             mCamera.stopVideo();
             mCamera.stopAudio();
@@ -208,17 +217,12 @@ public class LiveView_HichipActivity extends BaseActivity implements
         videoLoadProgressBar.setVisibility(View.VISIBLE);
 
         //LiveViewActivity.this.mFile = new FileOperation(LiveViewActivity.this.mCamera.uid, LiveViewActivity.this.mSelectedChannel);
-        if (monitor != null) {// 澧炲姞寮傚父澶勭悊
-            try {
-                mCamera.startLiveShow(mCamera.getVideoQuality(), monitor);
-            } catch (Exception e) {
-            }
-        }
+
         isVideoShowing = false;
         if (mCamera != null) {
             mCamera.registerIOTCListener(LiveView_HichipActivity.this);
             mCamera.registerPlayStateListener(this);
-            mCamera.asyncStartVideo(new IMyCamera.TaskExecute() {
+            mCamera.asyncStartVideo(monitor,new IMyCamera.TaskExecute() {
                 @Override
                 public void onPosted(IMyCamera c, Object data) {
                     if (playState.isListening()) {

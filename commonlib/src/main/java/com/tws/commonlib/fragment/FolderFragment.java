@@ -68,6 +68,14 @@ public class FolderFragment extends BaseFragment {
         return imagesPath;
     }
 
+    private String getAutoThumbFile(String dev_uid) {
+        String imagesPath = null;
+        if (imagesPath == null) {
+            imagesPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) + "/" + TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB);
+        }
+        return imagesPath;
+    }
+
     private String getVideosPath(String dev_uid) {
         String videosPath = null;
         if (videosPath == null) {
@@ -246,11 +254,23 @@ public class FolderFragment extends BaseFragment {
                     try {
                         Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
                         holder.img_snap.setImageBitmap(bmp);
-                    }catch (OutOfMemoryError error){
+                    } catch (OutOfMemoryError error) {
                         holder.img_snap.setImageResource(R.drawable.default_img);
                     }
                 } else {
-                    holder.img_snap.setImageResource(R.drawable.default_img);
+                    BitmapFactory.Options bfo = new BitmapFactory.Options();
+                    bfo.inSampleSize = 4;// 1/4宽高
+                    String autoThumb = getAutoThumbFile(model.uid);
+                    try {
+                        Bitmap bmp = BitmapFactory.decodeFile(autoThumb, bfo);
+                        if (bmp == null) {
+                            holder.img_snap.setImageResource(R.drawable.default_img);
+                        } else {
+                            holder.img_snap.setImageBitmap(bmp);
+                        }
+                    } catch (OutOfMemoryError error) {
+                        holder.img_snap.setImageResource(R.drawable.default_img);
+                    }
                 }
             }
 

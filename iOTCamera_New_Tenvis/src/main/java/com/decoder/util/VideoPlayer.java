@@ -21,7 +21,7 @@ public class VideoPlayer {
 
     private native void getYuvData(byte[] yuvData, int video_stream_index);//video stream的标识
 
-    private native void getBitmap(Bitmap bitmap, int video_stream_index);//video stream的标识
+    private native int getBitmap(Bitmap bitmap, int video_stream_index);//video stream的标识
 
     private native void startRecord(String path, boolean isAudioPlay,
                                     boolean isVideoPlay);
@@ -95,8 +95,9 @@ public class VideoPlayer {
                     Bitmap.Config.RGB_565);
         }
 
-        getBitmap(bitmap, video_stream_index);
-        return bitmap;
+        int i = getBitmap(bitmap, video_stream_index);
+
+         return bitmap;
     }
 
     public byte[] decode2Yuv(byte[] video_data, int[] pictureParam, int[] result) {
@@ -121,16 +122,19 @@ public class VideoPlayer {
     }
 
     public void realese() {
+        lock.lock();
         if (video_stream_index < 0) {
             return;
         }
         yuvData = null;
-        if (bitmap != null && bitmap.isRecycled()) {
-            bitmap.recycle();
-            bitmap = null;
-        }
+        bitmap.recycle();
+//        if (bitmap != null && !bitmap.isRecycled()) {
+//            bitmap.recycle();
+//            bitmap = null;
+//        }
         dealloc(video_stream_index);
         System.out.println("VideoPlayer realese");
+        lock.unlock();
     }
 
     public void stopRecordVideo() {

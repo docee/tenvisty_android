@@ -201,6 +201,15 @@ public class LiveViewActivity extends BaseActivity implements
         super.onPause();
         if (mCamera != null) {//鍋滄璇煶
             delayHandler.removeMessages(0);
+            mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
+                @Override
+                public void onPosted(IMyCamera c, Object data) {
+                    Intent intent = new Intent();
+                    intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+                    intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
+                    LiveViewActivity.this.sendBroadcast(intent);
+                }
+            });
             mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
                 @Override
                 public void onPosted(IMyCamera c, Object data) {

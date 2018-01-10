@@ -526,7 +526,7 @@ public class Camera extends NSCamera {
         }
 
         ch.RecordFrameQueue.removeAll();
-        if (ch.RecordFirstFrame != null && ch.RecordFirstFrame.isRecycled()) {
+        if (ch.RecordFirstFrame != null && !ch.RecordFirstFrame.isRecycled()) {
             ch.RecordFirstFrame.recycle();
         }
         ch.RecordFirstFrame = null;
@@ -629,11 +629,9 @@ public class Camera extends NSCamera {
 //                        } catch (InterruptedException e) {
 //                            e.printStackTrace();
 //                        }
-                        ch.threadRecording = null;
                     }
                     if (ch.threadRecvVideo != null) {
                         ch.threadRecvVideo.stopThread();
-                        ch.threadRecvVideo = null;
                     }
 
                     if (ch.threadDecVideo != null) {
@@ -644,16 +642,27 @@ public class Camera extends NSCamera {
 //                        } catch (InterruptedException e) {
 //                            e.printStackTrace();
 //                        }
-                        ch.threadDecVideo = null;
                     }
 
                     ch.VideoFrameQueue.removeAll();
                     ch.RecordFrameQueue.removeAll();
                     ch.RecordFrameTempQueue.removeAll();
-                    if (ch.RecordFirstFrame != null && ch.RecordFirstFrame.isRecycled()) {
+                    if (ch.RecordFirstFrame != null && !ch.RecordFirstFrame.isRecycled()) {
                         ch.RecordFirstFrame.recycle();
                     }
                     ch.RecordFirstFrame = null;
+                    while ((ch.threadRecvVideo != null && ch.threadRecvVideo.getState() != TERMINATED)
+                            || (ch.threadDecVideo != null && ch.threadDecVideo.getState() != TERMINATED)
+                            || (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED)) {
+                        try {
+                            Thread.sleep(5);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    ch.threadRecvVideo = null;
+                    ch.threadDecVideo = null;
+                    ch.threadRecording = null;
                     break;
                 }
             }
@@ -2838,7 +2847,7 @@ public class Camera extends NSCamera {
             AudioFrameQueue = new AVFrameQueue();
             RecordFrameQueue = new AVFrameQueue();
             RecordFrameTempQueue = new AVFrameQueue();
-            if (RecordFirstFrame != null && RecordFirstFrame.isRecycled()) {
+            if (RecordFirstFrame != null && !RecordFirstFrame.isRecycled()) {
                 RecordFirstFrame.recycle();
             }
             RecordFirstFrame = null;
@@ -3023,7 +3032,7 @@ public class Camera extends NSCamera {
 
             L.i("IOTCamera", uid + " ThreadRecording 开启录像");
             mAVChannel.RecordFrameQueue.removeAll();
-            if (mAVChannel.RecordFirstFrame != null && mAVChannel.RecordFirstFrame.isRecycled()) {
+            if (mAVChannel.RecordFirstFrame != null && !mAVChannel.RecordFirstFrame.isRecycled()) {
                 mAVChannel.RecordFirstFrame.recycle();
             }
             mAVChannel.RecordFirstFrame = null;
