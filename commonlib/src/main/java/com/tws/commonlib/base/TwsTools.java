@@ -456,6 +456,7 @@ public class TwsTools {
         return result;
         //return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
     }
+
     /**
      * 得到bitmap的大小
      */
@@ -472,34 +473,23 @@ public class TwsTools {
 
     public static boolean saveBitmap(Bitmap bitmap, String fileName) {
 
+        if (bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2) && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() - 1, bitmap.getHeight() - 1)) {
+            return false;
+        }
         boolean result = false;
         if (bitmap == null || fileName.isEmpty()) {
             return false;
         }
-        File tmpFile = new File(fileName + ".tmp");
-        if (tmpFile.exists()) {
-            tmpFile.delete();
-        }
+        File file = new File(fileName);
         long bmpSize = getBitmapSize(bitmap);
         FileOutputStream out;
         try {
-            out = new FileOutputStream(tmpFile);
+            out = new FileOutputStream(file);
             if (bitmap.compress(Bitmap.CompressFormat.JPEG, 30, out)) {
                 out.flush();
-                out.close();
             }
-            long l = tmpFile.length();
-            if ((l < 20000 && bitmap.getWidth() > 1800) || (l < 10000 && bitmap.getWidth() > 1000) || (l < 1000 && bitmap.getWidth() > 500) || l < 200) {
-                result = false;
-                tmpFile.delete();
-            } else {
-                File file = new File(fileName);
-                if (file.exists()) {
-                    file.delete();
-                }
-                tmpFile.renameTo(file);
-                result = true;
-            }
+            out.close();
+            result = true;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
