@@ -2,6 +2,7 @@ package com.tws.commonlib.adapter;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,7 @@ import android.widget.TextView;
 
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
+import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.CameraState;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
@@ -111,6 +113,26 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_disconnected.findViewById(R.id.btn_reconnect).setTag(camera);
             holder.ll_tip_password_wrong.findViewById(R.id.btn_modifyPassword).setTag(camera);
             Bitmap snap = camera.getSnapshot();
+            if (snap == null || snap.isRecycled()) {
+                if (TwsTools.isSDCardValid()) {
+                    try {
+                        BitmapFactory.Options opts = new BitmapFactory.Options();
+                        opts.inJustDecodeBounds = true;
+                        String snapshotPath = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) + "/" + TwsTools.getFileNameWithTime(camera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB);
+                        snap = BitmapFactory.decodeFile(snapshotPath,opts);
+                        opts.inSampleSize = opts.outWidth/640;
+                        if(opts.inSampleSize < 1){
+                            opts.inSampleSize = 1;
+                        }
+                        opts.inJustDecodeBounds = false;
+                        snap = BitmapFactory.decodeFile(snapshotPath,opts);
+                        camera.setSnapshot(snap);
+                    } catch (OutOfMemoryError error) {
+
+                    }
+                }
+
+            }
             if (snap != null) {
                 holder.img_snapshot.setImageBitmap(snap);
             } else {
@@ -119,10 +141,9 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.txt_nikename.setText(camera.getNickName());
             holder.txt_state.setBackgroundResource(camera.getCameraStateBackgroundColor());
             holder.txt_state.setText(camera.getCameraStateDesc());
-            if(camera.getEventNum() > 0){
+            if (camera.getEventNum() > 0) {
                 holder.img_push_alarm.setVisibility(View.VISIBLE);
-            }
-            else{
+            } else {
                 holder.img_push_alarm.setVisibility(View.GONE);
             }
             holder.ll_tip_password_wrong.setVisibility(View.GONE);
@@ -139,7 +160,7 @@ public class VideoViewAdapter extends SimpleAdapter {
                 if (camera.getState() == CameraState.None) {
                     if (camera.isPasswordWrong()) {
                         holder.ll_tip_password_wrong.setVisibility(View.VISIBLE);
-                    } else if (camera.isConnecting() ||camera.isNotConnect()) {
+                    } else if (camera.isConnecting() || camera.isNotConnect()) {
                         holder.ll_tip_connecting.setVisibility(View.VISIBLE);
                     } else {
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);

@@ -44,7 +44,10 @@ import static java.lang.Thread.State.TERMINATED;
 public class Camera extends NSCamera {
     AVIGeneratorH mAVIRecorder = null;
 
-
+    public static final int RECORD_INITT = 0;
+    public static final int RECORD_BEGIN = 1;
+    public static final int RECORD_STOP = 2;
+    public static final int RECORD_ERROR = 3;
     public static final String DEFAULT_FILENAME_LOG = "IOTCamera_log.txt";
     public static final String strCLCF = "\r\n";
     protected static String strSDPath = null;
@@ -1595,18 +1598,23 @@ public class Camera extends NSCamera {
                                 mAVChannel.VideoFrameQueue.addLast(frame);
                                 if (mAVChannel.mVideoPlayProperty.isRecording) {
                                     //FrameData record_frame = new FrameData(buf, nRet1);
-                                    mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
-                                } else {
-                                    if (frame.isIFrame()) {
-                                        mAVChannel.RecordFrameTempQueue.removeAll();
+                                    if (!mAVChannel.RecordFrameQueue.isFirstIFrame() && frame.isIFrame()) {
+                                        mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
+                                    } else if (!mAVChannel.RecordFrameQueue.isFirstIFrame()) {
+                                        mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
                                     }
-                                    mAVChannel.RecordFrameTempQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
+
+                                } else {
+//                                    if (frame.isIFrame()) {
+//                                        mAVChannel.RecordFrameTempQueue.removeAll();
+//                                    }
+//                                    mAVChannel.RecordFrameTempQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
                                 }
                                 //synchronized (mIOTCListeners) {
-                                    for (int i = 0; i < mIOTCListeners.size(); i++) {
-                                        IRegisterIOTCListener listener = mIOTCListeners.get(i);
-                                        listener.receiveOriginalFrameData(Camera.this, this.mAVChannel.getChannel(), pFrmInfoBuf, 24, frameData, nReadSize);
-                                    }
+                                for (int i = 0; i < mIOTCListeners.size(); i++) {
+                                    IRegisterIOTCListener listener = mIOTCListeners.get(i);
+                                    listener.receiveOriginalFrameData(Camera.this, this.mAVChannel.getChannel(), pFrmInfoBuf, 24, frameData, nReadSize);
+                                }
                                 //}
                             } else {
                                 L.i("IOTCamera", "Incorrect frame no(" + pFrmNo[0] + "), prev:" + nPrevFrmNo + " -> drop frame");
@@ -2996,6 +3004,10 @@ public class Camera extends NSCamera {
 
                     ch.mVideoPlayProperty.recordingPath = null;
                     ch.mVideoPlayProperty.isRecording = false;
+                    ch.RecordFrameQueue.removeAll();
+                    if (ch.RecordFirstFrame != null && !ch.RecordFirstFrame.isRecycled()) {
+                        ch.RecordFirstFrame.recycle();
+                    }
                     this.stopRecordingThread(ch);
 
                     break;
@@ -3031,10 +3043,10 @@ public class Camera extends NSCamera {
         public void run() {
 
             L.i("IOTCamera", uid + " ThreadRecording 开启录像");
-            mAVChannel.RecordFrameQueue.removeAll();
-            if (mAVChannel.RecordFirstFrame != null && !mAVChannel.RecordFirstFrame.isRecycled()) {
-                mAVChannel.RecordFirstFrame.recycle();
-            }
+//            mAVChannel.RecordFrameQueue.removeAll();
+//            if (mAVChannel.RecordFirstFrame != null && !mAVChannel.RecordFirstFrame.isRecycled()) {
+//                mAVChannel.RecordFirstFrame.recycle();
+//            }
             mAVChannel.RecordFirstFrame = null;
             boolean isFristIFrame = false;
             int[] handle = new int[1];
@@ -3049,16 +3061,20 @@ public class Camera extends NSCamera {
 //                // }
 //                return;
 //            }
+
+
+            for (int i = 0; i < mIOTCListeners.size(); i++) {
+                IRegisterIOTCListener listener = mIOTCListeners.get(i);
+                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_INITT, mAVChannel.mVideoPlayProperty.recordingPath);
+            }
             while (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0) {
                 this.sleep(33);
             }
-            EncMp4.HIEncMp4init(handle, mAVChannel.width, mAVChannel.heigth, mAVChannel.mVideoPlayProperty.recordingPath, chipVerion);
+            if (isRunning) {
+                EncMp4.HIEncMp4init(handle, mAVChannel.width, mAVChannel.heigth, mAVChannel.mVideoPlayProperty.recordingPath, chipVerion);
+            }
             boolean frameType = false;
             // synchronized (mIOTCListeners) {
-            for (int i = 0; i < mIOTCListeners.size(); i++) {
-                IRegisterIOTCListener listener = mIOTCListeners.get(i);
-                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, 0, mAVChannel.mVideoPlayProperty.recordingPath);
-            }
             // }
             while (this.isRunning) {
                 if (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0) {
@@ -3092,24 +3108,25 @@ public class Camera extends NSCamera {
                             //continue;
                         }
 
-                        int result = EncMp4.HIEncMp4write(handle[0], frame.frmData, frame.getFrmSize(), frameType1, frame.getTimeStamp());
                         if (!beginRecord) {
                             beginRecord = true;
                             for (int i = 0; i < mIOTCListeners.size(); i++) {
                                 IRegisterIOTCListener listener = mIOTCListeners.get(i);
-                                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, 3, mAVChannel.mVideoPlayProperty.recordingPath);
+                                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_BEGIN, mAVChannel.mVideoPlayProperty.recordingPath);
                             }
                         }
+                        int result = EncMp4.HIEncMp4write(handle[0], frame.frmData, frame.getFrmSize(), frameType1, frame.getTimeStamp());
                         Log.i("Recording", result + "");
                     }
                 }
             }
-
-            EncMp4.HIEncMp4deinit(handle[0]);
+            if (handle[0] != 0) {
+                EncMp4.HIEncMp4deinit(handle[0]);
+            }
             // synchronized (mIOTCListeners) {
             for (int i = 0; i < mIOTCListeners.size(); i++) {
                 IRegisterIOTCListener listener = mIOTCListeners.get(i);
-                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, 1, mAVChannel.mVideoPlayProperty.recordingPath);
+                listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_STOP, mAVChannel.mVideoPlayProperty.recordingPath);
             }
             // }
 //				if(HiCamera.this.mCameraPlayStateCallback != null) {

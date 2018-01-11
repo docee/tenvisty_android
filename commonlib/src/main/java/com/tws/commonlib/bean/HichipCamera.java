@@ -182,6 +182,11 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public void setSnapshot(Bitmap snapshot) {
+        if (this.snapshot != null && !this.snapshot.isRecycled()) {
+            this.snapshot.recycle();
+            this.snapshot = null;
+            System.gc();
+        }
         this.snapshot = snapshot;
     }
 
@@ -682,13 +687,9 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
                         if (fileName.equalsIgnoreCase(HichipCamera.this.getUid()) || !ff.exists()) {
                             isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
-                            if (isErr) {
-                                Thread.sleep(100);
-                                bmp = HichipCamera.super.getSnapshot();
-                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
-                            }
-                            if (!isErr && fileName.equalsIgnoreCase(c.getUid())) {
-                                c.setSnapshot((Bitmap) bmp);
+                            bmp = null;
+                            if (fileName.equalsIgnoreCase(c.getUid())) {
+                                c.setSnapshot(null);
                             }
                         } else {
                             isErr = false;

@@ -1120,7 +1120,13 @@ public class LiveView_HichipActivity extends BaseActivity implements
                 //myCamera.stop_record();
                 playState.setRecording(false);
                 if (filePath != null) {
-                    sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));
+                    File recordFile = new File(filePath);
+                    if(recordFile.exists() &&  recordFile.length() < 1024 && recordFile.isFile()){
+                        recordFile.delete();
+                    }
+                    else if(recordFile.exists() && recordFile.isFile()){
+                        sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));
+                    }
                 }
             }
             runOnUiThread(new Runnable() {
@@ -1165,10 +1171,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                         @Override
                         public void onPosted(IMyCamera c, Object data) {
-                            Intent intent = new Intent();
-                            intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
-                            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
-                            LiveView_HichipActivity.this.sendBroadcast(intent);
+
                         }
                     });
                 }

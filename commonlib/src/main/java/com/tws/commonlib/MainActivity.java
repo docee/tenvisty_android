@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
             } else if (i == R.id.navigation_folder) {
                 viewpager_container.setCurrentItem(1);
                 if(fgLists.size()>1 && ((FolderFragment)fgLists.get(1))!=null&& ((FolderFragment)fgLists.get(1)).isInited()) {
-                    ((FolderFragment) fgLists.get(1)).initView();
+                    //((FolderFragment) fgLists.get(1)).initView();
                 }
                 return true;
             } else if (i == R.id.navigation_about) {

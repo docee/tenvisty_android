@@ -91,6 +91,11 @@ public class VideoPlayer {
             return null;
         }
         if (bitmap == null || bitmap.getWidth() != width || bitmap.getHeight() != height) {
+            if(bitmap != null && !bitmap.isRecycled()){
+                bitmap.recycle();
+                System.gc();
+                bitmap = null;
+            }
             bitmap = Bitmap.createBitmap(width, height,
                     Bitmap.Config.RGB_565);
         }
@@ -127,11 +132,12 @@ public class VideoPlayer {
             return;
         }
         yuvData = null;
-        bitmap.recycle();
-//        if (bitmap != null && !bitmap.isRecycled()) {
-//            bitmap.recycle();
-//            bitmap = null;
-//        }
+       // bitmap.recycle();
+        if (bitmap != null && !bitmap.isRecycled()) {
+            bitmap.recycle();
+            bitmap = null;
+            System.gc();
+        }
         dealloc(video_stream_index);
         System.out.println("VideoPlayer realese");
         lock.unlock();

@@ -140,8 +140,9 @@ public class FolderFragment extends BaseFragment {
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
                         fos.flush();
                         fos.close();
-                        if (bitmap.isRecycled()) {
+                        if (!bitmap.isRecycled()) {
                             bitmap.recycle();
+                            System.gc();
                         }
                         thumbPath = snapFile;
                     } catch (FileNotFoundException e) {
@@ -157,6 +158,10 @@ public class FolderFragment extends BaseFragment {
     }
 
     public void initView() {
+        //清理bitmap
+        for(FolderInfoModel m : sourceList){
+            m.setThumbMap(null);
+        }
         sourceList.clear();
         ListView picture_fragment_camera_list = (ListView) view.findViewById(R.id.picture_fragment_camera_list);
 
@@ -248,28 +253,48 @@ public class FolderFragment extends BaseFragment {
             if (holder != null) {
                 holder.txt_name.setText(model.cameraName);
                 holder.txt_count.setText(String.format(getString(R.string.tips_folder_desc), model.photoCount + "", model.videoCount + ""));
-                if (model.thumbPath != null) {
-                    BitmapFactory.Options bfo = new BitmapFactory.Options();
-                    bfo.inSampleSize = 4;// 1/4宽高
-                    try {
-                        Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
-                        holder.img_snap.setImageBitmap(bmp);
-                    } catch (OutOfMemoryError error) {
-                        holder.img_snap.setImageResource(R.drawable.default_img);
-                    }
+                if (model.getThumbMap() != null) {
+                    holder.img_snap.setImageBitmap(model.getThumbMap());
                 } else {
-                    BitmapFactory.Options bfo = new BitmapFactory.Options();
-                    bfo.inSampleSize = 4;// 1/4宽高
-                    String autoThumb = getAutoThumbFile(model.uid);
-                    try {
-                        Bitmap bmp = BitmapFactory.decodeFile(autoThumb, bfo);
-                        if (bmp == null) {
-                            holder.img_snap.setImageResource(R.drawable.default_img);
-                        } else {
-                            holder.img_snap.setImageBitmap(bmp);
+                    if (model.thumbPath != null) {
+                        BitmapFactory.Options bfo = new BitmapFactory.Options();
+                        bfo.inJustDecodeBounds = true;
+                        BitmapFactory.decodeFile(model.thumbPath, bfo);
+
+                        bfo.inSampleSize = bfo.outWidth / 320;// 1/4宽高
+                        if (bfo.inSampleSize < 1) {
+                            bfo.inSampleSize = 1;
                         }
-                    } catch (OutOfMemoryError error) {
-                        holder.img_snap.setImageResource(R.drawable.default_img);
+                        bfo.inJustDecodeBounds = false;
+                        try {
+                            Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
+                            holder.img_snap.setImageBitmap(bmp);
+                            model.setThumbMap(bmp);
+                        } catch (OutOfMemoryError error) {
+                            holder.img_snap.setImageResource(R.drawable.default_img);
+                        }
+                    } else {
+                        BitmapFactory.Options bfo = new BitmapFactory.Options();
+                        String autoThumb = getAutoThumbFile(model.uid);
+                        bfo.inJustDecodeBounds = true;
+                        BitmapFactory.decodeFile(autoThumb, bfo);
+
+                        bfo.inSampleSize = bfo.outWidth / 320;// 1/4宽高
+                        if (bfo.inSampleSize < 1) {
+                            bfo.inSampleSize = 1;
+                        }
+                        bfo.inJustDecodeBounds = false;
+                        try {
+                            Bitmap bmp = BitmapFactory.decodeFile(autoThumb, bfo);
+                            if (bmp == null) {
+                                holder.img_snap.setImageResource(R.drawable.default_img);
+                            } else {
+                                holder.img_snap.setImageBitmap(bmp);
+                                model.setThumbMap(bmp);
+                            }
+                        } catch (OutOfMemoryError error) {
+                            holder.img_snap.setImageResource(R.drawable.default_img);
+                        }
                     }
                 }
             }
@@ -284,6 +309,17 @@ public class FolderFragment extends BaseFragment {
             public ImageView img_snap;
         }
 
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        //清理bitmap
+        if (sourceList != null) {
+            for (FolderInfoModel model : sourceList) {
+                model.setThumbMap(null);
+            }
+        }
     }
 
     @Override

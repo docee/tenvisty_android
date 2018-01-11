@@ -473,15 +473,16 @@ public class TwsTools {
 
     public static boolean saveBitmap(Bitmap bitmap, String fileName) {
 
+        boolean result = false;
+        if (bitmap == null || fileName.isEmpty() || bitmap.isRecycled()) {
+            return false;
+        }
+
         if (bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2) && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() - 1, bitmap.getHeight() - 1)) {
             return false;
         }
-        boolean result = false;
-        if (bitmap == null || fileName.isEmpty()) {
-            return false;
-        }
         File file = new File(fileName);
-        long bmpSize = getBitmapSize(bitmap);
+        //long bmpSize = getBitmapSize(bitmap);
         FileOutputStream out;
         try {
             out = new FileOutputStream(file);

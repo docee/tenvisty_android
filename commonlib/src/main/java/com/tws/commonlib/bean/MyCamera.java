@@ -361,6 +361,11 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public void setSnapshot(Bitmap snapshot) {
+        if(this.snapshot != null && !this.snapshot.isRecycled()){
+            this.snapshot.recycle();
+            this.snapshot = null;
+            System.gc();
+        }
         this.snapshot = snapshot;
     }
 
@@ -1524,13 +1529,14 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
                         if (fileName.equalsIgnoreCase(MyCamera.this.getUid()) || !ff.exists()) {
                             isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
-                            if (isErr) {
-                                Thread.sleep(100);
-                                bmp = MyCamera.super.Snapshot(channel);
-                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
-                            }
-                            if (!isErr && fileName.equalsIgnoreCase(c.getUid())) {
-                                c.setSnapshot((Bitmap) bmp);
+//                            if (isErr) {
+//                                Thread.sleep(100);
+//                                bmp = MyCamera.super.Snapshot(channel);
+//                                isErr = !TwsTools.saveBitmap((Bitmap) bmp, fullFilePath);
+//                            }
+                            bmp = null;
+                            if (fileName.equalsIgnoreCase(c.getUid())) {
+                            c.setSnapshot(null);
                             }
                         } else {
                             isErr = false;

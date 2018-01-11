@@ -1,39 +1,39 @@
 -- Merging decision tree log ---
 manifest
-ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:1-12:12
 	package
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:2:5-28
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:2:5-28
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
 	android:versionName
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:4:5-34
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:4:5-34
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
 	xmlns:android
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:11-69
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:1:11-69
 	android:versionCode
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:3:5-28
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:3:5-28
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
 uses-sdk
-ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
-INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
+ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
+INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:5-73
 	android:targetSdkVersion
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:41-70
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:41-70
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
 	android:minSdkVersion
-		ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:15-40
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
-		INJECTED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:6:15-40
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
+		INJECTED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml
 application
-ADDED from E:\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:8:5-10:19
+ADDED from F:\work\GitHub\tenvisty_android\iOTCamera_New_Tenvis\src\main\AndroidManifest.xml:8:5-10:19

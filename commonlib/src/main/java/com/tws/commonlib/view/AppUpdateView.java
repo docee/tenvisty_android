@@ -412,7 +412,7 @@ public class AppUpdateView {
 
             IMyCamera camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(dev_nickname, dev_uid, view_acc,
                     view_pwd);
-            camera.setSnapshot(loadImageFromUrl(context, camera));
+            //camera.setSnapshot(loadImageFromUrl(context, camera));
             if (cameraModel == 0) {
                 camera.setCameraModel(com.tutk.IOTC.NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
             }

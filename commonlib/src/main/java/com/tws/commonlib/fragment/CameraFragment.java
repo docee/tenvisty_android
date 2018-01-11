@@ -10,6 +10,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -482,7 +483,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     startActivity(intent);
                 }
                 else if(btnId == R.id.btn_play){
-                    //camera.asyncStartVideo(null);
+                    camera.asyncStartVideo(null);
                     if (camera.getEventNum() > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
@@ -860,9 +861,28 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                     if( c.getEventNum()>0) {
                                         cameraView.findViewById(R.id.img_push_alarm).setVisibility(View.VISIBLE);
                                     }
-                                    Bitmap bmp = c.getSnapshot();
-                                    if(bmp != null){
-                                        ((ImageView)cameraView.findViewById(R.id.img_snapshot)).setImageBitmap(bmp);
+                                    Bitmap snap = c.getSnapshot();
+                                    if(snap == null || !snap.isRecycled()) {
+                                        if (TwsTools.isSDCardValid()) {
+                                            try {
+                                                BitmapFactory.Options opts = new BitmapFactory.Options();
+                                                opts.inJustDecodeBounds = true;
+                                                String snapshotPath = TwsTools.getFilePath(uid, TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) + "/" + TwsTools.getFileNameWithTime(uid, TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB);
+                                                snap = BitmapFactory.decodeFile(snapshotPath, opts);
+                                                opts.inSampleSize = opts.outWidth / 640;
+                                                if (opts.inSampleSize < 1) {
+                                                    opts.inSampleSize = 1;
+                                                }
+                                                opts.inJustDecodeBounds = false;
+                                                snap = BitmapFactory.decodeFile(snapshotPath, opts);
+                                                c.setSnapshot(snap);
+                                            } catch (OutOfMemoryError error) {
+
+                                            }
+                                        }
+                                    }
+                                    if(snap == null || !snap.isRecycled()){
+                                        ((ImageView)cameraView.findViewById(R.id.img_snapshot)).setImageBitmap(snap);
                                     }
                                 }
                                 break;
