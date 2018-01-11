@@ -27,6 +27,5 @@ iOTCamera_New_Tenvis/build/generated/source/buildConfig/release/com/tutk/IOTC/Bu
 *.txt
 iOTCamera_New_Tenvis/build/generated/source/r/release/com/tutk/IOTC/R.java
 iOTCamera_New_Tenvis/build/generated/source/buildConfig/release/com/tutk/IOTC/BuildConfig.java
-*.xml
 iOTCamera_New_Tenvis/build/intermediates/incremental/release-mergeJniLibs/merge-state
-*.xml
+build
