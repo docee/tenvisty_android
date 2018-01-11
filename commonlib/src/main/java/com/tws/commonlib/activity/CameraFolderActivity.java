@@ -49,16 +49,25 @@ public class CameraFolderActivity extends BaseActivity {
     private String dev_uid;
     private String imagesPath;
     private String videosPath;
+    private String downloadVideosPath;
     private ListView listviewItemList;
     private DateScrollItemListAdapter adapter;
     int firstVisibleItem;
     int accSelect = -1;
     IMyCamera mCamera;
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (adapter != null) {
+            adapter.release();
+        }
+    }
+
     private String getImagesPath() {
         if (imagesPath == null) {
             dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-            imagesPath = TwsTools.getFilePath(dev_uid,TwsTools.PATH_SNAPSHOT_MANUALLY);
+            imagesPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_MANUALLY);
         }
         return imagesPath;
     }
@@ -66,9 +75,17 @@ public class CameraFolderActivity extends BaseActivity {
     private String getVideosPath() {
         if (videosPath == null) {
             dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
-            videosPath = TwsTools.getFilePath(dev_uid,TwsTools.PATH_RECORD_MANUALLY);
+            videosPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_MANUALLY);
         }
         return videosPath;
+    }
+
+    private String getDownloadVideosPath() {
+        if (downloadVideosPath == null) {
+            dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
+            downloadVideosPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND);
+        }
+        return downloadVideosPath;
     }
 
     private LinearLayout ll_videos;
@@ -117,14 +134,14 @@ public class CameraFolderActivity extends BaseActivity {
             public void OnNavigationButtonClick(int which) {
                 switch (which) {
                     case NavigationBar.NAVIGATION_BUTTON_LEFT:
-                        if (adapter!= null && adapter.isCheckMode()) {
+                        if (adapter != null && adapter.isCheckMode()) {
                             adapter.setCheckMode(false);
                         } else {
                             finish();
                         }
                         break;
                     case NavigationBar.NAVIGATION_BUTTON_RIGHT:
-                        if(adapter != null) {
+                        if (adapter != null) {
                             adapter.setCheckMode(!adapter.isCheckMode());
                         }
                         setToolBarVisible();
@@ -136,7 +153,7 @@ public class CameraFolderActivity extends BaseActivity {
         ll_no_photos = (LinearLayout) findViewById(R.id.ll_no_photos);
         ll_first_top = (LinearLayout) findViewById(R.id.ll_first_top);
         SpinnerButton spinnerButton = (SpinnerButton) findViewById(R.id.spinner_type);
-        spinnerButton.setTitles(new String[]{"Photos", "Videos"});
+        spinnerButton.setTitles(new String[]{getString(R.string.spinner_photos), getString(R.string.spinner_videos)});
         spinnerButton.setSpinnerButtonListener(new SpinnerButton.SpinnerButtonListener() {
             @Override
             public void OnSpinnerButtonClick(int which) {
@@ -162,6 +179,9 @@ public class CameraFolderActivity extends BaseActivity {
                     ll_first_top.setVisibility(View.VISIBLE);
                 } else {
                     ll_first_top.setVisibility(View.GONE);
+                }
+                if (adapter != null) {
+                    adapter.release();
                 }
                 adapter = new DateScrollItemListAdapter(CameraFolderActivity.this, adapterSource);
                 setToolBarVisible();
@@ -230,7 +250,7 @@ public class CameraFolderActivity extends BaseActivity {
                             DateScrollItem model = adapterSource.get(firstVisibleItem);
                             model.checked = !model.checked;
                             model.img_group_check.setSelected(model.checked);
-                           // model.img_group_check.setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
+                            // model.img_group_check.setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
                             LocalPicItemListAdapter picAdapter = (LocalPicItemListAdapter) model.subAdatper;
                             ((ImageView) view).setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
                             for (int i = 0; i < picAdapter.sourceItemList.size(); i++) {
@@ -248,7 +268,11 @@ public class CameraFolderActivity extends BaseActivity {
             }
         });
         listviewItemList = (ListView) findViewById(R.id.listviewItemList);
-        spinnerButton.Click(0);
+        if (this.getIntent().getBooleanExtra("goto", false)) {
+            spinnerButton.Click(1);
+        } else {
+            spinnerButton.Click(0);
+        }
 //        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            ((ImageView)(findViewById(R.id.img_delete))).setImageTintList(CameraFolderActivity.this.getColorStateList(R.color.select_tint_color));
@@ -260,7 +284,7 @@ public class CameraFolderActivity extends BaseActivity {
 //        if (accSelect == 1) {
 //            CameraFolderActivity.this.findViewById(R.id.ll_toolbar_bottom).findViewById(R.id.ll_share).setVisibility(View.GONE);
 //        } else {
-            CameraFolderActivity.this.findViewById(R.id.ll_toolbar_bottom).findViewById(R.id.ll_share).setVisibility(View.VISIBLE);
+        CameraFolderActivity.this.findViewById(R.id.ll_toolbar_bottom).findViewById(R.id.ll_share).setVisibility(View.VISIBLE);
         //}
 
         title.setRightBtnText(getString(adapter.isCheckMode() ? R.string.done : R.string.edit));
@@ -299,6 +323,7 @@ public class CameraFolderActivity extends BaseActivity {
             for (DateScrollItem item : adapterSource) {
                 for (LocalPichModel pic : ((LocalPicItemListAdapter) (item.subAdatper)).sourceItemList) {
                     if (pic.checked) {
+                        pic.setThumbBmp(null);
                         deleteFiles.add(pic);
                     }
                 }
@@ -310,7 +335,7 @@ public class CameraFolderActivity extends BaseActivity {
             }
             if (deleteFiles.size() > 0) {
                 String[] paths = new String[deleteFiles.size()];
-                for(int i=0;i<deleteFiles.size();i++){
+                for (int i = 0; i < deleteFiles.size(); i++) {
                     paths[i] = deleteFiles.get(i).path;
                 }
                 TwsTools.showShare(CameraFolderActivity.this, false, null, false, null, paths);
@@ -320,6 +345,7 @@ public class CameraFolderActivity extends BaseActivity {
             for (DateScrollItem item : adapterSource) {
                 for (LocalPichModel pic : ((LocalPicItemListAdapter) (item.subAdatper)).sourceItemList) {
                     if (pic.checked) {
+                        pic.setThumbBmp(null);
                         deleteFiles.add(pic);
                     }
                 }
@@ -384,14 +410,14 @@ public class CameraFolderActivity extends BaseActivity {
         }
     }
 
-    void refreshSource(int whitch) {
+    void refreshSource(final int whitch) {
         if (accSelect != whitch) {
             accSelect = whitch;
             adapterSource.clear();
             String dir = null;
             if (whitch == 0) {
                 dir = getImagesPath();
-            } else {
+            } else if (whitch == 1) {
                 dir = getVideosPath();
             }
             File folder = new File(dir);
@@ -399,40 +425,44 @@ public class CameraFolderActivity extends BaseActivity {
                 File[] files = folder.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
-                        return file.isDirectory() ||  (file.getName().length() == (mCamera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P?36:39));
+                        return file.isDirectory() || (file.getName().length() >= 36 && (whitch == 1 ? (file.getName().contains(".mp4") || file.getName().contains(".avi")) : (file.getName().contains(".jpg"))));
                     }
                 });
                 if (files != null) {
                     for (File f : files) {
+                        //下载的录像
                         if (f.isDirectory()) {
                             File[] pics = f.listFiles(new FileFilter() {
                                 @Override
                                 public boolean accept(File file) {
-                                    return (file.getName().length() == (mCamera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P?36:39));
+                                    return file.isFile() && file.getName().length() >= 36 && (file.getName().contains(".mp4") || file.getName().contains(".avi"));
                                 }
                             });
                             for (File pic : pics) {
                                 String[] paras = pic.getName().split("_");
                                 String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
                                 String title = paras[1].substring(0, 8);
-                                Date time = TwsTools.Str2Date(paras[1],null);
+                                Date time = TwsTools.Str2Date(paras[1], null);
                                 DateScrollItem sItem = findSouceItem(time);
                                 if (sItem == null) {
-                                    LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(),this.mCamera.getVideoRatio(CameraFolderActivity.this));
-                                    sItem = new DateScrollItem(time,date, title, adapter);
+                                    LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this));
+                                    sItem = new DateScrollItem(time, date, title, adapter);
                                     adapterSource.add(sItem);
                                 }
+                                sItem.isRemoteRecord = true;
                                 ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(pic.getAbsolutePath());
                             }
-                        } else {
+                        }
+                        //手动抓拍、录像
+                        else {
                             String[] paras = f.getName().split("_");
                             String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
                             String title = paras[1].substring(0, 8);
-                            Date time = TwsTools.Str2Date(paras[1],null);
+                            Date time = TwsTools.Str2Date(paras[1], null);
                             DateScrollItem sItem = findSouceItem(time);
                             if (sItem == null) {
-                                LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(),this.mCamera.getVideoRatio(CameraFolderActivity.this));
-                                sItem = new DateScrollItem(time,date, title, adapter);
+                                LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this));
+                                sItem = new DateScrollItem(time, date, title, adapter);
                                 adapterSource.add(sItem);
                             }
                             ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(f.getAbsolutePath());
@@ -461,7 +491,7 @@ public class CameraFolderActivity extends BaseActivity {
     DateScrollItem findSouceItem(Date date) {
         DateScrollItem result = null;
         for (DateScrollItem item : adapterSource) {
-            if (TwsTools.Date2Str(item.time,"yyyyMMdd").equals(TwsTools.Date2Str(date,"yyyyMMdd"))) {
+            if (TwsTools.Date2Str(item.time, "yyyyMMdd").equals(TwsTools.Date2Str(date, "yyyyMMdd"))) {
                 result = item;
                 break;
             }
@@ -488,7 +518,7 @@ public class CameraFolderActivity extends BaseActivity {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (adapter!= null && adapter.isCheckMode()) {
+            if (adapter != null && adapter.isCheckMode()) {
                 adapter.setCheckMode(false);
                 title.setRightBtnText(getString(adapter.isCheckMode() ? R.string.done : R.string.edit));
                 return true;
@@ -499,13 +529,4 @@ public class CameraFolderActivity extends BaseActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    public void onDestroy(){
-        super.onDestroy();
-        if(adapterSource != null) {
-            for (DateScrollItem item : adapterSource) {
-
-            }
-        }
-    }
 }

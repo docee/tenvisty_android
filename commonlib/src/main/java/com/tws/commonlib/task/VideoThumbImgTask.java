@@ -40,7 +40,7 @@ public class VideoThumbImgTask extends AsyncTask<String, Void, String> {
         final Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(filePath, MediaStore.Images.Thumbnails.MINI_KIND);
         if (bitmap != null) {
             try {
-                String snapFile = filePath + ".jpg";
+                String snapFile =  filePath+ ".jpg";
                 FileOutputStream fos = new FileOutputStream(snapFile);
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
                 fos.flush();

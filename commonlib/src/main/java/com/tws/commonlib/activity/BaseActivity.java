@@ -37,7 +37,6 @@ import com.tws.commonlib.view.TwsListView;
 
 public class BaseActivity extends AppCompatActivity {
     protected TwsProgressDialog progressDialog;
-    protected boolean setStatusBarColor = true;
     private final static int GO_ACTIVITY = 999;
     protected boolean needConnect = true;
     protected IMyCamera camera;

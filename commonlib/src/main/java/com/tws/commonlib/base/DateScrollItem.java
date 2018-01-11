@@ -24,4 +24,5 @@ public class DateScrollItem {
     public  boolean checked;
     public BaseAdapter subAdatper;
     public ImageView img_group_check;
+    public boolean isRemoteRecord;
 }

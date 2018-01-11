@@ -110,7 +110,8 @@ public interface IMyCamera {
     public  void registerPlayStateListener(IPlayStateListener listener);
     public  void unregisterPlayStateListener(IPlayStateListener listener);
     public  CameraP2PType getP2PType();
-
+    public void registerDownloadListener(IDownloadCallback listener) ;
+    public void unregisterDownloadListener(IDownloadCallback listener);
     public class MyCameraFactory{
         public  static MyCameraFactory instance;
         public static synchronized MyCameraFactory shareInstance(){

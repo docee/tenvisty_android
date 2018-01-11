@@ -36,6 +36,7 @@ public class TwsDataValue {
     public final static int HANDLE_MESSAGE_CHANNEL_STATE = 0x90000002;
     public final static int HANDLE_MESSAGE_STS_CHANGE_STREAMINFO = 0x90000003;
     public final static int HANDLE_MESSAGE_IO_RESP = 0x90000004;
+    public final static int HANDLE_MESSAGE_DOWNLOAD_STATE = 0x90000007;
     public final static String DEFAULT_PASSWORD = "admin";
     public final static String SNAP_DIR = "snapshot";
     public final static String RECORDING_DIR = "videorecording";

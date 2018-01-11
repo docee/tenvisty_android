@@ -11,14 +11,19 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.media.Image;
+import android.media.ThumbnailUtils;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.EventLog;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
 import android.widget.Toast;
@@ -46,16 +52,19 @@ import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
+import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.activity.PlaybackActivity;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
+import com.tws.commonlib.bean.IDownloadCallback;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
+import com.tws.commonlib.task.VideoThumbImgTask;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -71,7 +80,7 @@ import java.util.UUID;
 import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_ALL;
 import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_MOTIONDECT;
 
-public class EventList_HichipActivity extends BaseActivity implements IIOTCListener {
+public class EventList_HichipActivity extends BaseActivity implements IIOTCListener, IDownloadCallback {
 
     private static final int Build_VERSION_CODES_ICE_CREAM_SANDWICH = 14;
 
@@ -85,6 +94,8 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     public final static String VIDEO_PLAYBACK_START_TIME = "VIDEO START TIME";
     public final static String VIDEO_PLAYBACK_END_TIME = "VIDEO END TIME";
     private List<TWS_HI_P2P_FILE_INFO> list = Collections.synchronizedList(new ArrayList<TWS_HI_P2P_FILE_INFO>());
+
+    private List<TWS_HI_P2P_FILE_INFO> downloadlist = Collections.synchronizedList(new ArrayList<TWS_HI_P2P_FILE_INFO>());
     private EventListAdapter adapter;
 
     private HichipCamera mCamera;
@@ -113,6 +124,9 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     int accSelect = -1;
     boolean checkMode = false;
     NavigationBar title;
+    private boolean isDownloading = false;
+    private String path;
+    int downloadIndex;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,6 +145,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
                 mCamera = (HichipCamera) _camera;
                 mCamera.registerIOTCListener(this);
+                mCamera.registerDownloadListener(this);
                 break;
             }
         }
@@ -143,6 +158,20 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         initView();
 
 
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mCamera.registerDownloadListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        isDownloading = false;
+        mCamera.stopDownloadRecording();
+        mCamera.unregisterDownloadListener(this);
     }
 
     @Override
@@ -335,8 +364,12 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
             TWS_HI_P2P_FILE_INFO file_info = list.get(position);
             if (checkMode) {
-                file_info.isSelected = !file_info.isSelected;
-                v.findViewById(R.id.img_select).setSelected(file_info.isSelected);
+                if (file_info.downloadState != 1) {
+                    file_info.isSelected = !file_info.isSelected;
+                    v.findViewById(R.id.img_select).setSelected(file_info.isSelected);
+                } else {
+                    TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.tip_alear_dowm));
+                }
             } else {
                 Bundle extras = new Bundle();
                 extras.putString(TwsDataValue.EXTRA_KEY_UID, dev_uid);
@@ -373,12 +406,77 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 ((TextView) findViewById(R.id.txt_selectall)).setTextColor(AppCompatResources.getColorStateList(EventList_HichipActivity.this, R.color.darkergray));
             }
             boolean select = view.isSelected();
-            for(int i=0;i<list.size();i++){
-                list.get(i).isSelected = select;
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).downloadState != 1) {
+                    list.get(i).isSelected = select;
+                }
             }
             adapter.notifyDataSetChanged();
         } else if (view.getId() == R.id.img_download) {
+            downloadlist.clear();
+            for (int i = 0; i < list.size(); i++) {
+                if (list.get(i).isSelected && list.get(i).downloadState != 1) {
+                    downloadlist.add(list.get(i));
+                }
+            }
+            startMutiDownload();
+        }
+    }
 
+    public void startMutiDownload() {
+        if (TwsTools.isSDCardValid()) {
+            downloadIndex = 0;
+            if (downloadlist.size() == 0) {
+                showAlert(getString(R.string.dialog_msg_record_selectdownload));
+            } else {
+                showingProgressDialog();
+                new AsyncTask<Void, Void, Void>() {
+                    @Override
+                    protected Void doInBackground(Void... arg0) {
+                        downloadSingle();
+                        return null;
+                    }
+
+                    @Override
+                    protected void onPostExecute(Void result) {
+                        super.onPostExecute(result);
+                    }
+                }.execute();
+
+            }
+        } else {
+            TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.tips_setting_failed));
+        }
+    }
+
+    public void downloadSingle() {
+        boolean hasDownloaded = true;
+        TWS_HI_P2P_FILE_INFO fileInfo = null;
+        String filePath = null;
+        String fileName = null;
+        while (hasDownloaded && downloadIndex < downloadlist.size()) {
+            fileInfo = downloadlist.get(downloadIndex);
+            filePath = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND) + "/";
+            fileName = TwsTools.getFileNameWithTime(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND, fileInfo.sStartTime.getTimeInMillis(), fileInfo.EventType);
+            File file = new File(filePath + fileName + ".avi");
+            File file2 = new File(filePath + fileName + ".mp4");
+
+            if (file.exists() || file2.exists()) {// 文件已下载过
+                hasDownloaded = true;
+                fileInfo.downloadState = 1;
+                downloadIndex++;
+            } else {
+                hasDownloaded = false;
+            }
+        }
+        if (!hasDownloaded) {
+            if (mCamera != null) {
+                mCamera.startDownloadRecording(fileInfo.sStartTime, filePath, fileName);
+            }
+        } else {
+            if (handler != null) {
+                handler.sendEmptyMessage(77);
+            }
         }
     }
 //    private void downloadRecording(int position, final HiChipDefines.HI_P2P_FILE_INFO file_infos) {
@@ -451,7 +549,8 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     private void quit() {
         if (mCamera != null) {
             mCamera.unregisterIOTCListener(this);
-            mCamera = null;
+            mCamera.unregisterDownloadListener(this);
+            //mCamera = null;
             if (handler != null && timeoutRun != null) {
                 handler.removeCallbacks(timeoutRun);
             }
@@ -470,7 +569,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
         calendar.setTimeInMillis(utcTime);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         dateFormat.setTimeZone(TimeZone.getDefault());
 
         if (subMonth)
@@ -508,11 +607,21 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
     };
 
+    public void releaseBitmap() {
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setThumb(null);
+            }
+        }
+    }
+
     private void searchEventList(final long startTime, final long stopTime, int eventType) {
         mIsSearchingEvent = true;
         handler.removeCallbacks(timeoutRun);
 
         txt_event_day_top.setVisibility(View.GONE);
+
+        releaseBitmap();
         list.clear();
         adapter.notifyDataSetChanged();
 
@@ -620,7 +729,8 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     public void receiveSessionInfo(IMyCamera camera, int resultCode) {
         Bundle bundle = new Bundle();
         Message msg = handler.obtainMessage();
-        msg.what = resultCode;
+        msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
+        msg.arg2 = resultCode;
         msg.setData(bundle);
         handler.sendMessage(msg);
     }
@@ -646,8 +756,9 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         bundle.putByteArray("data", data);
 
         Message msg = new Message();
-        msg.what = avIOCtrlMsgType;
+        msg.what = TwsDataValue.HANDLE_MESSAGE_IO_RESP;
         msg.arg1 = succ;
+        msg.arg2 = avIOCtrlMsgType;
         msg.setData(bundle);
         handler.sendMessage(msg);
     }
@@ -670,6 +781,20 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     @Override
     public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
 
+    }
+
+    @Override
+    public void callbackDownloadState(IMyCamera var1, int total, int curSize, int state, String path) {
+        Bundle bundle = new Bundle();
+        bundle.putLong("total", total);
+        bundle.putLong("curSize", curSize);
+        bundle.putString("path", path);
+
+        Message msg = handler.obtainMessage();
+        msg.what = TwsDataValue.HANDLE_MESSAGE_DOWNLOAD_STATE;
+        msg.arg1 = state;
+        msg.setData(bundle);
+        handler.sendMessage(msg);
     }
 
     public class EventInfo {
@@ -801,27 +926,59 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 String timeString = dateFormat.format(calendar.getTime());
                 holder.txt_event_time.setText(timeString);
             }
+            if (evt.getThumb() == null) {
 
+            }
+            if (evt.downloadState == -1) {
+                String videoPath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND);
+                String videoName = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_RECORD_DOWNLAND, evt.sStartTime.getTimeInMillis(), evt.EventType);
+                if (new File(videoPath + "/" + videoName + ".mp4").exists() || new File(videoPath + "/" + videoName + ".avi").exists()) {
+                    evt.downloadState = 1;
+                } else {
+                    evt.downloadState = 0;
+                }
+            }
+            if (evt.downloadState == 1) {
+                holder.img_select.setSelected(true);
+                holder.img_select.setEnabled(false);
+            } else {
+                holder.img_select.setEnabled(true);
+            }
             //holder.indicator.setVisibility(supportPlayback & evt.EventStatus != EventInfo.EVENT_NORECORD ? View.VISIBLE : View.GONE);
 
-            BitmapFactory.Options bfo = new BitmapFactory.Options();
-            bfo.inSampleSize = 4;// 1/4宽高
 
             //Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_FILES.get(position),bfo) ;
-            Bitmap bitmap = null;
-            File rootFolder = new File(Environment
-                    .getExternalStorageDirectory().getAbsolutePath()
-                    + "/" + MyConfig.getFolderName() + "/");
-            File rootFolder1 = new File(rootFolder.getAbsolutePath()
-                    + "/Remote/");
-            File targetFolder = new File(rootFolder1.getAbsolutePath()
-                    + "/" + dev_uid);
-            String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
-            String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
-            try {
-                bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
-            }catch (OutOfMemoryError error){
+            Bitmap bitmap = evt.getThumb();
+            if (bitmap == null) {
+                String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
+                String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
+                try {
+                    BitmapFactory.Options bfo = new BitmapFactory.Options();
+                    bfo.inJustDecodeBounds = true;
+                    BitmapFactory.decodeFile(fullFileNamePath, bfo);
+                    if (bfo.outWidth > 0) {
+                        bfo.inJustDecodeBounds = false;
+                        bfo.inSampleSize = bfo.outWidth / 160;
+                        if (bfo.inSampleSize < 1) {
+                            bfo.inSampleSize = 1;
+                        }
+                        bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+                    } else if (evt.downloadState == 1) {
+                        String videoFilenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_RECORD_DOWNLAND, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
+                        String videoFullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND) + "/" + videoFilenameString +".mp4";
+                        bitmap = ThumbnailUtils.createVideoThumbnail(videoFullFileNamePath, MediaStore.Images.Thumbnails.MINI_KIND);
+                        if(bitmap == null){
+                            videoFullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND) + "/" + videoFilenameString +".avi";
+                            bitmap = ThumbnailUtils.createVideoThumbnail(videoFullFileNamePath, MediaStore.Images.Thumbnails.MINI_KIND);
+                        }
+                        if(bitmap != null){
+                            TwsTools.saveBitmap(bitmap,fullFileNamePath);
+                        }
+                    }
+                    evt.setThumb(bitmap);
+                } catch (OutOfMemoryError error) {
 
+                }
             }
             if (bitmap != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
@@ -869,7 +1026,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
 
     public static String getStringDateShort(Date currentTime) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         formatter.setTimeZone(TimeZone.getDefault());
         String dateString = formatter.format(currentTime);
         return dateString;
@@ -885,81 +1042,121 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             int sessionChannel = bundle.getInt("sessionChannel");
 
             switch (msg.what) {
-
-                case NSCamera.CONNECTION_STATE_CONNECTING:
-                    break;
-                case NSCamera.CONNECTION_STATE_WRONG_PASSWORD:
-                case NSCamera.CONNECTION_STATE_CONNECT_FAILED:
-                case NSCamera.CONNECTION_STATE_DISCONNECTED:
-                case NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE:
-                case NSCamera.CONNECTION_STATE_TIMEOUT:
-
-                    if (eventListView.getAdapter() != null && eventListView.getFooterViewsCount() == 0) {
-                        txt_event_day_top.setVisibility(View.GONE);
-                        list.clear();
-                        eventListView.addFooterView(offlineView);
-                        adapter.notifyDataSetChanged();
+                //批量下载结束
+                case 77:
+                    if (dlgBuilder != null) {
+                        dlgBuilder.dismiss();
                     }
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            adapter.notifyDataSetChanged();
+                            showAlertnew(android.R.drawable.ic_dialog_info, getString(R.string.prompt), getString(R.string.dialog_msg_download_complete), getString(R.string.ok), getString(R.string.btn_toView), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    if (i == DialogInterface.BUTTON_NEGATIVE) {
+                                    } else if (i == DialogInterface.BUTTON_POSITIVE) {
 
+                                        Bundle bundle = new Bundle();
+                                        bundle.putString(TwsDataValue.EXTRA_KEY_UID, mCamera.getUid());
+                                        bundle.putBoolean("goto", true);
+                                        Intent intent = new Intent(EventList_HichipActivity.this, CameraFolderActivity.class);
+                                        intent.putExtras(bundle);
+                                        startActivity(intent);
+                                    }
+                                }
+                            });
+                        }
+                    });
                     break;
+                case TwsDataValue.HANDLE_MESSAGE_IO_RESP:
+                    switch (msg.arg2) {
+                        case HiChipDefines.HI_P2P_START_REC_UPLOAD_EXT://下载
+                            break;
+                        case HiChipDefines.HI_P2P_PB_QUERY_START_NODST:
+                        case HiChipDefines.HI_P2P_PB_QUERY_START:
+                            if (data.length >= 12) {
+                                byte flag = data[8];// 数据发送的结束标识符
+                                int cnt = data[9]; // 当前包的文件个数
+                                if (cnt > 0) {
+                                    for (int i = 0; i < cnt; i++) {
+                                        int pos = 12;
+                                        int size = TWS_HI_P2P_FILE_INFO.sizeof();
+                                        byte[] t = new byte[24];
+                                        System.arraycopy(data, i * size + pos, t, 0, 24);
+                                        TWS_HI_P2P_FILE_INFO file_info = new TWS_HI_P2P_FILE_INFO(t);
+                                        long duration = file_info.sEndTime.getTimeInMillis()
+                                                - file_info.sStartTime.getTimeInMillis();
+                                        if (duration <= 1000 * 1000 && duration > 0) { //1000秒，文件录像一般为15分钟，但是有可能会长一点所有就设置为1000
+                                            list.add(file_info);
+                                        }
+                                    }
+                                }
+                                if (flag == 1) {// 表示数据收完了
+                                    if (!list.isEmpty()) {
+                                        txt_event_day_top.setText(list.get(0).strDate);
+                                        txt_event_day_top.setVisibility(View.VISIBLE);
+                                        Collections.sort(list, new Comparator<HiChipDefines.HI_P2P_FILE_INFO>() {
+                                            @Override
+                                            public int compare(HiChipDefines.HI_P2P_FILE_INFO eventInfo, HiChipDefines.HI_P2P_FILE_INFO t1) {
+                                                long tm1 = eventInfo.sStartTime.getTimeInMillis();
+                                                long tm2 = t1.sStartTime.getTimeInMillis();
+                                                return tm1 > tm2 ? -1 : (tm1 < tm2 ? 1 : 0);
+                                            }
+                                        });
+                                        setListDate();
+                                    }
+                                    adapter.notifyDataSetChanged();
 
-                case NSCamera.CONNECTION_STATE_CONNECTED:
+                                    eventListView.removeFooterView(loadingView);
+                                    eventListView.removeFooterView(noResultView);
 
-                    if (sessionChannel == 0 && eventListView.getAdapter() != null) {
-                        eventListView.removeFooterView(offlineView);
-                        adapter.notifyDataSetChanged();
-                    }
+                                    if (list.size() == 0) {
+                                        eventListView.addFooterView(noResultView);
+                                        //Toast.makeText(EventListActivity.this, EventListActivity.this.getText(R.string.tips_search_event_no_result), Toast.LENGTH_SHORT).show();
+                                    }
 
-                    break;
-                case HiChipDefines.HI_P2P_START_REC_UPLOAD_EXT://下载
-                    break;
-                case HiChipDefines.HI_P2P_PB_QUERY_START_NODST:
-                case HiChipDefines.HI_P2P_PB_QUERY_START:
-                    if (data.length >= 12) {
-                        byte flag = data[8];// 数据发送的结束标识符
-                        int cnt = data[9]; // 当前包的文件个数
-                        if (cnt > 0) {
-                            for (int i = 0; i < cnt; i++) {
-                                int pos = 12;
-                                int size = TWS_HI_P2P_FILE_INFO.sizeof();
-                                byte[] t = new byte[24];
-                                System.arraycopy(data, i * size + pos, t, 0, 24);
-                                TWS_HI_P2P_FILE_INFO file_info = new TWS_HI_P2P_FILE_INFO(t);
-                                long duration = file_info.sEndTime.getTimeInMillis()
-                                        - file_info.sStartTime.getTimeInMillis();
-                                if (duration <= 1000 * 1000 && duration > 0) { //1000秒，文件录像一般为15分钟，但是有可能会长一点所有就设置为1000
-                                    list.add(file_info);
+                                    eventListView.setEnabled(true);
+                                    mIsSearchingEvent = false;
                                 }
                             }
-                        }
-                        if (flag == 1) {// 表示数据收完了
-                            if (!list.isEmpty()) {
-                                txt_event_day_top.setText(list.get(0).strDate);
-                                txt_event_day_top.setVisibility(View.VISIBLE);
-                                Collections.sort(list, new Comparator<HiChipDefines.HI_P2P_FILE_INFO>() {
-                                    @Override
-                                    public int compare(HiChipDefines.HI_P2P_FILE_INFO eventInfo, HiChipDefines.HI_P2P_FILE_INFO t1) {
-                                        long tm1 = eventInfo.sStartTime.getTimeInMillis();
-                                        long tm2 = t1.sStartTime.getTimeInMillis();
-                                        return tm1 > tm2 ? -1 : (tm1 < tm2 ? 1 : 0);
-                                    }
-                                });
-                                setListDate();
-                            }
-                            adapter.notifyDataSetChanged();
-
-                            eventListView.removeFooterView(loadingView);
-                            eventListView.removeFooterView(noResultView);
-
-                            if (list.size() == 0) {
-                                eventListView.addFooterView(noResultView);
-                                //Toast.makeText(EventListActivity.this, EventListActivity.this.getText(R.string.tips_search_event_no_result), Toast.LENGTH_SHORT).show();
-                            }
-
-                            eventListView.setEnabled(true);
-                            mIsSearchingEvent = false;
-                        }
+                            break;
                     }
+                    break;
+                case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
+                    switch (msg.arg2) {
+                        case NSCamera.CONNECTION_STATE_CONNECTING:
+                            break;
+                        case NSCamera.CONNECTION_STATE_WRONG_PASSWORD:
+                        case NSCamera.CONNECTION_STATE_CONNECT_FAILED:
+                        case NSCamera.CONNECTION_STATE_DISCONNECTED:
+                        case NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE:
+                        case NSCamera.CONNECTION_STATE_TIMEOUT:
+
+                            if (eventListView.getAdapter() != null && eventListView.getFooterViewsCount() == 0) {
+                                txt_event_day_top.setVisibility(View.GONE);
+                                releaseBitmap();
+                                list.clear();
+                                eventListView.addFooterView(offlineView);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            break;
+
+                        case NSCamera.CONNECTION_STATE_CONNECTED:
+
+                            if (sessionChannel == 0 && eventListView.getAdapter() != null) {
+                                eventListView.removeFooterView(offlineView);
+                                adapter.notifyDataSetChanged();
+                            }
+
+                            break;
+                    }
+                    break;
+
+
+                case TwsDataValue.HANDLE_MESSAGE_DOWNLOAD_STATE:
+                    handDownLoad(msg);
                     break;
             }
 
@@ -967,48 +1164,191 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         }
     };
 
-    private void downloadRecording(int position, final HiChipDefines.HI_P2P_FILE_INFO file_infos) {
-        // HiChipDefines.HI_P2P_FILE_INFO file_infos = file_list.get(position);
-
-        if (TwsTools.isSDCardValid()) {
-
-            final String filePath = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND);
-            final String fileName = TwsTools.getFileNameWithTime(camera.getUid(), TwsTools.PATH_RECORD_DOWNLAND, list.get(position).sStartTime.getTimeInMillis(), list.get(position).EventType);
-            File file = new File(filePath + fileName + ".avi");
-            File file2 = new File(filePath + fileName + ".mp4");
-
-            if (file.exists() || file2.exists()) {// 文件已下载过
-                // HiToast.showToast(VideoOnlineActivity.this,
-                // getString(R.string.tip_alear_dowm));
-                showPrompt(getString(R.string.tip_alear_dowm));
-//                View view = View.inflate(VideoOnlineActivity.this, R.layout.popuwindow_aleary_down, null);
-//                AlertDialog.Builder builder = new AlertDialog.Builder(VideoOnlineActivity.this);
-//                final AlertDialog dialog = builder.create();
-//                dialog.show();
-//                dialog.setCancelable(false);
-//                dialog.getWindow().setContentView(view);
-//                TextView tvKnow = (TextView) dialog.findViewById(R.id.item_tv_know);
-//                tvKnow.setOnClickListener(new OnClickListener() {
-//                    @Override
-//                    public void onClick(View v) {
-//                        dialog.dismiss();
-//                    }
-//                });
-                return;
-            }
-            showLoadingProgress();
-//			//因为下载SDK加了耗时操作,所以放在要放在异步里处理
-            new Thread() {
-                public void run() {
-                    mCamera.startDownloadRecording(file_infos.sStartTime, filePath, fileName);
+    private void handDownLoad(Message msg) {
+        Bundle bundle = msg.getData();
+        switch (msg.arg1) {
+            case DOWNLOAD_STATE_START:
+                isDownloading = true;
+                path = bundle.getString("path");
+                if (popu_tips_down != null) {
+                    popu_tips_down.setText(String.format(getString(R.string.tips_downlaoding_video).toString(), "" + (downloadIndex + 1) + "/" + downloadlist.size()));
                 }
-            }.start();
-            //mCamera.startDownloadRecording(file_infos.sStartTime, download_path, fileName);
-        } else {
-            Toast.makeText(EventList_HichipActivity.this, getText(R.string.tips_setting_failed).toString(), Toast.LENGTH_SHORT)
-                    .show();
+                if(txt_downloadfile != null){
+                    txt_downloadfile.setText(downloadlist.get(downloadIndex).sStartTime.toString());
+                }
+                break;
+            case DOWNLOAD_STATE_DOWNLOADING:
+                if (isDownloading == false) {
+                    return;
+                }
+                float d;
+                long total = bundle.getLong("total");
+                if (total == 0) {
+                    d = bundle.getLong("curSize") * 100 / (1024 * 1024);
+                } else {
+                    d = bundle.getLong("curSize") * 100 / total;
+                }
+                if (d >= 100) {
+                    d = 99;
+                }
+                // int rate = Math.round(d);
+                int rate = (int) d;
+                String rateStr = "";
+                if (rate < 10) {
+                    rateStr = " " + rate + "%";
+                } else {
+                    rateStr = rate + "%";
+                }
+                prs_loading.setProgress(rate);
+
+                rate_loading_video.setText(rateStr);
+
+                break;
+            case DOWNLOAD_STATE_END:
+                prs_loading.setProgress(100);
+                rate_loading_video.setText(100 + "%");
+                isDownloading = false;
+//                cancel_btn_downloading_video.setText(R.string.ok);
+//                goto_btn_downloading_video.setVisibility(View.VISIBLE);
+//                popu_tips_down.setText(getString(R.string.tips_down_file_route));
+
+                downloadlist.get(downloadIndex).downloadState = 1;
+                String thumbPath = TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB);
+                String thumbFileNanme = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, downloadlist.get(downloadIndex).sStartTime.getTimeInMillis(), downloadlist.get(downloadIndex).EventType);
+                File thumb = new File(thumbPath + "/" + thumbFileNanme);
+                if (!thumb.exists()) {
+                    Bitmap bmp = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+                    TwsTools.saveBitmap(bmp, thumbPath + "/" + thumbFileNanme);
+                    bmp.recycle();
+                    bmp = null;
+                    System.gc();
+                }
+                downloadIndex++;
+                downloadSingle();
+
+                sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(path))));
+                break;
+            case DOWNLOAD_STATE_ERROR_PATH:
+                showAlert(getResources().getString(R.string.toast_connect_drop));
+                if (dlgBuilder != null) {
+                    dlgBuilder.dismiss();
+                }
+                dlgBuilder = null;
+                break;
+            case DOWNLOAD_STATE_ERROR_DATA:
+                // +++
+                if (mCamera != null && isDownloading) {
+                    mCamera.stopDownloadRecording();
+                    isDownloading = false;
+                    mCamera.disconnect();
+                    mCamera.connect();
+                }
+                break;
+
         }
     }
+
+    private AlertDialog dlgBuilder;
+    private SeekBar prs_loading;
+    private TextView rate_loading_video;
+    private  TextView txt_downloadfile;
+    private AlertDialog.Builder dlg;
+    private Button cancel_btn_downloading_video, goto_btn_downloading_video;
+    private TextView popu_tips_down;
+    private HiChipDefines.HI_P2P_FILE_INFO evt;
+
+    protected void showingProgressDialog() {
+        View customView = getLayoutInflater().inflate(R.layout.hint_download_record, null, false);
+        dlg = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_LIGHT);
+        dlgBuilder = dlg.create();
+        dlgBuilder.setView(customView);
+        dlgBuilder.setCancelable(false);
+        // dlgBuilder.setOnKeyListener(new OnKeyListener() {
+        //
+        // @Override
+        // public boolean onKey(DialogInterface arg0, int keyCode, KeyEvent
+        // keyEvent) {
+        // switch (keyCode) {
+        // case KeyEvent.KEYCODE_BACK:
+        // if (keyEvent.getAction() == KeyEvent.ACTION_UP) {
+        // cancelDownloadVideo();
+        // }
+        //
+        // break;
+        // }
+        // return true;
+        // }
+        //
+        // });
+
+		/*
+         * mPopupWindow = new PopupWindow(customView); ColorDrawable cd = new
+		 * ColorDrawable(-0000); mPopupWindow.setBackgroundDrawable(cd);
+		 * mPopupWindow.setOutsideTouchable(false);
+		 * mPopupWindow.setFocusable(true);
+		 * mPopupWindow.setWidth(LayoutParams.MATCH_PARENT);
+		 * mPopupWindow.setHeight(LayoutParams.MATCH_PARENT);
+		 */
+
+        dlgBuilder.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface d) {
+                isDownloading = false;
+                if (mCamera != null) {
+                    mCamera.stopDownloadRecording();
+                }
+            }
+        });
+
+        prs_loading = (SeekBar) customView.findViewById(R.id.sb_downloading_video);
+        prs_loading.setEnabled(false);
+        prs_loading.setMax(100);
+        prs_loading.setProgress(0);
+
+        rate_loading_video = (TextView) customView.findViewById(R.id.rate_loading_video);
+        txt_downloadfile = (TextView)customView.findViewById(R.id.txt_downloadfile);
+        popu_tips_down = (TextView) customView.findViewById(R.id.popu_tips_down);
+        if (popu_tips_down != null) {
+            popu_tips_down.setText(String.format(getString(R.string.tips_downlaoding_video).toString(), "" + (downloadIndex + 1) + "/" + downloadlist.size()));
+        }
+        if(txt_downloadfile != null){
+            txt_downloadfile.setText(downloadlist.get(downloadIndex).sStartTime.toString());
+        }
+        cancel_btn_downloading_video = (Button) customView.findViewById(R.id.cancel_btn_downloading_video);
+        cancel_btn_downloading_video.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View arg0) {
+                // 显示取消下载的对话框
+                // cancelDownloadVideo();
+                if (getString(R.string.ok)
+                        .equals(cancel_btn_downloading_video.getText().toString().trim())) {
+                    dlgBuilder.dismiss();
+                } else {
+                    dlgBuilder.dismiss();
+                    deleteLoadingFile();
+                    adapter.notifyDataSetChanged();
+                }
+            }
+        });
+
+        dlgBuilder.show();
+        WindowManager m = getWindowManager();
+        Display d = m.getDefaultDisplay();  //为获取屏幕宽、高
+        android.view.WindowManager.LayoutParams p = dlgBuilder.getWindow().getAttributes();  //获取对话框当前的参数值
+        //p.height = (int) (d.getHeight() * 0.3);   //高度设置为屏幕的0.3
+        p.width = (int) (d.getWidth() * 0.9);    //宽度设置为屏幕的0.8
+        dlgBuilder.getWindow().setAttributes(p);     //设置生效
+    }
+
+    private void deleteLoadingFile() {
+        if (path != null) {
+            File file = new File(path);
+            file.delete();
+        }
+    }
+
+
     public void showPrompt(CharSequence message) {
 
         AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
@@ -1051,7 +1391,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
 
         // set button
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
         EventList_HichipActivity.this.mStartSearchCalendar = Calendar.getInstance();
@@ -1239,6 +1579,22 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         public String strTime;
         public boolean isDateFirstItem;
         public boolean isSelected;
+        public int downloadState;
+
+        public Bitmap getThumb() {
+            return thumb;
+        }
+
+        public void setThumb(Bitmap thumb) {
+            if (this.thumb != null && !this.thumb.isRecycled()) {
+                this.thumb.recycle();
+                this.thumb = null;
+                System.gc();
+            }
+            this.thumb = thumb;
+        }
+
+        private Bitmap thumb;
 
         public static int sizeof() {
             return 24;
@@ -1251,19 +1607,23 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 strTime = super.sStartTime.toString().substring(11, 19);
                 isDateFirstItem = false;
             }
+            downloadState = -1;
         }
     }
 
     void setToolBarVisible() {
         checkMode = !checkMode;
-        if (!checkMode && list != null) {
-            for (int i = 0; i < list.size(); i++) {
-                list.get(i).isSelected = false;
-            }
-        }
-
         title.setRightBtnText(getString(checkMode ? R.string.done : R.string.edit));
         EventList_HichipActivity.this.findViewById(R.id.ll_toolbar_bottom).setVisibility(checkMode ? View.VISIBLE : View.GONE);
-        adapter.notifyDataSetChanged();
+        if (findViewById(R.id.img_selectall).isSelected()) {
+            findViewById(R.id.img_selectall).performClick();
+        } else {
+            if (!checkMode && list != null) {
+                for (int i = 0; i < list.size(); i++) {
+                    list.get(i).isSelected = false;
+                }
+            }
+            adapter.notifyDataSetChanged();
+        }
     }
 }

@@ -352,7 +352,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
         calendar.setTimeInMillis(utcTime);
 
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm");
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm");
         dateFormat.setTimeZone(TimeZone.getDefault());
 
         if (subMonth)
@@ -395,6 +395,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         handler.removeCallbacks(timeoutRun);
 
         txt_event_day_top.setVisibility(View.GONE);
+        releaseBitmap();
         list.clear();
         adapter.notifyDataSetChanged();
 
@@ -506,6 +507,20 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         public String strTime;
         public boolean isDateFirstItem;
         private UUID m_uuid = UUID.randomUUID();
+        public Bitmap getThumb() {
+            return thumb;
+        }
+
+        public void setThumb(Bitmap thumb) {
+            if (this.thumb != null && !this.thumb.isRecycled()) {
+                this.thumb.recycle();
+                this.thumb = null;
+                System.gc();
+            }
+            this.thumb = thumb;
+        }
+
+        private Bitmap thumb;
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("gmt"));
 
         public String getUUID() {
@@ -617,16 +632,26 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
             //holder.indicator.setVisibility(supportPlayback & evt.EventStatus != EventInfo.EVENT_NORECORD ? View.VISIBLE : View.GONE);
 
-            BitmapFactory.Options bfo = new BitmapFactory.Options();
-            bfo.inSampleSize = 4;// 1/4宽高
+
 
             //Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_FILES.get(position),bfo) ;
-            Bitmap bitmap = null;
+            Bitmap bitmap = evt.getThumb();
 
             String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.EventTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
             String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
             try {
-                bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+                BitmapFactory.Options bfo = new BitmapFactory.Options();
+                bfo.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(fullFileNamePath, bfo);
+                if(bfo.outWidth > 0){
+                    bfo.inSampleSize = bfo.outWidth/160;
+                    if(bfo.inSampleSize < 1){
+                        bfo.inSampleSize = 1;
+                    }
+                    bfo.inJustDecodeBounds = false;
+                    bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
+                    evt.setThumb(bitmap);
+                }
             } catch (OutOfMemoryError error) {
 
             }
@@ -675,12 +700,18 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
 
     public static String getStringDateShort(Date currentTime) {
-        SimpleDateFormat formatter = new SimpleDateFormat("MM-dd-yyyy");
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd");
         formatter.setTimeZone(TimeZone.getDefault());
         String dateString = formatter.format(currentTime);
         return dateString;
     }
-
+    public void releaseBitmap() {
+        if (list != null) {
+            for (int i = 0; i < list.size(); i++) {
+                list.get(i).setThumb(null);
+            }
+        }
+    }
     private Handler handler = new Handler() {
 
         @Override
@@ -702,6 +733,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
                     if (eventListView.getAdapter() != null && eventListView.getFooterViewsCount() == 0) {
                         txt_event_day_top.setVisibility(View.GONE);
+                        releaseBitmap();
                         list.clear();
                         eventListView.addFooterView(offlineView);
                         adapter.notifyDataSetChanged();
@@ -832,7 +864,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         Button btnCancel = (Button) view.findViewById(R.id.btnCancel);
 
         // set button
-        final SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+        final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd");
         final SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
 
         EventListActivity.this.mStartSearchCalendar = Calendar.getInstance();

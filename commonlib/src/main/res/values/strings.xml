@@ -254,6 +254,8 @@
     <string name="dialog_msg_no_network">The phone network is disconnected. Please check the network settings.</string>
     <string name="dialog_msg_emailtest_falied">Test failed, please check your email settings.</string>
     <string name="dialog_msg_ftptest_falied">Test failed, please check your FTP settings.</string>
+    <string name="dialog_msg_record_selectdownload">Please select the record.</string>
+    <string name="dialog_msg_download_complete">Download complete, you can view downloaded videos under this path: Image - Video - Download</string>
 
     <string name="btn_config_wifi">Configure Wi-Fi</string>
     <string name="btn_manually_add_camera">Manually add</string>
@@ -274,6 +276,7 @@
     <string name="btn_ptz_zoomout">Zoom out</string>
     <string name="btn_ptz_focusout">Focus out</string>
     <string name="btn_ptz_focusin">Focus in</string>
+    <string name="btn_toView">To view</string>
 
     <string name="alert_all_field_can_not_empty">Please complete each password.</string>
     <string name="alert_old_password_is_wrong">The old password is wrong.</string>
@@ -355,6 +358,8 @@
     <string name="tips_upgrading_percent">Upgrading %s%%</string>
     <string name="tips_no_sdcard">No SDCard found in your device.</string>
     <string name="tip_alear_dowm">The video has been downloaded yet</string>
+    <string name="tips_downlaoding_video">Downloading %s.</string>
+    <string name="tips_down_file_route">You can view downloaded videos under this path: Image - Video - Download</string>
 
     <string name="tips_device_time_setting_synchroned_time">Synchronization Time Successfully </string>
     <string name="hint_mail_setting_sender">Email</string>
@@ -411,4 +416,9 @@
     <string name="camera_state_connected">Online</string>
     <string name="camera_state_disconnect">Disconnected</string>
     <string name="camera_state_passwordWrong">Wrong Password</string>
+
+    <string name="spinner_photos">Photos</string>
+    <string name="spinner_videos">Videos</string>
+    <string name="spinner_download">Download</string>
+
 </resources>

@@ -694,7 +694,7 @@ public class AVIOCTRLDEFs {
             calendar.setTimeInMillis(getTimeInMillis());
             // calendar.add(Calendar.MONTH, -1);
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             dateFormat.setTimeZone(TimeZone.getDefault());
 
             return dateFormat.format(calendar.getTime());
@@ -706,7 +706,7 @@ public class AVIOCTRLDEFs {
             calendar.setTimeInMillis(getTimeInMillis());
             // calendar.add(Calendar.MONTH, -1);
 
-            SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
             dateFormat.setTimeZone(TimeZone.getTimeZone("gmt"));
 
             return dateFormat.format(calendar.getTime());

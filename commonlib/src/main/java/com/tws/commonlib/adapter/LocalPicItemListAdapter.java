@@ -22,6 +22,7 @@ import com.tws.commonlib.R;
 import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.LocalPichModel;
+import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.task.LocalPichumbImgTask;
 import com.tws.commonlib.task.VideoThumbImgTask;
 
@@ -44,7 +45,6 @@ public class LocalPicItemListAdapter extends BaseAdapter {
         this.mInflater = LayoutInflater.from(context);
     }
 
-    private HashMap<String, Bitmap> bitmapHashMap;
 
     public boolean checkMode;
 
@@ -59,7 +59,6 @@ public class LocalPicItemListAdapter extends BaseAdapter {
         this.mInflater = LayoutInflater.from(context);
         this.sourceItemList = _sourceItemList;
         this.checkPicList = new ArrayList<ImageView>();
-        this.bitmapHashMap = new HashMap<String, Bitmap>();
         defaultPic = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_video_snap);
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -136,7 +135,7 @@ public class LocalPicItemListAdapter extends BaseAdapter {
             holder = (ViewHolder) convertView.getTag();
         }
         Bitmap bitmap = null;
-        if (!bitmapHashMap.containsKey(sourceItemList.get(position).path)) {
+        if (model.getThumbBmp() == null) {
             LocalPichumbImgTask task = new LocalPichumbImgTask(new LocalPichumbImgTask.onCreateVideoThumb() {
                 @Override
                 public void onCreated(final ImageView itemView, final String path, final Bitmap bmp) {
@@ -144,7 +143,7 @@ public class LocalPicItemListAdapter extends BaseAdapter {
                         @Override
                         public void run() {
                             if (path != null && bmp != null) {
-                                if (path.contains(".mp4")) {
+                                if (path.contains(".mp4") || path.contains(TwsDataValue.Remte_RECORDING_DIR)) {
                                     itemView.setImageResource(R.drawable.ic_menu_play_inverse_background);
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                                         itemView.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bmp));
@@ -164,7 +163,7 @@ public class LocalPicItemListAdapter extends BaseAdapter {
                             }
                         }
                     });
-                    bitmapHashMap.put(path, bmp);
+                    model.setThumbBmp(bmp);
                 }
             });
             task.setItemView(holder.img_pic);
@@ -173,7 +172,7 @@ public class LocalPicItemListAdapter extends BaseAdapter {
 //            bfo.inSampleSize = 4;// 1/4宽高
 //            bitmap = BitmapFactory.decodeFile(sourceItemList.get(position).path, bfo);
         } else {
-            bitmap = bitmapHashMap.get(sourceItemList.get(position).path);
+            bitmap = model.getThumbBmp();
         }
         holder.img_select.setEnabled(model.checked);
         if (model.isVideo()) {
@@ -198,6 +197,19 @@ public class LocalPicItemListAdapter extends BaseAdapter {
     public final class ViewHolder {
         public ImageView img_pic;
         public ImageView img_select;
+    }
+
+    public void  release(){
+        if(defaultPic != null && !defaultPic.isRecycled()){
+            defaultPic.recycle();
+            defaultPic = null;
+            System.gc();
+        }
+        if(sourceItemList != null){
+            for(LocalPichModel model : sourceItemList){
+                model.setThumbBmp(null);
+            }
+        }
     }
 
 }

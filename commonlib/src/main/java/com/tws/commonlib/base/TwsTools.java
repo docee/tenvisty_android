@@ -449,9 +449,9 @@ public class TwsTools {
 
         String strTime = dateFormat.format(calendar.getTime());
         if (type == PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) {
-            result = uid + "_" + eventType + strTime + ".jpg";
+            result = uid + "_" + strTime + "_" + eventType + ".jpg";
         } else if (type == PATH_RECORD_DOWNLAND) {
-            result = uid + "_" + eventType + strTime + ".mp4";
+            result = uid + "_" + strTime + "_" + eventType;
         }
         return result;
         //return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
@@ -500,7 +500,6 @@ public class TwsTools {
         }
         return result;
     }
-
 
     public final static String getEventType(Context context, int eventType,
                                             boolean isSearch) {
@@ -883,7 +882,7 @@ public class TwsTools {
             }
             result = cameraFolder.getAbsoluteFile().toString();
         } else if (type == PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) {
-            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.Remte_RECORDING_DIR);
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.RECORDING_DIR + "/" + TwsDataValue.Remte_RECORDING_DIR);
             if (!cameraFolder.exists()) {
                 cameraFolder.mkdirs();
             }
@@ -902,7 +901,7 @@ public class TwsTools {
             }
             result = cameraFolder.getAbsoluteFile().toString();
         } else if (type == PATH_RECORD_DOWNLAND) {
-            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.Remte_RECORDING_DIR + "/download");
+            File cameraFolder = new File(rootFolder.getAbsolutePath() + "/" + MyConfig.getFolderName() + "/" + uid + "/" + TwsDataValue.RECORDING_DIR + "/" + TwsDataValue.Remte_RECORDING_DIR);
             if (!cameraFolder.exists()) {
                 cameraFolder.mkdirs();
             }

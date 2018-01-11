@@ -5,6 +5,6 @@
 
     <solid android:color="@color/radio_bg_selected" />
 
-    <corners android:radius="10dip" />
+    <corners android:radius="6dip" />
 
 </shape>

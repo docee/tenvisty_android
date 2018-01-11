@@ -94,7 +94,7 @@ public class FolderFragment extends BaseFragment {
             photos = photoFolder.listFiles(new FileFilter() {
                 @Override
                 public boolean accept(File file) {
-                    return file.isDirectory() || ((file.getName().length() == 36) || (file.getName().length() == 39));
+                    return file.isFile() && (file.getName().length() >= 36);
                 }
             });
             if (photos != null) {
@@ -105,19 +105,38 @@ public class FolderFragment extends BaseFragment {
         } else {
             photoCount = 0;
         }
+
         File[] videos = null;
         File videoFolder = new File(getVideosPath(camera.getUid()));
+        String videoPath = null;
         if (videoFolder.exists()) {
-            videos = videoFolder.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isDirectory() || ((file.getName().length() == 36) || (file.getName().length() == 39));
+
+            for (File file : videoFolder.listFiles()) {
+                if (file.isFile() && file.getName().length() >= 36) {
+                    if( (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi"))){
+                        videoCount++;
+                        if(videoPath == null){
+                            videoPath = file.getAbsolutePath();
+                        }
+                    }
+                    else if(thumbPath == null && file.getName().endsWith(".jpg")){
+                        thumbPath = file.getAbsolutePath();
+                    }
+                } else if (file.isDirectory()) {
+                    for (File remoteFile : file.listFiles()) {
+                        if (remoteFile.isFile() && remoteFile.getName().length() >= 36) {
+                            if( (remoteFile.getName().endsWith(".mp4") || remoteFile.getName().endsWith(".avi"))){
+                                videoCount++;
+                                if(videoPath == null){
+                                    videoPath = remoteFile.getAbsolutePath();
+                                }
+                            }
+                            else if(thumbPath == null && remoteFile.getName().endsWith(".jpg")){
+                                thumbPath = remoteFile.getAbsolutePath();
+                            }
+                        }
+                    }
                 }
-            });
-            if (videos != null) {
-                videoCount = videos.length;
-            } else {
-                videoCount = 0;
             }
         } else {
             videoCount = 0;
@@ -125,17 +144,13 @@ public class FolderFragment extends BaseFragment {
         if (photoCount > 0) {
             thumbPath = photos[0].getAbsolutePath();
         } else if (videoCount > 0) {
-            for (File v : videos) {
-                if (new File(v.getAbsoluteFile() + ".jpg").exists()) {
-                    thumbPath = v.getAbsoluteFile() + ".jpg";
-                    break;
-                }
-            }
             if (thumbPath == null) {
-                final Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(videos[0].getAbsolutePath(), MediaStore.Images.Thumbnails.MINI_KIND);
+                final Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
                 if (bitmap != null) {
                     try {
-                        String snapFile = videos[0].getAbsolutePath() + ".jpg";
+                        String filePath = videos[0].getAbsolutePath();
+                        String snapFile = filePath + ".jpg";
+
                         FileOutputStream fos = new FileOutputStream(snapFile);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
                         fos.flush();
@@ -159,7 +174,7 @@ public class FolderFragment extends BaseFragment {
 
     public void initView() {
         //清理bitmap
-        for(FolderInfoModel m : sourceList){
+        for (FolderInfoModel m : sourceList) {
             m.setThumbMap(null);
         }
         sourceList.clear();

@@ -31,23 +31,23 @@ public class LocalPichumbImgTask extends AsyncTask<String, Void, String> {
     @Override
     protected String doInBackground(String... strings) {
         String filePath = strings[0];
-        BitmapFactory.Options bfo = new BitmapFactory.Options();
-        bfo.inSampleSize = 4;// 1/4宽高
-        if (filePath.contains(".mp4")) {
+        if (filePath.contains(".mp4") || filePath.contains(".avi")) {
             String thumbPath = filePath + ".jpg";
             File f = new File(thumbPath);
+            if(!f.exists()){
+                thumbPath = filePath.substring(0,filePath.length() - 4) + ".jpg";
+                f = new File(thumbPath);
+            }
             if (!f.exists()) {
-                final Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(filePath, MediaStore.Images.Thumbnails.MINI_KIND);
+                Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(filePath, MediaStore.Images.Thumbnails.MINI_KIND);
                 if (bitmap != null) {
                     try {
-                        String snapFile = filePath + ".jpg";
+                        String snapFile = filePath+ ".jpg";
+
                         FileOutputStream fos = new FileOutputStream(snapFile);
                         bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
                         fos.flush();
                         fos.close();
-                        if (bitmap.isRecycled()) {
-                            bitmap.recycle();
-                        }
                         if (itemView != null) {
                             if (te != null) {
                                 te.onCreated(itemView, snapFile, bitmap);
@@ -58,8 +58,7 @@ public class LocalPichumbImgTask extends AsyncTask<String, Void, String> {
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                }
-                else{
+                } else {
                     if (itemView != null) {
                         if (te != null) {
                             te.onCreated(itemView, null, bitmap);
@@ -68,26 +67,42 @@ public class LocalPichumbImgTask extends AsyncTask<String, Void, String> {
                 }
                 return null;
 
-            }
-            else{
+            } else {
                 filePath = thumbPath;
             }
         }
         try {
-            final Bitmap bitmap = BitmapFactory.decodeFile(filePath, bfo);
-            if (bitmap != null) {
+            BitmapFactory.Options bfo = new BitmapFactory.Options();
+            bfo.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(filePath, bfo);
+
+            bfo.inSampleSize = bfo.outWidth / 320;// 1/4宽高
+            if (bfo.inSampleSize < 1) {
+                bfo.inSampleSize = 1;
+            }
+            bfo.inJustDecodeBounds = false;
+            try {
+                Bitmap bitmap = BitmapFactory.decodeFile(filePath, bfo);
+                if (bitmap != null) {
 //        else {
 //            File file = new File(filePath);
 //            file.delete();
 //        }
 
+                    if (itemView != null) {
+                        if (te != null) {
+                            te.onCreated(itemView, filePath, bitmap);
+                        }
+                    }
+                }
+            }catch (OutOfMemoryError error){
                 if (itemView != null) {
                     if (te != null) {
-                        te.onCreated(itemView, filePath, bitmap);
+                        te.onCreated(itemView, filePath, null);
                     }
                 }
             }
-        }catch (OutOfMemoryError error){
+        } catch (OutOfMemoryError error) {
 
         }
 

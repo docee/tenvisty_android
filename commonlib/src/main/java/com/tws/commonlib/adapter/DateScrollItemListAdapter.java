@@ -222,5 +222,15 @@ public class DateScrollItemListAdapter extends BaseAdapter {
         public void onCheck(boolean b);
     }
 
+    public  void  release(){
+        if(sourceList != null){
+            for(DateScrollItem item  : sourceList){
+                if(item.subAdatper instanceof  LocalPicItemListAdapter){
+                    ((LocalPicItemListAdapter)item.subAdatper).release();
+                }
+            }
+        }
+    }
+
 
 }

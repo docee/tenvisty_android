@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.hichip.base.HiLog;
 import com.hichip.base.SharePreUtils;
+import com.hichip.callback.ICameraDownloadCallback;
 import com.hichip.callback.ICameraIOSessionCallback;
 import com.hichip.callback.ICameraPlayStateCallback;
 import com.hichip.content.HiChipDefines;
@@ -45,10 +46,11 @@ import java.util.Vector;
  * Created by Administrator on 2018/1/7.
  */
 
-public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessionCallback, ICameraPlayStateCallback {
+public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessionCallback, ICameraPlayStateCallback, ICameraDownloadCallback {
 
     protected List<IIOTCListener> mIOTCListeners = Collections.synchronizedList(new Vector<IIOTCListener>());
     protected List<IPlayStateListener> mPlayStateListeners = Collections.synchronizedList(new Vector<IPlayStateListener>());
+    protected List<IDownloadCallback> mDownloadListeners = Collections.synchronizedList(new Vector<IDownloadCallback>());
     private String nickName;
     private CameraState cameraState;
     private int eventNum;
@@ -71,6 +73,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         this.nickName = nikename;
         this.registerIOSessionListener(this);
         this.registerPlayStateListener(this);
+        this.registerDownloadListener(this);
     }
 
     public boolean isInitTime() {
@@ -851,12 +854,29 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
+    public void unregisterDownloadListener(IDownloadCallback listener) {
+        if (mDownloadListeners.contains(listener)) {
+            Log.i("NSCamera", "unregister IOTC listener");
+            mDownloadListeners.remove(listener);
+        }
+    }
+
+    @Override
+    public void registerDownloadListener(IDownloadCallback listener) {
+        if (!mDownloadListeners.contains(listener)) {
+            Log.i("NSCamera", "register IOTC listener");
+            mDownloadListeners.add(listener);
+        }
+    }
+
+    @Override
     public void unregisterPlayStateListener(IPlayStateListener listener) {
         if (mPlayStateListeners.contains(listener)) {
             Log.i("NSCamera", "unregister IOTC listener");
             mPlayStateListeners.remove(listener);
         }
     }
+
 
     protected void setServer(HichipCamera mCamera) {
 
@@ -1112,6 +1132,14 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             this.serverData = db.getDeviceServerData(this.getUid());
         }
         return this.serverData;
+    }
+
+    @Override
+    public void callbackDownloadState(HiCamera hiCamera, int total, int curSize, int state, String path) {
+        for (int i = 0; i < mDownloadListeners.size(); i++) {
+            IDownloadCallback listener = mDownloadListeners.get(i);
+            listener.callbackDownloadState(HichipCamera.this, total, curSize, state, path);
+        }
     }
 
     public interface OnBindPushResult {

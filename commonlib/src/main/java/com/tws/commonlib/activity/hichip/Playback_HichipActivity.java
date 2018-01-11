@@ -133,7 +133,6 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        setStatusBarColor = false;
         super.onCreate(savedInstanceState);
 
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
