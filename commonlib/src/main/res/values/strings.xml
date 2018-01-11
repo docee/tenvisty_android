@@ -391,7 +391,7 @@
     <string name="tip_not_switch_quality">Can\'t change quality while recording</string>
     <string name="toast_test_success">Test Succeed</string>
     <string name="toast_test_failed">Test Failed</string>
-
+    <string name="no_network_connection_toast">No network connection found</string>
     <!-- Event type -->
     <string name="evttype_all">All</string>
     <string name="evttype_motion_detection">Motion detection</string>

@@ -1,18 +1,23 @@
 package com.tws.commonlib.fragment;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.media.ThumbnailUtils;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
+import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
@@ -20,6 +25,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.tws.commonlib.BuildConfig;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.CameraFolderActivity;
 import com.tws.commonlib.base.FolderInfoModel;
@@ -27,6 +33,10 @@ import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
+import com.tws.commonlib.ui.RecyclingImageView;
+import com.tws.commonlib.util.ImageCache;
+import com.tws.commonlib.util.ImageFetcher;
+import com.tws.commonlib.util.Utils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -37,20 +47,101 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class FolderFragment extends BaseFragment {
+public class FolderFragment extends BaseFragment implements AdapterView.OnItemClickListener {
     private View view;
     private final List<FolderInfoModel> sourceList = new ArrayList<FolderInfoModel>();
     private boolean isInit = false;
-
+    private ImageFetcher mImageFetcher;
+    private  PictureListAdapter mAdapter;
+    private static final String IMAGE_CACHE_DIR = "thumbs";
+    private int mImageThumbSize;
+    private int mImageThumbSpacing;
+    private static final String TAG = "FolderFragment";
     public boolean isInited() {
         return isInit;
     }
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
 
+        mImageThumbSize = TwsTools.dip2px(getActivity(),100);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
+        mImageThumbSpacing = TwsTools.dip2px(getActivity(),1);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
+
+        mAdapter = new PictureListAdapter(getActivity());
+
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(getActivity(), IMAGE_CACHE_DIR);
+
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        // The ImageFetcher takes care of loading images into our ImageView children asynchronously
+        mImageFetcher = new ImageFetcher(getActivity(), mImageThumbSize);
+
+        mImageFetcher.setImageSize(TwsTools.dip2px(getActivity(),100),TwsTools.dip2px(getActivity(),60));
+        mImageFetcher.setLoadingImage(R.drawable.default_img);
+        mImageFetcher.addImageCache(getActivity().getSupportFragmentManager(), cacheParams);
+        mImageFetcher.clearCache();
+    }
     @Override
     public View onCreateView(LayoutInflater inflater,
                              @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         if (view == null) {
             view = inflater.inflate(R.layout.fragment_folder, null);
+            final ListView picture_fragment_camera_list = (ListView) view.findViewById(R.id.picture_fragment_camera_list);
+            picture_fragment_camera_list.setAdapter(mAdapter);
+            picture_fragment_camera_list.setOnItemClickListener(this);
+            picture_fragment_camera_list.setOnScrollListener(new AbsListView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(AbsListView absListView, int scrollState) {
+                    // Pause fetcher to ensure smoother scrolling when flinging
+                    if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                        // Before Honeycomb pause image loading on scroll to help with performance
+                        if (!Utils.hasHoneycomb()) {
+                            mImageFetcher.setPauseWork(true);
+                        }
+                    } else {
+                        mImageFetcher.setPauseWork(false);
+                    }
+                }
+
+                @Override
+                public void onScroll(AbsListView absListView, int firstVisibleItem,
+                                     int visibleItemCount, int totalItemCount) {
+                }
+            });
+
+            // This listener is used to get the final width of the GridView and then calculate the
+            // number of columns and the width of each column. The width of each column is variable
+            // as the GridView has stretchMode=columnWidth. The column width is used to set the height
+            // of each view so we get nice square thumbnails.
+//            picture_fragment_camera_list.getViewTreeObserver().addOnGlobalLayoutListener(
+//                    new ViewTreeObserver.OnGlobalLayoutListener() {
+//                        @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+//                        @Override
+//                        public void onGlobalLayout() {
+//                            if (mAdapter.getNumColumns() == 0) {
+//                                final int numColumns = (int) Math.floor(
+//                                        mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+//                                if (numColumns > 0) {
+//                                    final int columnWidth =
+//                                            (mGridView.getWidth() / numColumns) - mImageThumbSpacing;
+//                                    mAdapter.setNumColumns(numColumns);
+//                                    mAdapter.setItemHeight(columnWidth);
+//                                    if (BuildConfig.DEBUG) {
+//                                        Log.d(TAG, "onCreateView - numColumns set to " + numColumns);
+//                                    }
+//                                    if (Utils.hasJellyBean()) {
+//                                        picture_fragment_camera_list.getViewTreeObserver()
+//                                                .removeOnGlobalLayoutListener(this);
+//                                    } else {
+//                                        picture_fragment_camera_list.getViewTreeObserver()
+//                                                .removeGlobalOnLayoutListener(this);
+//                                    }
+//                                }
+//                            }
+//                        }
+//                    });
         }
         ViewGroup parent = (ViewGroup) view.getParent();
         if (parent != null) {
@@ -89,81 +180,49 @@ public class FolderFragment extends BaseFragment {
         int photoCount = 0;
         int videoCount = 0;
         File photoFolder = new File(getImagesPath(camera.getUid()));
-        File[] photos = null;
         if (photoFolder.exists()) {
-            photos = photoFolder.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isFile() && (file.getName().length() >= 36);
+            for(File pic : photoFolder.listFiles()){
+                String strFileName = pic.getName();
+                if(strFileName.length() >= 36 && strFileName.endsWith(".jpg")){
+                    photoCount++;
+                    if(thumbPath == null) {
+                        thumbPath = pic.getAbsolutePath();
+                    }
                 }
-            });
-            if (photos != null) {
-                photoCount = photos.length;
-            } else {
-                photoCount = 0;
             }
-        } else {
-            photoCount = 0;
         }
-
-        File[] videos = null;
+        if(thumbPath == null){
+            String autoThumFile = getAutoThumbFile(camera.getUid());
+            File fThumb = new File(autoThumFile);
+            if(fThumb.exists()){
+                thumbPath = autoThumFile;
+            }
+        }
         File videoFolder = new File(getVideosPath(camera.getUid()));
-        String videoPath = null;
         if (videoFolder.exists()) {
-
-            for (File file : videoFolder.listFiles()) {
-                if (file.isFile() && file.getName().length() >= 36) {
-                    if( (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi"))){
-                        videoCount++;
-                        if(videoPath == null){
-                            videoPath = file.getAbsolutePath();
+            for(File fVideo : videoFolder.listFiles()){
+                if(fVideo.isFile()) {
+                    String strFileName = fVideo.getName();
+                    if(strFileName.length() >= 36) {
+                        if (strFileName.endsWith(".mp4")) {
+                            videoCount++;
+                        } else if (thumbPath == null && strFileName.endsWith(".jpg")) {
+                            thumbPath = fVideo.getAbsolutePath();
                         }
                     }
-                    else if(thumbPath == null && file.getName().endsWith(".jpg")){
-                        thumbPath = file.getAbsolutePath();
-                    }
-                } else if (file.isDirectory()) {
-                    for (File remoteFile : file.listFiles()) {
-                        if (remoteFile.isFile() && remoteFile.getName().length() >= 36) {
-                            if( (remoteFile.getName().endsWith(".mp4") || remoteFile.getName().endsWith(".avi"))){
-                                videoCount++;
-                                if(videoPath == null){
-                                    videoPath = remoteFile.getAbsolutePath();
+                }
+                else{
+                    for(File fRemoteVideo : fVideo.listFiles()){
+                        if(fRemoteVideo.isFile()) {
+                            String strFileName = fRemoteVideo.getName();
+                            if(strFileName.length() >= 36) {
+                                if (strFileName.endsWith(".mp4")) {
+                                    videoCount++;
+                                } else if (thumbPath == null && strFileName.endsWith(".jpg")) {
+                                    thumbPath = fVideo.getAbsolutePath();
                                 }
                             }
-                            else if(thumbPath == null && remoteFile.getName().endsWith(".jpg")){
-                                thumbPath = remoteFile.getAbsolutePath();
-                            }
                         }
-                    }
-                }
-            }
-        } else {
-            videoCount = 0;
-        }
-        if (photoCount > 0) {
-            thumbPath = photos[0].getAbsolutePath();
-        } else if (videoCount > 0) {
-            if (thumbPath == null) {
-                final Bitmap bitmap = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
-                if (bitmap != null) {
-                    try {
-                        String filePath = videos[0].getAbsolutePath();
-                        String snapFile = filePath + ".jpg";
-
-                        FileOutputStream fos = new FileOutputStream(snapFile);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
-                        fos.flush();
-                        fos.close();
-                        if (!bitmap.isRecycled()) {
-                            bitmap.recycle();
-                            System.gc();
-                        }
-                        thumbPath = snapFile;
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (IOException e) {
-                        e.printStackTrace();
                     }
                 }
             }
@@ -173,41 +232,30 @@ public class FolderFragment extends BaseFragment {
     }
 
     public void initView() {
-        //清理bitmap
-        for (FolderInfoModel m : sourceList) {
-            m.setThumbMap(null);
-        }
         sourceList.clear();
-        ListView picture_fragment_camera_list = (ListView) view.findViewById(R.id.picture_fragment_camera_list);
-
         for (IMyCamera camera : TwsDataValue.cameraList()) {
             sourceList.add(processFolderInfo(camera));
         }
 
-        picture_fragment_camera_list.setAdapter(new PictureListAdapter(getActivity()));
-        picture_fragment_camera_list.setOnItemClickListener(new OnItemClickListener() {
-
-            @Override
-            public void onItemClick(AdapterView<?> arg0, View arg1, int position,
-                                    long arg3) {
-                FolderInfoModel m = sourceList.get(position);
-//                if (m.videoCount + m.photoCount == 0) {
-//                    TwsToast.showToast(FolderFragment.this.getContext(), getString(R.string.tips_no_photo_video));
-//                } else {
-                Bundle extras = new Bundle();
-                extras.putString(TwsDataValue.EXTRA_KEY_UID, m.uid);
-                Intent intent = new Intent();
-                intent.putExtras(extras);
-                intent.setClass(getActivity(), CameraFolderActivity.class);
-                startActivity(intent);
-                //}
-            }
-        });
         if (TwsDataValue.cameraList().size() > 0) {
             view.findViewById(R.id.txt_nocamera).setVisibility(View.GONE);
         } else {
             view.findViewById(R.id.txt_nocamera).setVisibility(View.VISIBLE);
         }
+    }
+
+    @Override
+    public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+        FolderInfoModel m = sourceList.get(position);
+//                if (m.videoCount + m.photoCount == 0) {
+//                    TwsToast.showToast(FolderFragment.this.getContext(), getString(R.string.tips_no_photo_video));
+//                } else {
+        Bundle extras = new Bundle();
+        extras.putString(TwsDataValue.EXTRA_KEY_UID, m.uid);
+        Intent intent = new Intent();
+        intent.putExtras(extras);
+        intent.setClass(getActivity(), CameraFolderActivity.class);
+        startActivity(intent);
     }
 
 
@@ -259,7 +307,7 @@ public class FolderFragment extends BaseFragment {
                 //			holder.img = (ImageView) convertView.findViewById(R.id.img);
                 holder.txt_name = (TextView) convertView.findViewById(R.id.txt_name);
                 holder.txt_count = (TextView) convertView.findViewById(R.id.txt_count);
-                holder.img_snap = (ImageView) convertView.findViewById(R.id.img_snap);
+                holder.img_snap = (RecyclingImageView) convertView.findViewById(R.id.img_snap);
                 convertView.setTag(holder);
             } else {
                 holder = (ViewHolder) convertView.getTag();
@@ -268,50 +316,8 @@ public class FolderFragment extends BaseFragment {
             if (holder != null) {
                 holder.txt_name.setText(model.cameraName);
                 holder.txt_count.setText(String.format(getString(R.string.tips_folder_desc), model.photoCount + "", model.videoCount + ""));
-                if (model.getThumbMap() != null) {
-                    holder.img_snap.setImageBitmap(model.getThumbMap());
-                } else {
-                    if (model.thumbPath != null) {
-                        BitmapFactory.Options bfo = new BitmapFactory.Options();
-                        bfo.inJustDecodeBounds = true;
-                        BitmapFactory.decodeFile(model.thumbPath, bfo);
+                mImageFetcher.loadImage(model.thumbPath, holder.img_snap);
 
-                        bfo.inSampleSize = bfo.outWidth / 320;// 1/4宽高
-                        if (bfo.inSampleSize < 1) {
-                            bfo.inSampleSize = 1;
-                        }
-                        bfo.inJustDecodeBounds = false;
-                        try {
-                            Bitmap bmp = BitmapFactory.decodeFile(model.thumbPath, bfo);
-                            holder.img_snap.setImageBitmap(bmp);
-                            model.setThumbMap(bmp);
-                        } catch (OutOfMemoryError error) {
-                            holder.img_snap.setImageResource(R.drawable.default_img);
-                        }
-                    } else {
-                        BitmapFactory.Options bfo = new BitmapFactory.Options();
-                        String autoThumb = getAutoThumbFile(model.uid);
-                        bfo.inJustDecodeBounds = true;
-                        BitmapFactory.decodeFile(autoThumb, bfo);
-
-                        bfo.inSampleSize = bfo.outWidth / 320;// 1/4宽高
-                        if (bfo.inSampleSize < 1) {
-                            bfo.inSampleSize = 1;
-                        }
-                        bfo.inJustDecodeBounds = false;
-                        try {
-                            Bitmap bmp = BitmapFactory.decodeFile(autoThumb, bfo);
-                            if (bmp == null) {
-                                holder.img_snap.setImageResource(R.drawable.default_img);
-                            } else {
-                                holder.img_snap.setImageBitmap(bmp);
-                                model.setThumbMap(bmp);
-                            }
-                        } catch (OutOfMemoryError error) {
-                            holder.img_snap.setImageResource(R.drawable.default_img);
-                        }
-                    }
-                }
             }
 
             return convertView;
@@ -321,26 +327,31 @@ public class FolderFragment extends BaseFragment {
             //		public ImageView img;
             public TextView txt_name;
             public TextView txt_count;
-            public ImageView img_snap;
+            public RecyclingImageView img_snap;
         }
 
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        //清理bitmap
-        if (sourceList != null) {
-            for (FolderInfoModel model : sourceList) {
-                model.setThumbMap(null);
-            }
-        }
     }
 
     @Override
     public void onResume() {
         super.onResume();
+        mImageFetcher.setExitTasksEarly(false);
         initView();
+        mAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mImageFetcher.setPauseWork(false);
+        mImageFetcher.setExitTasksEarly(true);
+        mImageFetcher.flushCache();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mImageFetcher.closeCache();
     }
 
 }

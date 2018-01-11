@@ -7,7 +7,7 @@
     android:orientation="horizontal"
     android:gravity="center"
     android:padding="8dp">
-<ImageView
+<com.tws.commonlib.ui.RecyclingImageView
     android:id="@+id/img_snap"
     android:layout_width="100dp"
     android:src="@drawable/default_img"
