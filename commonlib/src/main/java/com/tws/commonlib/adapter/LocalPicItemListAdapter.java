@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.media.Image;
 import android.os.Build;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
@@ -25,6 +26,7 @@ import com.tws.commonlib.bean.LocalPichModel;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.task.LocalPichumbImgTask;
 import com.tws.commonlib.task.VideoThumbImgTask;
+import com.tws.commonlib.util.ImageFetcher;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,11 +56,18 @@ public class LocalPicItemListAdapter extends BaseAdapter {
     Bitmap defaultPic;
     int width;
     int height;
-    public LocalPicItemListAdapter(Context context, List<LocalPichModel> _sourceItemList,float ratio) {
+    int type;
+
+    private ImageFetcher mImageFetcher;
+    public void  setImageFetcher(ImageFetcher imageFetcher){
+        this.mImageFetcher = imageFetcher;
+    }
+    public LocalPicItemListAdapter(Context context, List<LocalPichModel> _sourceItemList,float ratio,int type) {
         this.activity = (Activity) context;
         this.mInflater = LayoutInflater.from(context);
         this.sourceItemList = _sourceItemList;
         this.checkPicList = new ArrayList<ImageView>();
+        this.type = type;
         defaultPic = BitmapFactory.decodeResource(context.getResources(), R.drawable.ic_video_snap);
 
         DisplayMetrics dm = new DisplayMetrics();
@@ -73,7 +82,7 @@ public class LocalPicItemListAdapter extends BaseAdapter {
                 return;
             }
         }
-        sourceItemList.add(new LocalPichModel(path));
+        sourceItemList.add(new LocalPichModel(path,type));
     }
 
 
@@ -124,6 +133,8 @@ public class LocalPicItemListAdapter extends BaseAdapter {
             holder = new ViewHolder();
             holder.img_pic = (ImageView) convertView.findViewById(R.id.img_pic);
             holder.img_select = (ImageView) convertView.findViewById(R.id.img_select);
+            holder.img_play = (ImageView)convertView.findViewById(R.id.img_play);
+            holder.img_download = convertView.findViewById(R.id.img_download);
             if (checkPicList.size() <= position) {
                 checkPicList.add(position, holder.img_select);
             }
@@ -134,57 +145,25 @@ public class LocalPicItemListAdapter extends BaseAdapter {
         } else {
             holder = (ViewHolder) convertView.getTag();
         }
-        Bitmap bitmap = null;
-        if (model.getThumbBmp() == null) {
-            LocalPichumbImgTask task = new LocalPichumbImgTask(new LocalPichumbImgTask.onCreateVideoThumb() {
-                @Override
-                public void onCreated(final ImageView itemView, final String path, final Bitmap bmp) {
-                    activity.runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (path != null && bmp != null) {
-                                if (path.contains(".mp4") || path.contains(TwsDataValue.Remte_RECORDING_DIR)) {
-                                    itemView.setImageResource(R.drawable.ic_menu_play_inverse_background);
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                        itemView.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bmp));
-                                    } else {
-                                        itemView.setImageBitmap(bmp);
-                                    }
-                                } else {
-                                    itemView.setImageBitmap(bmp);
-                                }
-                            } else {
-                                itemView.setImageResource(R.drawable.ic_menu_play_inverse_background);
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                                    itemView.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), defaultPic));
-                                } else {
-                                    itemView.setImageBitmap(defaultPic);
-                                }
-                            }
-                        }
-                    });
-                    model.setThumbBmp(bmp);
-                }
-            });
-            task.setItemView(holder.img_pic);
-            task.execute(sourceItemList.get(position).path);
-//            BitmapFactory.Options bfo = new BitmapFactory.Options();
-//            bfo.inSampleSize = 4;// 1/4宽高
-//            bitmap = BitmapFactory.decodeFile(sourceItemList.get(position).path, bfo);
-        } else {
-            bitmap = model.getThumbBmp();
+        mImageFetcher.loadImage(model.thumbPath,holder.img_pic);
+        if(model.isVideo()){
+            holder.img_play.setVisibility(View.VISIBLE);
+        }
+        else{
+            holder.img_play.setVisibility(View.GONE);
+        }
+        if(model.type == 2){
+            holder.img_download.setVisibility(View.VISIBLE);
+        }
+        else{
+            holder.img_download.setVisibility(View.GONE);
         }
         holder.img_select.setEnabled(model.checked);
-        if (model.isVideo()) {
-            holder.img_pic.setImageResource(R.drawable.ic_menu_play_inverse_background);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                holder.img_pic.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bitmap));
-            } else {
-                holder.img_pic.setImageBitmap(bitmap);
-            }
-        } else {
-            holder.img_pic.setImageBitmap(bitmap);
-        }
+//        if (model.isVideo()) {
+//            holder.img_pic.setImageResource(R.drawable.ic_menu_play_inverse_background);
+//        } else {
+//            //holder.img_pic.setImageResource(0);
+//        }
         if (!checkMode) {
             holder.img_select.setVisibility(View.INVISIBLE);
         } else {
@@ -197,19 +176,9 @@ public class LocalPicItemListAdapter extends BaseAdapter {
     public final class ViewHolder {
         public ImageView img_pic;
         public ImageView img_select;
+        public  ImageView img_play;
+        public  ImageView img_download;
     }
 
-    public void  release(){
-        if(defaultPic != null && !defaultPic.isRecycled()){
-            defaultPic.recycle();
-            defaultPic = null;
-            System.gc();
-        }
-        if(sourceItemList != null){
-            for(LocalPichModel model : sourceItemList){
-                model.setThumbBmp(null);
-            }
-        }
-    }
 
 }

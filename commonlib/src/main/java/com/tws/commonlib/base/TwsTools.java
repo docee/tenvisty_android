@@ -486,7 +486,7 @@ public class TwsTools {
         FileOutputStream out;
         try {
             out = new FileOutputStream(file);
-            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 30, out)) {
+            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out)) {
                 out.flush();
             }
             out.close();

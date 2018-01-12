@@ -5,11 +5,12 @@
 	android:baselineAligned="false"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent">
-<RelativeLayout
+<FrameLayout
 	android:id="@+id/rl_wrapper"
 	android:layout_width="match_parent"
+	android:gravity="center"
 	android:layout_height="match_parent">
-	<ImageView
+	<com.tws.commonlib.ui.RecyclingImageView
 		android:id="@+id/img_pic"
 		android:layout_width="match_parent"
 		android:background="@drawable/videoclip"
@@ -24,5 +25,19 @@
 		android:paddingBottom="20dp"
 		android:background="@color/mask_press"
 		android:layout_height="match_parent" />
-</RelativeLayout>
+	<ImageView
+		android:id="@+id/img_play"
+		android:layout_gravity="center"
+		android:layout_width="20dp"
+		android:layout_height="20dp"
+		android:tint="@color/white"
+		app:srcCompat="@drawable/ic_play_circle_outline_24dp"/>
+	<ImageView
+		android:id="@+id/img_download"
+		android:layout_gravity="right|bottom"
+		android:layout_width="20dp"
+		android:layout_height="20dp"
+		android:tint="@color/gray"
+		app:srcCompat="@drawable/ic_file_download_black_24dp"/>
+</FrameLayout>
 </LinearLayout>

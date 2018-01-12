@@ -261,11 +261,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true; // 先获取原大小
-        try {
-            scanBitmap = BitmapFactory.decodeFile(path, options);
-        }catch (OutOfMemoryError error){
-            return null;
-        }
+        scanBitmap = BitmapFactory.decodeFile(path, options);
         options.inJustDecodeBounds = false; // 获取新的大小
         int sampleSize = (int) (options.outHeight / (float) 200);
         if (sampleSize <= 0)
@@ -273,7 +269,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
         options.inSampleSize = sampleSize;
         try {
             scanBitmap = BitmapFactory.decodeFile(path, options);
-        }catch (OutOfMemoryError error){
+        } catch (OutOfMemoryError error) {
             return null;
         }
         RGBLuminanceSource source = new RGBLuminanceSource(scanBitmap);

@@ -44,6 +44,9 @@ import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.SpinnerButton;
+import com.tws.commonlib.util.ImageCache;
+import com.tws.commonlib.util.ImageFetcher;
+import com.tws.commonlib.util.ImageWorker;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -97,6 +100,11 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
     private Calendar mStopSearchCalendar;
     TextView txt_event_day_top;
     int accSelect = -1;
+    private ImageFetcher mImageFetcher;
+    private static final String IMAGE_CACHE_DIR = "thumbs";
+
+    private int mImageThumbSize;
+    private int mImageThumbSpacing;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -124,9 +132,28 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
         supportPlayback = true;
         this.setTitle(getResources().getString(R.string.title_event_list));
+        initImageFetcher();
         initView();
 
 
+    }
+
+    void initImageFetcher() {
+
+        mImageThumbSize = TwsTools.dip2px(this, 100);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
+        mImageThumbSpacing = TwsTools.dip2px(this, 5);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
+
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, IMAGE_CACHE_DIR);
+
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        // The ImageFetcher takes care of loading images into our ImageView children asynchronously
+        mImageFetcher = new ImageFetcher(this, mImageThumbSize);
+
+        mImageFetcher.setImageSize(TwsTools.dip2px(this, 69), TwsTools.dip2px(this, 52));
+        mImageFetcher.setLoadingImage(R.drawable.view_event_record);
+        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
     }
 
     @Override
@@ -235,12 +262,24 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         txt_event_day_top.setVisibility(View.GONE);
         spinner_type.Click(0);
     }
-
+    @Override
+    public void onResume() {
+        super.onResume();
+        mImageFetcher.setExitTasksEarly(false);
+    }
+    @Override
+    public void onPause() {
+        super.onPause();
+        mImageFetcher.setPauseWork(false);
+        mImageFetcher.setExitTasksEarly(true);
+        mImageFetcher.flushCache();
+    }
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
         quit();
+        mImageFetcher.closeCache();
     }
 
     @Override
@@ -249,21 +288,23 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
         if (requestCode == REQUEST_CODE_EVENT_DETAIL) {
 
-            if (data != null) {
-                Bundle extras = data.getExtras();
-                if (extras != null) {
-                    String evtUUID = extras.getString("event_uuid");
-
-                    for (EventInfo evt : list) {
-
-                        if (evt.getUUID().equalsIgnoreCase(evtUUID)) {
-                            evt.EventStatus = EventInfo.EVENT_READED;
-                            adapter.notifyDataSetChanged();
-                            break;
-                        }
-                    }
-                }
-            }
+            mImageFetcher.setExitTasksEarly(false);
+            adapter.notifyDataSetChanged();
+//            if (data != null) {
+//                Bundle extras = data.getExtras();
+//                if (extras != null) {
+//                    String evtUUID = extras.getString("event_uuid");
+//
+//                    for (EventInfo evt : list) {
+//
+//                        if (evt.getUUID().equalsIgnoreCase(evtUUID)) {
+//                            evt.EventStatus = EventInfo.EVENT_READED;
+//                            adapter.notifyDataSetChanged();
+//                            break;
+//                        }
+//                    }
+//                }
+//            }
         }
     }
 
@@ -507,6 +548,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         public String strTime;
         public boolean isDateFirstItem;
         private UUID m_uuid = UUID.randomUUID();
+
         public Bitmap getThumb() {
             return thumb;
         }
@@ -633,57 +675,50 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
             //holder.indicator.setVisibility(supportPlayback & evt.EventStatus != EventInfo.EVENT_NORECORD ? View.VISIBLE : View.GONE);
 
 
-
             //Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_FILES.get(position),bfo) ;
             Bitmap bitmap = evt.getThumb();
 
             String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.EventTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
             String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
-            try {
-                BitmapFactory.Options bfo = new BitmapFactory.Options();
-                bfo.inJustDecodeBounds = true;
-                BitmapFactory.decodeFile(fullFileNamePath, bfo);
-                if(bfo.outWidth > 0){
-                    bfo.inSampleSize = bfo.outWidth/160;
-                    if(bfo.inSampleSize < 1){
-                        bfo.inSampleSize = 1;
+            mImageFetcher.loadImage(fullFileNamePath, holder.img_event_image, new ImageWorker.OnImageLoadedListener() {
+                @Override
+                public void onImageLoaded(Object obj,boolean success) {
+                    View view = (View)obj;
+                    int i=3;
+                    while (i>=0 && view != null){
+                        view = (View)view.getParent();
+                        i--;
                     }
-                    bfo.inJustDecodeBounds = false;
-                    bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
-                    evt.setThumb(bitmap);
-                }
-            } catch (OutOfMemoryError error) {
+                    ImageView img_event_type = null;
+                    ImageView img_play = null;
+                    if(view != null){
+                        img_event_type = view.findViewById(R.id.img_event_type_image);
+                        img_play = view.findViewById(R.id.img_play);
+                    }
+                    if(img_event_type == null || img_play == null){
+                        return;
+                    }
+                    if(success){
 
-            }
-            if (bitmap != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    holder.img_event_image.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bitmap));
-                } else {
-                    holder.img_event_image.setBackgroundResource(R.drawable.view_event_record);
-                }
-                holder.img_event_image.setImageResource(R.drawable.ic_menu_play_inverse_background);
-            } else {
-                holder.img_event_image.setBackgroundResource(R.drawable.view_event_record);
-                holder.img_event_image.setImageBitmap(null);
-            }
-            if (evt.EventStatus == EventInfo.EVENT_READED || bitmap != null) {
-                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_read);
-                } else {
+                        if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+                            img_event_type.setImageResource(R.drawable.ic_motion_detection_read);
+                        } else {
 
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_read);
+                            img_event_type.setImageResource(R.drawable.ic_time_record_read);
+                        }
+                        img_play.setVisibility(View.VISIBLE);
+                    }else {
+                        if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+                            img_event_type.setImageResource(R.drawable.ic_motion_detection_unread);
+                        } else {
+                            img_event_type.setImageResource(R.drawable.ic_time_record_unread);
+                        }
+                        img_play.setVisibility(View.GONE);
+                        // holder.txt_event_type.setTypeface(null, Typeface.BOLD);
+                        // holder.txt_event_type.setTextColor(0xFF000000);
+                    }
                 }
-                // holder.txt_event_type.setTypeface(null, Typeface.NORMAL);
-                // holder.txt_event_type.setTextColor(0xFF999999);
-            } else {
-                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_unread);
-                } else {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_unread);
-                }
-                // holder.txt_event_type.setTypeface(null, Typeface.BOLD);
-                // holder.txt_event_type.setTextColor(0xFF000000);
-            }
+            });
             return convertView;
 
         }
@@ -705,6 +740,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         String dateString = formatter.format(currentTime);
         return dateString;
     }
+
     public void releaseBitmap() {
         if (list != null) {
             for (int i = 0; i < list.size(); i++) {
@@ -712,6 +748,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
             }
         }
     }
+
     private Handler handler = new Handler() {
 
         @Override

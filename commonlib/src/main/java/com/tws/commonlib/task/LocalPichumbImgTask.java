@@ -45,7 +45,7 @@ public class LocalPichumbImgTask extends AsyncTask<String, Void, String> {
                         String snapFile = filePath+ ".jpg";
 
                         FileOutputStream fos = new FileOutputStream(snapFile);
-                        bitmap.compress(Bitmap.CompressFormat.JPEG, 10, fos);
+                        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, fos);
                         fos.flush();
                         fos.close();
                         if (itemView != null) {

@@ -549,6 +549,10 @@ public class Camera extends NSCamera {
                 || (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED)
                 || (mThreadSendAudio != null && mThreadSendAudio.getState() != TERMINATED)) {
             try {
+
+                if(ch.threadRecording != null  && ch.threadRecording.getState() != TERMINATED){
+                    ch.threadRecording.stopThread();
+                }
                 Thread.sleep(5);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -658,6 +662,9 @@ public class Camera extends NSCamera {
                             || (ch.threadDecVideo != null && ch.threadDecVideo.getState() != TERMINATED)
                             || (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED)) {
                         try {
+                            if(ch.threadRecording != null  && ch.threadRecording.getState() != TERMINATED){
+                                ch.threadRecording.stopThread();
+                            }
                             Thread.sleep(5);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
@@ -3067,7 +3074,7 @@ public class Camera extends NSCamera {
                 IRegisterIOTCListener listener = mIOTCListeners.get(i);
                 listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_INITT, mAVChannel.mVideoPlayProperty.recordingPath);
             }
-            while (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0) {
+            while (isRunning && (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0)) {
                 this.sleep(33);
             }
             if (isRunning) {

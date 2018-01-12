@@ -10,12 +10,14 @@ import android.graphics.Point;
 import android.graphics.Shader.TileMode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -104,6 +106,8 @@ public class LiveViewActivity extends BaseActivity implements
     LinearLayout lay_live_tools_top;
     LinearLayout lay_live_tools_bottom;
     boolean toolsVisible;
+    int videoWidth;
+    int videoHeight;
 
     public Button getBtn_stream() {
         return (Button) findViewById(R.id.btn_stream);
@@ -224,8 +228,8 @@ public class LiveViewActivity extends BaseActivity implements
                     }
                 }
             });
-            mCamera.unregisterPlayStateListener(LiveViewActivity.this);
-            mCamera.unregisterIOTCListener(LiveViewActivity.this);
+//            mCamera.unregisterPlayStateListener(LiveViewActivity.this);
+//            mCamera.unregisterIOTCListener(LiveViewActivity.this);
         }
 
         if (monitor != null) {
@@ -656,6 +660,8 @@ public class LiveViewActivity extends BaseActivity implements
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        mCamera.unregisterPlayStateListener(LiveViewActivity.this);
+        mCamera.unregisterIOTCListener(LiveViewActivity.this);
     }
 
     @Override
@@ -1175,12 +1181,15 @@ public class LiveViewActivity extends BaseActivity implements
                 } else {
                     playState.setVideoQuality(1);
                 }
+                videoWidth = w;
+                videoHeight = h;
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(IMyCamera c, Object data) {;
+                            public void onPosted(IMyCamera c, Object data) {
+                                ;
                             }
                         });
                     }
@@ -1326,10 +1335,10 @@ public class LiveViewActivity extends BaseActivity implements
                     setRecodingView();
                     if (filePath != null) {
                         File recordFile = new File(filePath);
-                        if(recordFile.exists() &&  recordFile.length() < 1024 && recordFile.isFile()){
+                        boolean exist = recordFile.exists();
+                        if (exist&& recordFile.length() < videoHeight*videoWidth*2/8/20) {
                             recordFile.delete();
-                        }
-                        else if(recordFile.exists() && recordFile.isFile()){
+                        } else if (exist && recordFile.isFile()) {
                             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));
                         }
                     }

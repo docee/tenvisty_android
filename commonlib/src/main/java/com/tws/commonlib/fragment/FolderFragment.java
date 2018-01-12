@@ -63,7 +63,6 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
 
         mImageThumbSize = TwsTools.dip2px(getActivity(),100);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
         mImageThumbSpacing = TwsTools.dip2px(getActivity(),1);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
@@ -73,7 +72,7 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
         ImageCache.ImageCacheParams cacheParams =
                 new ImageCache.ImageCacheParams(getActivity(), IMAGE_CACHE_DIR);
 
-        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+        cacheParams.setMemCacheSizePercent(0.10f); // Set memory cache to 25% of app memory
 
         // The ImageFetcher takes care of loading images into our ImageView children asynchronously
         mImageFetcher = new ImageFetcher(getActivity(), mImageThumbSize);
@@ -81,7 +80,6 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
         mImageFetcher.setImageSize(TwsTools.dip2px(getActivity(),100),TwsTools.dip2px(getActivity(),60));
         mImageFetcher.setLoadingImage(R.drawable.default_img);
         mImageFetcher.addImageCache(getActivity().getSupportFragmentManager(), cacheParams);
-        mImageFetcher.clearCache();
     }
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -219,7 +217,7 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
                                 if (strFileName.endsWith(".mp4")) {
                                     videoCount++;
                                 } else if (thumbPath == null && strFileName.endsWith(".jpg")) {
-                                    thumbPath = fVideo.getAbsolutePath();
+                                    thumbPath = fRemoteVideo.getAbsolutePath();
                                 }
                             }
                         }
@@ -242,6 +240,7 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
         } else {
             view.findViewById(R.id.txt_nocamera).setVisibility(View.VISIBLE);
         }
+        mAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -337,7 +336,6 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
         super.onResume();
         mImageFetcher.setExitTasksEarly(false);
         initView();
-        mAdapter.notifyDataSetChanged();
     }
 
     @Override

@@ -108,7 +108,7 @@ public class ImageDetailFragment extends Fragment implements ImageWorker.OnImage
     }
 
     @Override
-    public void onImageLoaded(boolean success) {
+    public void onImageLoaded(Object obj,boolean success) {
         // Set loading spinner to gone once image has loaded. Cloud also show
         // an error view here if needed.
         mProgressBar.setVisibility(View.GONE);

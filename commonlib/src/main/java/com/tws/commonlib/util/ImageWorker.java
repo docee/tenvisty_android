@@ -89,7 +89,7 @@ public abstract class ImageWorker {
             // Bitmap found in memory cache
             imageView.setImageDrawable(value);
             if (listener != null) {
-                listener.onImageLoaded(true);
+                listener.onImageLoaded(imageView,true);
             }
         } else if (cancelPotentialWork(data, imageView)) {
             //BEGIN_INCLUDE(execute_background_task)
@@ -361,7 +361,7 @@ public abstract class ImageWorker {
                 setImageDrawable(imageView, value);
             }
             if (mOnImageLoadedListener != null) {
-                mOnImageLoadedListener.onImageLoaded(success);
+                mOnImageLoadedListener.onImageLoaded(imageView,success);
             }
             //END_INCLUDE(complete_background_work)
         }
@@ -400,7 +400,7 @@ public abstract class ImageWorker {
          * @param success True if the image was loaded successfully, false if
          *                there was an error.
          */
-        void onImageLoaded(boolean success);
+        void onImageLoaded(Object obj,boolean success);
     }
 
     /**
@@ -435,7 +435,7 @@ public abstract class ImageWorker {
             // Transition drawable with a transparent drawable and the final drawable
             final TransitionDrawable td =
                     new TransitionDrawable(new Drawable[] {
-                            new ColorDrawable(android.R.color.transparent),
+                            new ColorDrawable(mResources.getColor(android.R.color.transparent)),
                             drawable
                     });
             // Set background to loading bitmap

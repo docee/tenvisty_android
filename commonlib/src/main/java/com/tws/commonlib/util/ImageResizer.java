@@ -255,15 +255,15 @@ public class ImageResizer extends ImageWorker {
             // end up being too large to fit comfortably in memory, so we should
             // be more aggressive with sample down the image (=larger inSampleSize).
 
-            long totalPixels = width * height / inSampleSize;
-
-            // Anything more than 2x the requested pixels we'll sample down further
-            final long totalReqPixelsCap = reqWidth * reqHeight * 2;
-
-            while (totalPixels > totalReqPixelsCap) {
-                inSampleSize *= 2;
-                totalPixels /= 2;
-            }
+//            long totalPixels = (width/inSampleSize) * (height / inSampleSize) * 2;
+//
+//            // Anything more than 2x the requested pixels we'll sample down further
+//            final long totalReqPixelsCap = reqWidth * reqHeight * 2;
+//
+//            while (totalPixels > totalReqPixelsCap) {
+//                inSampleSize *= 2;
+//                totalPixels /= 2;
+//            }
         }
         return inSampleSize;
         // END_INCLUDE (calculate_sample_size)

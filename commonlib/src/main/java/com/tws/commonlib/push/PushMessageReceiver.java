@@ -104,7 +104,6 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
         // TODO Auto-generated method stub
 
         // TODO Auto-generated method stub
-
         String key = arg1.getCustomContent();
         String uid = null;
         int type = 0;
@@ -116,27 +115,29 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
                 String jsonc = arrJson.getString("content");
                 JSONObject conJson = new JSONObject(jsonc);
                 uid = conJson.getString("uid");
-                type = conJson.getInt("type");
-                time = conJson.getInt("time");
+//                type = conJson.getInt("type");
+//                time = conJson.getInt("time");
                 int result = TwsTools.showAlarmNotification(arg0,uid, 1, System.currentTimeMillis());
-                camera = IMyCamera.MyCameraFactory.shareInstance().createCamera("",uid,"admin","admin");
-                if(result == -2 && camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
-                    mContext = arg0;
-                    mUid = uid;
-                    int subId = SharePreUtils.getInt("subId", arg0, uid);
-                    String server = " ";
-                    if (handSubXYZ(uid)) {
-                        server = TwsDataValue.CAMERA_ALARM_ADDRESS_THERE;
-                    } else {
-                        server = TwsDataValue.CAMERA_ALARM_ADDRESS;
+                if(result == -2 ) {
+                    camera = IMyCamera.MyCameraFactory.shareInstance().createCamera("", uid, "admin", "admin");
+                    if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
+                        mContext = arg0;
+                        mUid = uid;
+                        int subId = SharePreUtils.getInt("subId", arg0, uid);
+                        String server = " ";
+                        if (handSubXYZ(uid)) {
+                            server = TwsDataValue.CAMERA_ALARM_ADDRESS_THERE;
+                        } else {
+                            server = TwsDataValue.CAMERA_ALARM_ADDRESS;
+                        }
+                        pushSDK = new HiPushSDK(XGPushConfig.getToken(arg0), uid, TwsDataValue.company(), pushResult, server);
+                        if (subId > 0) {
+                            pushSDK.unbind(subId);
+                        } else {
+                            pushSDK.bind();
+                        }
+                        return;
                     }
-                    pushSDK = new HiPushSDK(XGPushConfig.getToken(arg0), uid, TwsDataValue.company(), pushResult, server);
-                    if (subId > 0) {
-                        pushSDK.unbind(subId);
-                    } else {
-                        pushSDK.bind();
-                    }
-                    return;
                 }
             } catch (JSONException e) {
                 // TODO Auto-generated catch block

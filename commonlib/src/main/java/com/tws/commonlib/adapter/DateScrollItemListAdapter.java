@@ -22,6 +22,7 @@ import com.tws.commonlib.activity.setting.WiFiListActivity;
 import com.tws.commonlib.base.DateScrollItem;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.LocalPichModel;
+import com.tws.commonlib.util.ImageFetcher;
 
 import java.util.List;
 
@@ -73,6 +74,10 @@ public class DateScrollItemListAdapter extends BaseAdapter {
         return this.layout;
     }
 
+    private ImageFetcher mImageFetcher;
+    public void  setImageFetcher(ImageFetcher imageFetcher){
+        this.mImageFetcher = imageFetcher;
+    }
     int layout;
 
     @Override
@@ -221,16 +226,4 @@ public class DateScrollItemListAdapter extends BaseAdapter {
     public interface onStateChangedListner {
         public void onCheck(boolean b);
     }
-
-    public  void  release(){
-        if(sourceList != null){
-            for(DateScrollItem item  : sourceList){
-                if(item.subAdatper instanceof  LocalPicItemListAdapter){
-                    ((LocalPicItemListAdapter)item.subAdatper).release();
-                }
-            }
-        }
-    }
-
-
 }

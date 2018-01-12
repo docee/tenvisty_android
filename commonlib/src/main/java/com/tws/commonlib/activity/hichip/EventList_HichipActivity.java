@@ -65,6 +65,10 @@ import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
 import com.tws.commonlib.task.VideoThumbImgTask;
+import com.tws.commonlib.util.ImageCache;
+import com.tws.commonlib.util.ImageFetcher;
+import com.tws.commonlib.util.ImageWorker;
+import com.tws.commonlib.util.Utils;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
@@ -128,6 +132,12 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     private String path;
     int downloadIndex;
 
+    private ImageFetcher mImageFetcher;
+    private static final String IMAGE_CACHE_DIR = "thumbs";
+
+    private int mImageThumbSize;
+    private int mImageThumbSpacing;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -155,15 +165,35 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
         supportPlayback = true;
         this.setTitle(getResources().getString(R.string.title_event_list));
+        initImageFetcher();
         initView();
 
-
     }
+
+    void initImageFetcher() {
+
+        mImageThumbSize = TwsTools.dip2px(this, 69);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
+        mImageThumbSpacing = TwsTools.dip2px(this, 5);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
+
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, IMAGE_CACHE_DIR);
+
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        // The ImageFetcher takes care of loading images into our ImageView children asynchronously
+        mImageFetcher = new ImageFetcher(this, mImageThumbSize);
+
+        mImageFetcher.setImageSize(TwsTools.dip2px(this, 69), TwsTools.dip2px(this, 52));
+        mImageFetcher.setLoadingImage(R.drawable.view_event_record);
+        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
+    }
+
 
     @Override
     public void onResume() {
         super.onResume();
         mCamera.registerDownloadListener(this);
+        mImageFetcher.setExitTasksEarly(false);
     }
 
     @Override
@@ -172,6 +202,9 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         isDownloading = false;
         mCamera.stopDownloadRecording();
         mCamera.unregisterDownloadListener(this);
+        mImageFetcher.setPauseWork(false);
+        mImageFetcher.setExitTasksEarly(true);
+        mImageFetcher.flushCache();
     }
 
     @Override
@@ -227,6 +260,14 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             @Override
             public void onScrollStateChanged(AbsListView view, int scrollState) {
                 //do nothing
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                    // Before Honeycomb pause image loading on scroll to help with performance
+                    if (!Utils.hasHoneycomb()) {
+                        mImageFetcher.setPauseWork(true);
+                    }
+                } else {
+                    mImageFetcher.setPauseWork(false);
+                }
             }
 
         });
@@ -309,6 +350,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         super.onDestroy();
 
         quit();
+        mImageFetcher.closeCache();
     }
 
     @Override
@@ -316,6 +358,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_CODE_EVENT_DETAIL) {
+            mImageFetcher.setExitTasksEarly(false);
             adapter.notifyDataSetChanged();
         }
     }
@@ -946,69 +989,69 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             }
             //holder.indicator.setVisibility(supportPlayback & evt.EventStatus != EventInfo.EVENT_NORECORD ? View.VISIBLE : View.GONE);
 
-
-            //Bitmap bitmap = BitmapFactory.decodeFile(IMAGE_FILES.get(position),bfo) ;
-            Bitmap bitmap = evt.getThumb();
-            if (bitmap == null) {
-                String filenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
-                String fullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + filenameString;
-                try {
-                    BitmapFactory.Options bfo = new BitmapFactory.Options();
-                    bfo.inJustDecodeBounds = true;
-                    BitmapFactory.decodeFile(fullFileNamePath, bfo);
-                    if (bfo.outWidth > 0) {
-                        bfo.inJustDecodeBounds = false;
-                        bfo.inSampleSize = bfo.outWidth / 160;
-                        if (bfo.inSampleSize < 1) {
-                            bfo.inSampleSize = 1;
-                        }
-                        bitmap = BitmapFactory.decodeFile(fullFileNamePath, bfo);
-                    } else if (evt.downloadState == 1) {
-                        String videoFilenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_RECORD_DOWNLAND, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
-                        String videoFullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND) + "/" + videoFilenameString +".mp4";
-                        bitmap = ThumbnailUtils.createVideoThumbnail(videoFullFileNamePath, MediaStore.Images.Thumbnails.MINI_KIND);
-                        if(bitmap == null){
-                            videoFullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_RECORD_DOWNLAND) + "/" + videoFilenameString +".avi";
-                            bitmap = ThumbnailUtils.createVideoThumbnail(videoFullFileNamePath, MediaStore.Images.Thumbnails.MINI_KIND);
-                        }
-                        if(bitmap != null){
-                            TwsTools.saveBitmap(bitmap,fullFileNamePath);
-                        }
+            String videoFilenameString = TwsTools.getFileNameWithTime(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, evt.sStartTime.getTimeInMillis(), evt.EventType);// dev_uid + "_" + evt.EventType + evt.EventTime.year + evt.EventTime.month + evt.EventTime.day + evt.EventTime.wday + evt.EventTime.hour + evt.EventTime.minute + evt.EventTime.second + ".jpg";
+            String videoFullFileNamePath = TwsTools.getFilePath(dev_uid, TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB) + "/" + videoFilenameString;
+            mImageFetcher.loadImage(videoFullFileNamePath, holder.img_event_image, new ImageWorker.OnImageLoadedListener() {
+                @Override
+                public void onImageLoaded(Object obj,boolean success) {
+                    View view = (View)obj;
+                    int i=3;
+                    while (i>=0 && view != null){
+                        view = (View)view.getParent();
+                        i--;
                     }
-                    evt.setThumb(bitmap);
-                } catch (OutOfMemoryError error) {
+                    ImageView img_event_type = null;
+                    ImageView img_play = null;
+                    if(view != null){
+                        img_event_type = view.findViewById(R.id.img_event_type_image);
+                        img_play = view.findViewById(R.id.img_play);
+                    }
+                    if(img_event_type == null || img_play == null){
+                        return;
+                    }
+                    if(success){
 
-                }
-            }
-            if (bitmap != null) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                    holder.img_event_image.setBackground(new BitmapDrawable(mInflater.getContext().getResources(), bitmap));
-                } else {
-                    holder.img_event_image.setBackgroundResource(R.drawable.view_event_record);
-                }
-                holder.img_event_image.setImageResource(R.drawable.ic_menu_play_inverse_background);
-            } else {
-                holder.img_event_image.setBackgroundResource(R.drawable.view_event_record);
-                holder.img_event_image.setImageBitmap(null);
-            }
-            if (bitmap != null) {
-                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_read);
-                } else {
+                        if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+                            img_event_type.setImageResource(R.drawable.ic_motion_detection_read);
+                        } else {
 
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_read);
+                            img_event_type.setImageResource(R.drawable.ic_time_record_read);
+                        }
+                        img_play.setVisibility(View.VISIBLE);
+                    }else {
+                        if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+                            img_event_type.setImageResource(R.drawable.ic_motion_detection_unread);
+                        } else {
+                            img_event_type.setImageResource(R.drawable.ic_time_record_unread);
+                        }
+                        img_play.setVisibility(View.GONE);
+                        // holder.txt_event_type.setTypeface(null, Typeface.BOLD);
+                        // holder.txt_event_type.setTextColor(0xFF000000);
+                    }
                 }
-                // holder.txt_event_type.setTypeface(null, Typeface.NORMAL);
-                // holder.txt_event_type.setTextColor(0xFF999999);
-            } else {
-                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_unread);
-                } else {
-                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_unread);
-                }
-                // holder.txt_event_type.setTypeface(null, Typeface.BOLD);
-                // holder.txt_event_type.setTextColor(0xFF000000);
-            }
+            });
+//            File f = new File(videoFullFileNamePath);
+//            boolean hasThumb = f.exists();
+//            if (hasThumb) {
+//                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+//                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_read);
+//                } else {
+//
+//                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_read);
+//                }
+//                holder.img_play.setVisibility(View.VISIBLE);
+//                // holder.txt_event_type.setTypeface(null, Typeface.NORMAL);
+//                // holder.txt_event_type.setTextColor(0xFF999999);
+//            } else {
+//                if (evt.EventType == AVIOCTRL_EVENT_MOTIONDECT) {
+//                    holder.img_event_type_image.setImageResource(R.drawable.ic_motion_detection_unread);
+//                } else {
+//                    holder.img_event_type_image.setImageResource(R.drawable.ic_time_record_unread);
+//                }
+//                holder.img_play.setVisibility(View.GONE);
+//                // holder.txt_event_type.setTypeface(null, Typeface.BOLD);
+//                // holder.txt_event_type.setTextColor(0xFF000000);
+//            }
             return convertView;
 
         }
@@ -1173,7 +1216,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                 if (popu_tips_down != null) {
                     popu_tips_down.setText(String.format(getString(R.string.tips_downlaoding_video).toString(), "" + (downloadIndex + 1) + "/" + downloadlist.size()));
                 }
-                if(txt_downloadfile != null){
+                if (txt_downloadfile != null) {
                     txt_downloadfile.setText(downloadlist.get(downloadIndex).sStartTime.toString());
                 }
                 break;
@@ -1213,16 +1256,18 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 //                popu_tips_down.setText(getString(R.string.tips_down_file_route));
 
                 downloadlist.get(downloadIndex).downloadState = 1;
-                String thumbPath = TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB);
-                String thumbFileNanme = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, downloadlist.get(downloadIndex).sStartTime.getTimeInMillis(), downloadlist.get(downloadIndex).EventType);
-                File thumb = new File(thumbPath + "/" + thumbFileNanme);
-                if (!thumb.exists()) {
-                    Bitmap bmp = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
-                    TwsTools.saveBitmap(bmp, thumbPath + "/" + thumbFileNanme);
-                    bmp.recycle();
-                    bmp = null;
-                    System.gc();
-                }
+//                String thumbPath = TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB);
+//                String thumbFileNanme = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, downloadlist.get(downloadIndex).sStartTime.getTimeInMillis(), downloadlist.get(downloadIndex).EventType);
+//                File thumb = new File(thumbPath + "/" + thumbFileNanme);
+//                if (!thumb.exists()) {
+//                    Bitmap bmp = ThumbnailUtils.createVideoThumbnail(path, MediaStore.Images.Thumbnails.MINI_KIND);
+//                    if(bmp != null) {
+//                        TwsTools.saveBitmap(bmp, thumbPath + "/" + thumbFileNanme);
+//                        bmp.recycle();
+//                        bmp = null;
+//                        System.gc();
+//                    }
+//                }
                 downloadIndex++;
                 downloadSingle();
 
@@ -1251,7 +1296,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
     private AlertDialog dlgBuilder;
     private SeekBar prs_loading;
     private TextView rate_loading_video;
-    private  TextView txt_downloadfile;
+    private TextView txt_downloadfile;
     private AlertDialog.Builder dlg;
     private Button cancel_btn_downloading_video, goto_btn_downloading_video;
     private TextView popu_tips_down;
@@ -1306,12 +1351,12 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         prs_loading.setProgress(0);
 
         rate_loading_video = (TextView) customView.findViewById(R.id.rate_loading_video);
-        txt_downloadfile = (TextView)customView.findViewById(R.id.txt_downloadfile);
+        txt_downloadfile = (TextView) customView.findViewById(R.id.txt_downloadfile);
         popu_tips_down = (TextView) customView.findViewById(R.id.popu_tips_down);
         if (popu_tips_down != null) {
             popu_tips_down.setText(String.format(getString(R.string.tips_downlaoding_video).toString(), "" + (downloadIndex + 1) + "/" + downloadlist.size()));
         }
-        if(txt_downloadfile != null){
+        if (txt_downloadfile != null) {
             txt_downloadfile.setText(downloadlist.get(downloadIndex).sStartTime.toString());
         }
         cancel_btn_downloading_video = (Button) customView.findViewById(R.id.cancel_btn_downloading_video);

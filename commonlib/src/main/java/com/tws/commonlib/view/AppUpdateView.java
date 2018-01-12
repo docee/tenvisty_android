@@ -417,7 +417,8 @@ public class AppUpdateView {
                 camera.setCameraModel(com.tutk.IOTC.NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
             }
             camera.setVideoQuality(videoQuality);
-            camera.setEventNum(event_notification);
+            camera.setPushOpen(event_notification>0);
+            //camera.setEventNum(event_notification);
             camera.setDatabaseId(db_id);
             //DeviceInfo dev = new DeviceInfo(db_id, camera.getUUID(), dev_nickname, dev_uid, view_acc, view_pwd, "", event_notification, channel, null);
             //VideoList.DeviceList.add(dev);

@@ -7,10 +7,17 @@ import android.graphics.Bitmap;
  */
 
 public class LocalPichModel {
-    public LocalPichModel(String path) {
+    public  int type;
+    public LocalPichModel(String path,int type) {
+        this.type = type;
         this.path = path;
         if (isVideo()) {
-            this.thumbPath = path + ".jpg";
+            if(type == 1) {
+                this.thumbPath = path + ".jpg";
+            }
+            else{
+                this.thumbPath = path.substring(0,path.lastIndexOf(".mp4"))+".jpg";
+            }
         } else {
             this.thumbPath = path;
         }
@@ -20,22 +27,8 @@ public class LocalPichModel {
     public boolean checked;
     public String thumbPath;
 
-    public Bitmap getThumbBmp() {
-        return thumbBmp;
-    }
-
-    public void setThumbBmp(Bitmap thumbBmp) {
-        if(this.thumbBmp != null && !this.thumbBmp.isRecycled()){
-            this.thumbBmp.recycle();
-            this.thumbBmp = null;
-            System.gc();
-        }
-        this.thumbBmp = thumbBmp;
-    }
-
-    private Bitmap thumbBmp;
 
     public boolean isVideo() {
-        return path != null && path.contains(".mp4");
+        return path != null && path.endsWith(".mp4");
     }
 }

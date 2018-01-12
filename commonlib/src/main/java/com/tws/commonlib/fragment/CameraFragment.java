@@ -147,7 +147,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             camera.setPassword(TwsDataValue.DEFAULT_PASSWORD);
                             camera.asyncStop(new IMyCamera.TaskExecute() {
                                 @Override
-                                public void onPosted(IMyCamera c,Object data) {
+                                public void onPosted(IMyCamera c, Object data) {
                                     c.start();
                                 }
                             });
@@ -162,7 +162,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     } else if (resultCode == TwsSessionState.CONNECTION_STATE_TIMEOUT) {
                         camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(IMyCamera c,Object data) {
+                            public void onPosted(IMyCamera c, Object data) {
                                 c.start();
                             }
                         });
@@ -171,7 +171,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         if (camera.getState() != CameraState.None) {
                             camera.asyncStop(new IMyCamera.TaskExecute() {
                                 @Override
-                                public void onPosted(IMyCamera c,Object data) {
+                                public void onPosted(IMyCamera c, Object data) {
                                     c.start();
                                 }
                             });
@@ -200,7 +200,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                 && evtType != AVIOCTRLDEFs.AVIOCTRL_EVENT_IOALARMPASS) {
                             boolean canPush = true;//((MyCamera) camera).shouldPush();
                             if (evtType == AVIOCTRLDEFs.AVIOCTRL_EVENT_BELL_RING || canPush) {
-                                TwsTools.showAlarmNotification(getActivity(),camera.getUid(), 2, System.currentTimeMillis());
+                                TwsTools.showAlarmNotification(getActivity(), camera.getUid(), 2, System.currentTimeMillis());
                             }
                         }
 
@@ -239,8 +239,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                 mCamera.setSystemTypeVersion(arrFirm[2] + "." + arrFirm[3] + "." + arrFirm[4]);
                             }
                         }
-                    }
-                    else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_UPGRADE_STATUS) {
+                    } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_UPGRADE_STATUS) {
                         final View view = getCameraView(camera);
                         final AVIOCTRLDEFs.SMsgAVIoctrlUpgradeStatus process = new AVIOCTRLDEFs.SMsgAVIoctrlUpgradeStatus(data);
                         if (view != null) {
@@ -307,7 +306,6 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
     };
 
-    private View view;
 
     @Override
     public View onCreateView(LayoutInflater inflater,
@@ -325,6 +323,22 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         afterInit();
         return view;
     }
+
+    void refreshTitle() {
+        if (view != null) {
+            TextView txt_title = view.findViewById(R.id.txt_title);
+            if(txt_title != null) {
+                if(TwsDataValue.cameraList().size() > 0) {
+                    txt_title.setText(getString(R.string.title_camera_list) + String.format("(%d)", TwsDataValue.cameraList().size()));
+                }
+                else{
+                    txt_title.setText(getString(R.string.title_camera_list));
+                }
+            }
+        }
+    }
+
+    private View view;
 
     public void initView() {
 
@@ -466,23 +480,20 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                 if (btnId == R.id.btn_item_delete) {
                     CameraFragment.this.deleteCamera(camera);
                 } else if (btnId == R.id.btn_item_setting) {
-                    if(camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
+                    if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
                         intent.setClass(CameraFragment.this.getActivity(), DeviceSetting_HichipActivity.class);
-                    }
-                    else{
+                    } else {
                         intent.setClass(CameraFragment.this.getActivity(), DeviceSettingActivity.class);
                     }
                     startActivity(intent);
-                }  else if (btnId == R.id.btn_item_event) {
-                    if(camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P){
+                } else if (btnId == R.id.btn_item_event) {
+                    if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
                         intent.setClass(CameraFragment.this.getActivity(), EventList_HichipActivity.class);
-                    }
-                    else {
+                    } else {
                         intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);
                     }
                     startActivity(intent);
-                }
-                else if(btnId == R.id.btn_play){
+                } else if (btnId == R.id.btn_play) {
                     camera.asyncStartVideo(null);
                     if (camera.getEventNum() > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
@@ -491,27 +502,23 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         manager.cancel(camera.getUid(), intId);
                     }
 
-                    intent.setClass(CameraFragment.this.getActivity(),camera instanceof MyCamera? LiveViewActivity.class: LiveView_HichipActivity.class);
+                    intent.setClass(CameraFragment.this.getActivity(), camera instanceof MyCamera ? LiveViewActivity.class : LiveView_HichipActivity.class);
                     startActivity(intent);
-                }
-                else if(btnId == R.id.btn_modifyPassword){
+                } else if (btnId == R.id.btn_modifyPassword) {
                     camera.stop();
                     showPasswordWrongHint(camera);
-                }
-                else if(btnId == R.id.btn_reconnect){
+                } else if (btnId == R.id.btn_reconnect) {
                     camera.asyncStop(new IMyCamera.TaskExecute() {
                         @Override
-                        public void onPosted(IMyCamera c,Object data) {
+                        public void onPosted(IMyCamera c, Object data) {
                             c.start();
                         }
                     });
-                }
-
-                else if (btnId == R.id.img_snapshot) {
+                } else if (btnId == R.id.img_snapshot) {
                     if (camera.isPasswordWrong()) {
                         camera.stop();
                         showPasswordWrongHint(camera);
-                    }  else if (camera.isConnected()) {
+                    } else if (camera.isConnected()) {
                         camera.asyncStartVideo(null);
 
                         if (camera.getEventNum() > 0) {
@@ -525,7 +532,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     } else {
                         camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(IMyCamera c,Object data) {
+                            public void onPosted(IMyCamera c, Object data) {
                                 c.start();
                             }
                         });
@@ -553,7 +560,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             } else {
                                 camera.asyncStop(new IMyCamera.TaskExecute() {
                                     @Override
-                                    public void onPosted(IMyCamera c,Object data) {
+                                    public void onPosted(IMyCamera c, Object data) {
                                         c.start();
                                     }
                                 });
@@ -620,7 +627,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     @Override
     public void onResume() {
         super.onResume();
-
+        refreshTitle();
         refreshItems();
         for (IMyCamera camera : TwsDataValue.cameraList()) {
             if (camera.isConnected() && camera.getPassword().equalsIgnoreCase(IMyCamera.DEFAULT_PASSWORD)) {
@@ -793,6 +800,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         //dlgBuilder.setMessage("UID:"+camera.uid+"\n"+getText(R.string.tips_remove_camera_confirm));
         dlgBuilder.setPositiveButton(getText(R.string.ok),
                 new DialogInterface.OnClickListener() {
+                    @SuppressLint("RestrictedApi")
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         for (int i = 0; i < cells.size(); i++) {
@@ -803,7 +811,13 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         camera.closePush(CameraFragment.this.getContext());
                         camera.asyncStop(null);
                         camera.remove(CameraFragment.this.getContext());
+                        try {
+                            ((FolderFragment) CameraFragment.this.getFragmentManager().getFragments().get(1)).initView();
+                        } catch (Exception ex) {
+
+                        }
                         refreshItems();
+                        refreshTitle();
                     }
                 });
         dlgBuilder.setNegativeButton(getText(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -827,6 +841,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
+
     private class CameraBroadcastReceiver extends BroadcastReceiver {
 
         @Override
@@ -841,28 +856,28 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     if (!camera.isConnected() && !camera.isPasswordWrong()) {
                         camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
-                            public void onPosted(IMyCamera c,Object data) {
+                            public void onPosted(IMyCamera c, Object data) {
                                 c.start();
                             }
                         });
                     }
                 }
             } else if (intent.getAction().equals(TwsDataValue.ACTION_CAMERA_REFRESH)) {
-               // refreshItems();
-            }else if (intent.getAction().equals(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM)) {
+                // refreshItems();
+            } else if (intent.getAction().equals(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM)) {
                 Bundle bundle = intent.getExtras();
-                if(bundle != null){
+                if (bundle != null) {
                     String uid = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
-                    if(uid!= null){
-                        for(IMyCamera c : TwsDataValue.cameraList()){
-                            if(c.getUid().equals(uid)){
+                    if (uid != null) {
+                        for (IMyCamera c : TwsDataValue.cameraList()) {
+                            if (c.getUid().equals(uid)) {
                                 View cameraView = getCameraView(c);//.findViewById(R.id.img_push_alarm)
-                                if(cameraView!=null){
-                                    if( c.getEventNum()>0) {
+                                if (cameraView != null) {
+                                    if (c.getEventNum() > 0) {
                                         cameraView.findViewById(R.id.img_push_alarm).setVisibility(View.VISIBLE);
                                     }
                                     Bitmap snap = c.getSnapshot();
-                                    if(snap == null || !snap.isRecycled()) {
+                                    if (snap == null || !snap.isRecycled()) {
                                         if (TwsTools.isSDCardValid()) {
                                             try {
                                                 BitmapFactory.Options opts = new BitmapFactory.Options();
@@ -881,8 +896,8 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                             }
                                         }
                                     }
-                                    if(snap == null || !snap.isRecycled()){
-                                        ((ImageView)cameraView.findViewById(R.id.img_snapshot)).setImageBitmap(snap);
+                                    if (snap == null || !snap.isRecycled()) {
+                                        ((ImageView) cameraView.findViewById(R.id.img_snapshot)).setImageBitmap(snap);
                                     }
                                 }
                                 break;

@@ -111,7 +111,7 @@ public class SensitivitySetting_HichipActivity extends BaseActivity implements I
         sensLevel = level;
         if (camera != null) {
             md_param.struArea.u32Sensi =  TwsDataValue.SensValues[TwsDataValue.SensValues.length-1-sensLevel];
-            if(sensLevel == TwsDataValue.SensValues.length -1){
+            if(sensLevel == 0){
                 md_param.struArea.u32Enable = 0;
             }
             else{

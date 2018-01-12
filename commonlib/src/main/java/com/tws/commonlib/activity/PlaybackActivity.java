@@ -46,6 +46,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
     private static final int STS_CHANGE_CHANNEL_STREAMINFO = 99;
     private static final int PLAY_TIMEOUT = 98;
     private static final int DISCONNECT_DELAY = 97;
+    private static final int SNAPSHOT_TRY = 100;
 
     private final int OPT_MENU_ITEM_PLAY = 0;
 
@@ -77,6 +78,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
     boolean toolsVisible;
     Bitmap snap;
     private boolean isQuiting = false;
+    boolean hasSnaped = false;
 
     LinearLayout ll_playback() {
         return (LinearLayout) findViewById(R.id.ll_playback);
@@ -256,6 +258,9 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
         if (!isQuiting) {
             handler.sendEmptyMessageDelayed(DISCONNECT_DELAY, 3000);
         }
+        if(handler.hasMessages(SNAPSHOT_TRY)) {
+            handler.removeMessages(SNAPSHOT_TRY);
+        }
     }
 
     @Override
@@ -265,6 +270,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
         if (handler != null && handler.hasMessages(DISCONNECT_DELAY)) {
             handler.removeMessages(DISCONNECT_DELAY);
         }
+        trySnapTimes = 5;
     }
 
     @Override
@@ -486,52 +492,8 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                 Environment.MEDIA_MOUNTED);
     }
 
-    /**
-     * 淇濆瓨鍥剧墖锛屽苟涓旀坊鍔犺嚦澶氬獟浣撳簱
-     *
-     * @param fileName
-     * @param frame
-     * @return
-     */
-    private boolean saveImage(String fileName, Bitmap frame) {
 
-        if (fileName == null || fileName.length() <= 0)
-            return false;
-
-        boolean bErr = false;
-        FileOutputStream fos = null;
-
-        try {
-
-            // 灏嗗浘鐗囦繚瀛樺埌filename鏂囦欢
-            fos = new FileOutputStream(fileName, false);
-            frame.compress(Bitmap.CompressFormat.JPEG, 10, fos);//杩涜鍘嬬缉鐒跺悗鍐欏叆鍒版枃浠�
-            fos.flush();
-            fos.close();
-
-        } catch (Exception e) {
-
-            bErr = true;
-            System.out.println("saveImage(.): " + e.getMessage());
-
-        } finally {
-
-            if (bErr) {
-
-                if (fos != null) {
-                    try {
-                        fos.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-                return false;
-            }
-        }
-        // addImageGallery(new File(fileName));
-        return true;
-    }
-
+    int trySnapTimes = 10;
     void saveSnap() {
         if (mCamera != null) {
             if (isSDCardValid()) {// 濡傛灉sd鍗″彲鐢�
@@ -539,7 +501,18 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
                     return;
                 }
                 String filenameString = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, mEvtTime2.getTimeInMillis(), mEvtType);//  mDevUID + "_" + mEvtType + mEvtTime2.year + mEvtTime2.month + mEvtTime2.day + mEvtTime2.wday + mEvtTime2.hour + mEvtTime2.minute + mEvtTime2.second + ".jpg";
-                mCamera.saveSnapShot(mPlaybackChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, null);
+                mCamera.saveSnapShot(mPlaybackChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, new IMyCamera.TaskExecute() {
+                    @Override
+                    public void onPosted(IMyCamera camera, Object data) {
+                        if(data == null && trySnapTimes > 0){
+                            trySnapTimes--;
+                            handler.sendEmptyMessageDelayed(SNAPSHOT_TRY,500);
+                        }
+                        if(data != null){
+                            hasSnaped = true;
+                        }
+                    }
+                });
             }
         }
     }
@@ -547,21 +520,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
     @Override
     public void receiveFrameData(final IMyCamera camera, int sessionChannel, Bitmap bmp) {
         System.out.println("receiveFrameData");
-        if (mCamera == camera && sessionChannel == mPlaybackChannel && bmp != null) {
-            mVideoWidth = bmp.getWidth();
-            mVideoHeight = bmp.getHeight();
-            if (snap == null && bmp != null && mEvtTime2 != null) {
-                snap = bmp;
-                saveSnap();
-            }
-            this.runOnUiThread(new Runnable() {
 
-                @Override
-                public void run() {
-                    videoProgressBar().setVisibility(View.INVISIBLE);
-                }
-            });
-        }
     }
 
     @Override
@@ -783,6 +742,11 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
             } else if (msg.what == DISCONNECT_DELAY) {
                 disConnect();
             }
+            else if(msg.what == SNAPSHOT_TRY){
+                if(!hasSnaped) {
+                    saveSnap();
+                }
+            }
             super.handleMessage(msg);
         }
     };
@@ -843,7 +807,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
             if (state == 0) {
                 mVideoWidth = w;
                 mVideoHeight = h;
-                if (snap == null && mEvtTime2 != null) {
+                if (mEvtTime2 != null && !hasSnaped) {
                     saveSnap();
                 }
                 if (w != 0 && h != 0 && Math.abs(this.mCamera.getVideoRatio(PlaybackActivity.this) - (float) w / h) > 0.2) {

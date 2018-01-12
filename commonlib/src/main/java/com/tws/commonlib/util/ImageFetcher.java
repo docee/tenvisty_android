@@ -18,15 +18,19 @@ package com.tws.commonlib.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.media.ThumbnailUtils;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Build;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
 
 import com.tws.commonlib.BuildConfig;
 import com.tws.commonlib.R;
+import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.TwsDataValue;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -302,6 +306,36 @@ public class ImageFetcher extends ImageResizer {
             }
         }
         else{
+            if(urlString.endsWith(".mp4.jpg")){
+                File f = new File(urlString);
+                if(!f.exists()){
+                    String videoPath = urlString.substring(0,urlString.lastIndexOf(".jpg"));
+                    f = new File(videoPath);
+                    if(f.exists()){
+                        Bitmap bmp = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
+                        TwsTools.saveBitmap(bmp,urlString);
+                        if(bmp != null && !bmp.isRecycled()) {
+                            bmp.recycle();
+                            System.gc();
+                        }
+                    }
+                }
+            }
+            else if(urlString.endsWith(".jpg")&& urlString.contains(TwsDataValue.Remte_RECORDING_DIR)){
+                File f = new File(urlString);
+                if(!f.exists()){
+                    String videoPath = urlString.substring(0,urlString.lastIndexOf(".jpg"))+".mp4";
+                    f = new File(videoPath);
+                    if(f.exists()){
+                        Bitmap bmp = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
+                        TwsTools.saveBitmap(bmp,urlString);
+                        if(bmp != null && !bmp.isRecycled()) {
+                            bmp.recycle();
+                            System.gc();
+                        }
+                    }
+                }
+            }
             BufferedOutputStream out = null;
             BufferedInputStream in = null;
             try {

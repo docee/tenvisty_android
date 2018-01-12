@@ -689,7 +689,12 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
                     return;
                 }
                 String filenameString = TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB, startTimeLong, eventType);// mCamera.getUid() + "_" + eventType + startCal.get(Calendar.YEAR) + (startCal.get(Calendar.MONTH) + 1) + startCal.get(Calendar.DAY_OF_MONTH) + "0" + startCal.get(Calendar.HOUR_OF_DAY) + startCal.get(Calendar.MINUTE) + startCal.get(Calendar.SECOND) + ".jpg";
-                mCamera.saveSnapShot(0, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, null);
+                mCamera.saveSnapShot(0, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_PLAYBACK_AUTOTHUMB), filenameString, new IMyCamera.TaskExecute() {
+                    @Override
+                    public void onPosted(IMyCamera camera, Object data) {
+                        hasSaveSnapshot = data != null;
+                    }
+                });
             }
         }
     }

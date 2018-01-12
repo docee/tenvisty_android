@@ -127,8 +127,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     @Override
     public void setVideoRatio(Context context, float ratio) {
         DatabaseManager db = new DatabaseManager(context);
-        db.updateDeviceVideoRatio(this.getUid(), videoRatio);
-        this.videoRatio = videoRatio;
+        db.updateDeviceVideoRatio(this.getUid(), ratio);
+        this.videoRatio = ratio;
     }
 
     @Override
@@ -607,7 +607,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public boolean setPushOpen(boolean open) {
-        return false;
+        this.pushState = open?1:0;
+        return true;
     }
 
     @Override
@@ -1046,6 +1047,9 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
         if (type == HiChipDefines.HI_P2P_SET_TIME_PARAM) {
             this.setInitTime(false);
+        }
+        if(type == HiChipDefines.HI_P2P_ALARM_EVENT){
+            TwsTools.showAlarmNotification(App.getContext(),getUid(),1,System.currentTimeMillis());
         }
     }
 

@@ -124,6 +124,9 @@ public class VideoViewAdapter extends SimpleAdapter {
                         if(opts.inSampleSize < 1){
                             opts.inSampleSize = 1;
                         }
+                        else if(opts.inSampleSize%2 == 1){
+                            opts.inSampleSize--;
+                        }
                         opts.inJustDecodeBounds = false;
                         snap = BitmapFactory.decodeFile(snapshotPath,opts);
                         camera.setSnapshot(snap);

@@ -1,5 +1,7 @@
 package com.tws.commonlib.activity;
 
+import android.app.Activity;
+import android.app.ActivityOptions;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -7,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.content.FileProvider;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -29,6 +32,10 @@ import com.tws.commonlib.bean.LocalPichModel;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
+import com.tws.commonlib.ui.ImageDetailActivity;
+import com.tws.commonlib.util.ImageCache;
+import com.tws.commonlib.util.ImageFetcher;
+import com.tws.commonlib.util.Utils;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -55,14 +62,11 @@ public class CameraFolderActivity extends BaseActivity {
     int firstVisibleItem;
     int accSelect = -1;
     IMyCamera mCamera;
+    private ImageFetcher mImageFetcher;
+    private static final String IMAGE_CACHE_DIR = "thumbs";
 
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (adapter != null) {
-            adapter.release();
-        }
-    }
+    private int mImageThumbSize;
+    private int mImageThumbSpacing;
 
     private String getImagesPath() {
         if (imagesPath == null) {
@@ -115,9 +119,78 @@ public class CameraFolderActivity extends BaseActivity {
                 break;
             }
         }
+        initImageFetcher();
         initView();
-
         //.initSDK(this);
+    }
+
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mImageFetcher.setExitTasksEarly(false);
+        renderData();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mImageFetcher.setPauseWork(false);
+        mImageFetcher.setExitTasksEarly(true);
+        mImageFetcher.flushCache();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mImageFetcher.closeCache();
+    }
+
+
+    void initImageFetcher() {
+
+        mImageThumbSize = TwsTools.dip2px(this, 100);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_size);
+        mImageThumbSpacing = TwsTools.dip2px(this, 5);// getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
+
+        ImageCache.ImageCacheParams cacheParams =
+                new ImageCache.ImageCacheParams(this, IMAGE_CACHE_DIR);
+
+        cacheParams.setMemCacheSizePercent(0.25f); // Set memory cache to 25% of app memory
+
+        // The ImageFetcher takes care of loading images into our ImageView children asynchronously
+        mImageFetcher = new ImageFetcher(this, mImageThumbSize);
+        DisplayMetrics dm = new DisplayMetrics();
+        (this).getWindowManager().getDefaultDisplay().getMetrics(dm);
+        int width = (dm.widthPixels - TwsTools.dip2px(this,80))/3;
+        int  height = (int)(width/camera.getVideoRatio(this)) ;
+        mImageFetcher.setImageSize(width,height);
+        mImageFetcher.setLoadingImage(R.drawable.default_img);
+        mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
+    }
+
+    private void renderData() {
+        // if (which == 0) {
+        refreshSource();
+        if (adapterSource.size() > 0) {
+            listviewItemList.setVisibility(View.VISIBLE);
+        } else {
+            listviewItemList.setVisibility(View.GONE);
+            if (accSelect == 1) {
+                ll_no_videos.setVisibility(View.VISIBLE);
+                ll_no_photos.setVisibility(View.GONE);
+            } else {
+                ll_no_videos.setVisibility(View.GONE);
+                ll_no_photos.setVisibility(View.VISIBLE);
+            }
+        }
+        firstVisibleItem = 0;
+        if (adapterSource.size() > 0) {
+            ll_first_top.setVisibility(View.VISIBLE);
+        } else {
+            ll_first_top.setVisibility(View.GONE);
+        }
+        setToolBarVisible();
+        adapter.notifyDataSetChanged();
     }
 
     @Override
@@ -160,114 +233,102 @@ public class CameraFolderActivity extends BaseActivity {
                 if (accSelect == which) {
                     return;
                 }
-                // if (which == 0) {
-                refreshSource(which);
-                if (adapterSource.size() > 0) {
-                    listviewItemList.setVisibility(View.VISIBLE);
-                } else {
-                    listviewItemList.setVisibility(View.GONE);
-                    if (which == 1) {
-                        ll_no_videos.setVisibility(View.VISIBLE);
-                        ll_no_photos.setVisibility(View.GONE);
-                    } else {
-                        ll_no_videos.setVisibility(View.GONE);
-                        ll_no_photos.setVisibility(View.VISIBLE);
+                accSelect = which;
+                renderData();
+            }
+        });
+
+        CameraFolderActivity.this.findViewById(R.id.img_group_check).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (adapterSource.size() > firstVisibleItem) {
+                    DateScrollItem model = adapterSource.get(firstVisibleItem);
+                    model.checked = !model.checked;
+                    model.img_group_check.setSelected(model.checked);
+                    // model.img_group_check.setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
+                    LocalPicItemListAdapter picAdapter = (LocalPicItemListAdapter) model.subAdatper;
+                    ((ImageView) view).setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
+                    for (int i = 0; i < picAdapter.sourceItemList.size(); i++) {
+                        LocalPichModel m = picAdapter.sourceItemList.get(i);
+                        m.checked = model.checked;
+                        picAdapter.checkPicList.get(i).setEnabled(m.checked);
                     }
+                    picAdapter.notifyDataSetChanged();
                 }
-                firstVisibleItem = 0;
-                if (adapterSource.size() > 0) {
-                    ll_first_top.setVisibility(View.VISIBLE);
-                } else {
-                    ll_first_top.setVisibility(View.GONE);
-                }
-                if (adapter != null) {
-                    adapter.release();
-                }
-                adapter = new DateScrollItemListAdapter(CameraFolderActivity.this, adapterSource);
+            }
+        });
+        adapter = new DateScrollItemListAdapter(CameraFolderActivity.this, adapterSource);
+        adapter.setImageFetcher(mImageFetcher);
+        adapter.setStateChangedListner(new DateScrollItemListAdapter.onStateChangedListner() {
+            @Override
+            public void onCheck(boolean b) {
                 setToolBarVisible();
-                listviewItemList.setAdapter(adapter);
-                listviewItemList.setOnScrollListener(new AbsListView.OnScrollListener() {
-                    @Override
-                    public void onScroll(AbsListView view, int _firstVisibleItem, int visibleItemCount, int totalItemCount) {
-                        firstVisibleItem = _firstVisibleItem;
-                        if (!adapterSource.isEmpty()) {
-                            DateScrollItem model = adapterSource.get(_firstVisibleItem);
-                            ((TextView) CameraFolderActivity.this.findViewById(R.id.txt_date)).setText(adapterSource.get(firstVisibleItem).date);
-                            ((TextView) CameraFolderActivity.this.findViewById(R.id.txt_title)).setText(adapterSource.get(firstVisibleItem).title);
-                            ((ImageView) findViewById(R.id.img_group_check)).setSelected(model.checked);
-                            //((ImageView) findViewById(R.id.img_group_check)).setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
+            }
+        });
+        adapter.setOnclickListner(new DateScrollItemListAdapter.onItemClickLinstener() {
+            @Override
+            public void onClick(View view, int position, int subPosition, long viewid) {
+                if (!adapter.isCheckMode()) {
+                    String fileName = ((LocalPichModel) ((DateScrollItem) adapter.getItem(position)).subAdatper.getItem(subPosition)).path;
+                    if (accSelect == 0) {
+                        Intent intent = new Intent(CameraFolderActivity.this, PhotoShowActivity.class);
+                        intent.putExtra("filename", fileName);
+                        intent.putExtra("dir", getImagesPath());
+                        if (Utils.hasJellyBean()) {
+                            // makeThumbnailScaleUpAnimation() looks kind of ugly here as the loading spinner may
+                            // show plus the thumbnail image in GridView is cropped. so using
+                            // makeScaleUpAnimation() instead.
+                            ActivityOptions options = ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.getWidth(),view.getHeight());
+                            CameraFolderActivity.this.startActivity(intent, options.toBundle());
+                        } else {
+                            startActivity(intent);
                         }
-                        // TwsToast.showToast(EventListActivity.this, "firstVisibleItem:" + firstVisibleItem + ",visibleItemCount:" + visibleItemCount + ",totalItemCount:" + totalItemCount);
-                        if (firstVisibleItem == 0) {
-//                        Log.d("ListView", "##### 滚动到顶部 #####");
-                        } else if ((firstVisibleItem + visibleItemCount) == totalItemCount) {
-//                        Log.d("ListView", "##### 滚动到底部 ######");
-                        }
-                    }
-
-                    @Override
-                    public void onScrollStateChanged(AbsListView view, int scrollState) {
-                        //do nothing
-                    }
-
-                });
-                adapter.setStateChangedListner(new DateScrollItemListAdapter.onStateChangedListner() {
-                    @Override
-                    public void onCheck(boolean b) {
-                        setToolBarVisible();
-                    }
-                });
-                adapter.setOnclickListner(new DateScrollItemListAdapter.onItemClickLinstener() {
-                    @Override
-                    public void onClick(View view, int position, int subPosition, long viewid) {
-                        if (!adapter.isCheckMode()) {
-                            String fileName = ((LocalPichModel) ((DateScrollItem) adapter.getItem(position)).subAdatper.getItem(subPosition)).path;
-                            if (accSelect == 0) {
-                                Intent intent = new Intent(CameraFolderActivity.this, PhotoShowActivity.class);
-                                intent.putExtra("filename", fileName);
-                                intent.putExtra("dir", getImagesPath());
-                                startActivityForResult(intent, 0);
-                            } else {
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                                    playbackInAndroid7(fileName);
-                                } else {
-                                    playbackRecording(fileName);
-                                }
-//                                String fileName = ((LocalPichModel) ((DateScrollItem) adapter.getItem(position)).subAdatper.getItem(subPosition)).path;
-//                                Uri uri = Uri.parse(fileName);//调用系统自带的播放器
-//                                Intent intent = new Intent(Intent.ACTION_VIEW);
-//                                intent.setDataAndType(uri, "video/mp4");
-//                                startActivity(intent);
-                            }
+                    } else {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            playbackInAndroid7(fileName);
+                        } else {
+                            playbackRecording(fileName);
                         }
                     }
-                });
-
-                CameraFolderActivity.this.findViewById(R.id.img_group_check).setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        if (adapterSource.size() > firstVisibleItem) {
-                            DateScrollItem model = adapterSource.get(firstVisibleItem);
-                            model.checked = !model.checked;
-                            model.img_group_check.setSelected(model.checked);
-                            // model.img_group_check.setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
-                            LocalPicItemListAdapter picAdapter = (LocalPicItemListAdapter) model.subAdatper;
-                            ((ImageView) view).setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
-                            for (int i = 0; i < picAdapter.sourceItemList.size(); i++) {
-                                LocalPichModel m = picAdapter.sourceItemList.get(i);
-                                m.checked = model.checked;
-                                picAdapter.checkPicList.get(i).setEnabled(m.checked);
-                            }
-                            picAdapter.notifyDataSetChanged();
-                        }
-                    }
-                });
-//                } else {
-//
-//                }
+                }
             }
         });
         listviewItemList = (ListView) findViewById(R.id.listviewItemList);
+
+        listviewItemList.setAdapter(adapter);
+        listviewItemList.setOnScrollListener(new AbsListView.OnScrollListener() {
+            @Override
+            public void onScroll(AbsListView view, int _firstVisibleItem, int visibleItemCount, int totalItemCount) {
+                firstVisibleItem = _firstVisibleItem;
+                if (!adapterSource.isEmpty()) {
+                    DateScrollItem model = adapterSource.get(_firstVisibleItem);
+                    ((TextView) CameraFolderActivity.this.findViewById(R.id.txt_date)).setText(adapterSource.get(firstVisibleItem).date);
+                    ((TextView) CameraFolderActivity.this.findViewById(R.id.txt_title)).setText(adapterSource.get(firstVisibleItem).title);
+                    ((ImageView) findViewById(R.id.img_group_check)).setSelected(model.checked);
+                    //((ImageView) findViewById(R.id.img_group_check)).setImageResource(model.checked ? R.drawable.ic_check_circle_24dp_checked : R.drawable.ic_check_circle_24dp_unchecked);
+                }
+                // TwsToast.showToast(EventListActivity.this, "firstVisibleItem:" + firstVisibleItem + ",visibleItemCount:" + visibleItemCount + ",totalItemCount:" + totalItemCount);
+                if (firstVisibleItem == 0) {
+//                        Log.d("ListView", "##### 滚动到顶部 #####");
+                } else if ((firstVisibleItem + visibleItemCount) == totalItemCount) {
+//                        Log.d("ListView", "##### 滚动到底部 ######");
+                }
+            }
+
+            @Override
+            public void onScrollStateChanged(AbsListView view, int scrollState) {
+                //do nothing
+                if (scrollState == AbsListView.OnScrollListener.SCROLL_STATE_FLING) {
+                    // Before Honeycomb pause image loading on scroll to help with performance
+                    if (!Utils.hasHoneycomb()) {
+                        mImageFetcher.setPauseWork(true);
+                    }
+                } else {
+                    mImageFetcher.setPauseWork(false);
+                }
+            }
+
+        });
         if (this.getIntent().getBooleanExtra("goto", false)) {
             spinnerButton.Click(1);
         } else {
@@ -323,7 +384,6 @@ public class CameraFolderActivity extends BaseActivity {
             for (DateScrollItem item : adapterSource) {
                 for (LocalPichModel pic : ((LocalPicItemListAdapter) (item.subAdatper)).sourceItemList) {
                     if (pic.checked) {
-                        pic.setThumbBmp(null);
                         deleteFiles.add(pic);
                     }
                 }
@@ -345,7 +405,6 @@ public class CameraFolderActivity extends BaseActivity {
             for (DateScrollItem item : adapterSource) {
                 for (LocalPichModel pic : ((LocalPicItemListAdapter) (item.subAdatper)).sourceItemList) {
                     if (pic.checked) {
-                        pic.setThumbBmp(null);
                         deleteFiles.add(pic);
                     }
                 }
@@ -366,6 +425,12 @@ public class CameraFolderActivity extends BaseActivity {
                                             File f = new File(pic.path);
                                             if (f.exists()) {
                                                 f.delete();
+                                            }
+                                            if (pic.thumbPath != null && pic.thumbPath != pic.path) {
+                                                File fThumb = new File(pic.thumbPath);
+                                                if (fThumb.exists()) {
+                                                    fThumb.delete();
+                                                }
                                             }
                                             subAdapter.sourceItemList.remove(pic);
                                             k--;
@@ -410,88 +475,89 @@ public class CameraFolderActivity extends BaseActivity {
         }
     }
 
-    void refreshSource(final int whitch) {
-        if (accSelect != whitch) {
-            accSelect = whitch;
-            adapterSource.clear();
-            String dir = null;
-            if (whitch == 0) {
-                dir = getImagesPath();
-            } else if (whitch == 1) {
-                dir = getVideosPath();
-            }
-            File folder = new File(dir);
-            if (folder.exists()) {
-                File[] files = folder.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File file) {
-                        return file.isDirectory() || (file.getName().length() >= 36 && (whitch == 1 ? (file.getName().contains(".mp4") || file.getName().contains(".avi")) : (file.getName().contains(".jpg"))));
-                    }
-                });
-                if (files != null) {
-                    for (File f : files) {
-                        //下载的录像
-                        if (f.isDirectory()) {
-                            File[] pics = f.listFiles(new FileFilter() {
-                                @Override
-                                public boolean accept(File file) {
-                                    return file.isFile() && file.getName().length() >= 36 && (file.getName().contains(".mp4") || file.getName().contains(".avi"));
-                                }
-                            });
-                            for (File pic : pics) {
-                                String[] paras = pic.getName().split("_");
-                                String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
-                                String title = paras[1].substring(0, 8);
-                                Date time = TwsTools.Str2Date(paras[1], null);
-                                DateScrollItem sItem = findSouceItem(time);
-                                if (sItem == null) {
-                                    LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this));
-                                    sItem = new DateScrollItem(time, date, title, adapter);
-                                    adapterSource.add(sItem);
-                                }
-                                sItem.isRemoteRecord = true;
-                                ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(pic.getAbsolutePath());
+    void refreshSource() {
+        adapterSource.clear();
+        String dir = null;
+        if (accSelect == 0) {
+            dir = getImagesPath();
+        } else if (accSelect == 1) {
+            dir = getVideosPath();
+        }
+        File folder = new File(dir);
+        if (folder.exists()) {
+            File[] files = folder.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return file.isDirectory() || (file.getName().length() >= 36 && (accSelect == 1 ? (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi")) : (file.getName().endsWith(".jpg"))));
+                }
+            });
+            if (files != null) {
+                for (File f : files) {
+                    //下载的录像
+                    if (f.isDirectory()) {
+                        File[] pics = f.listFiles(new FileFilter() {
+                            @Override
+                            public boolean accept(File file) {
+                                return file.isFile() && file.getName().length() >= 36 && (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi"));
                             }
-                        }
-                        //手动抓拍、录像
-                        else {
-                            String[] paras = f.getName().split("_");
+                        });
+                        for (File pic : pics) {
+                            String[] paras = pic.getName().split("_");
                             String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
                             String title = paras[1].substring(0, 8);
                             Date time = TwsTools.Str2Date(paras[1], null);
-                            DateScrollItem sItem = findSouceItem(time);
+                            int type = 2;
+                            DateScrollItem sItem = findSouceItem(time, 2);
                             if (sItem == null) {
-                                LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this));
-                                sItem = new DateScrollItem(time, date, title, adapter);
+                                LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), 2);
+                                adapter.setImageFetcher(mImageFetcher);
+                                sItem = new DateScrollItem(time, date, title, adapter, 2);
                                 adapterSource.add(sItem);
                             }
-                            ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(f.getAbsolutePath());
+                            sItem.isRemoteRecord = true;
+                            ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(pic.getAbsolutePath());
                         }
+                    }
+                    //手动抓拍、录像
+                    else {
+                        String[] paras = f.getName().split("_");
+                        String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
+                        String title = paras[1].substring(0, 8);
+                        Date time = TwsTools.Str2Date(paras[1], null);
+                        int type = paras[1].endsWith(".mp4") ? 1 : 0;
+                        DateScrollItem sItem = findSouceItem(time, type);
+                        if (sItem == null) {
+                            LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
+                            adapter.setImageFetcher(mImageFetcher);
+                            sItem = new DateScrollItem(time, date, title, adapter, type);
+                            adapterSource.add(sItem);
+                        }
+                        ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(f.getAbsolutePath());
                     }
                 }
             }
-            for (DateScrollItem item : adapterSource) {
-                Collections.sort(((LocalPicItemListAdapter) item.subAdatper).sourceItemList, new Comparator<LocalPichModel>() {
-                    @Override
-                    public int compare(LocalPichModel localPichModel, LocalPichModel t1) {
-                        return -localPichModel.path.compareTo(t1.path);
-                        // return 0;
-                    }
-                });
-            }
-            Collections.sort(adapterSource, new Comparator<DateScrollItem>() {
+        }
+        for (DateScrollItem item : adapterSource) {
+            Collections.sort(((LocalPicItemListAdapter) item.subAdatper).sourceItemList, new Comparator<LocalPichModel>() {
                 @Override
-                public int compare(DateScrollItem dateScrollItem, DateScrollItem t1) {
-                    return -dateScrollItem.time.compareTo(t1.time);
+                public int compare(LocalPichModel localPichModel, LocalPichModel t1) {
+                    return -localPichModel.path.compareTo(t1.path);
+                    // return 0;
                 }
             });
         }
+        Collections.sort(adapterSource, new Comparator<DateScrollItem>() {
+            @Override
+            public int compare(DateScrollItem dateScrollItem, DateScrollItem t1) {
+                return -dateScrollItem.time.compareTo(t1.time);
+            }
+        });
     }
 
-    DateScrollItem findSouceItem(Date date) {
+    DateScrollItem findSouceItem(Date date, int type) {
         DateScrollItem result = null;
         for (DateScrollItem item : adapterSource) {
-            if (TwsTools.Date2Str(item.time, "yyyyMMdd").equals(TwsTools.Date2Str(date, "yyyyMMdd"))) {
+            if (item.type == type && TwsTools.Date2Str(item.time, "yyyyMMdd").equals(TwsTools.Date2Str(date, "yyyyMMdd"))) {
                 result = item;
                 break;
             }
@@ -504,8 +570,8 @@ public class CameraFolderActivity extends BaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (resultCode) { //resultCode为回传的标记，我在B中回传的是RESULT_OK
             case RESULT_OK:
-                accSelect = -1;
-                initView();
+                //accSelect = -1;
+                //renderData();
                 //imageAdapter.notifyDataSetChanged();
                 break;
 
