@@ -193,6 +193,9 @@ public class LiveView_HichipActivity extends BaseActivity implements
     @Override
     protected void onPause() {
         super.onPause();
+        if (handler.hasMessages(TwsDataValue.HANDLE_MESSAGE_RECONNECT)) {
+            handler.removeMessages(TwsDataValue.HANDLE_MESSAGE_RECONNECT);
+        }
         if (mCamera != null) {//鍋滄璇煶
 
             delayHandler.removeMessages(0);
@@ -203,11 +206,11 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
                     intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
                     LiveView_HichipActivity.this.sendBroadcast(intent);
-                    stopRecording();
-                    mCamera.stopVideo();
-                    mCamera.stopAudio();
                 }
             });
+            stopRecording();
+            mCamera.stopVideo();
+            mCamera.stopAudio();
             mCamera.unregisterPlayStateListener(LiveView_HichipActivity.this);
             mCamera.unregisterIOTCListener(LiveView_HichipActivity.this);
         }
@@ -224,14 +227,18 @@ public class LiveView_HichipActivity extends BaseActivity implements
         if (mCamera != null) {
             mCamera.registerIOTCListener(LiveView_HichipActivity.this);
             mCamera.registerPlayStateListener(this);
-            mCamera.asyncStartVideo(monitor,new IMyCamera.TaskExecute() {
-                @Override
-                public void onPosted(IMyCamera c, Object data) {
-                    if (playState.isListening()) {
-                        c.startAudio();
+            if(mCamera.isConnected()) {
+                mCamera.asyncStartVideo(monitor, new IMyCamera.TaskExecute() {
+                    @Override
+                    public void onPosted(IMyCamera c, Object data) {
+                        if (playState.isListening()) {
+                            c.startAudio();
+                        }
                     }
-                }
-            });
+                });
+            }else{
+                mCamera.start();
+            }
         }
         //GCMUtils.SetRemoteEventCamera(null, this.getApplicationContext());
     }
@@ -562,6 +569,14 @@ public class LiveView_HichipActivity extends BaseActivity implements
             St_SInfo stSInfo = new St_SInfo();
             int requestCode = msg.arg1;
             switch (msg.what) {
+                case TwsDataValue.HANDLE_MESSAGE_RECONNECT:
+                    mCamera.asyncStop(new IMyCamera.TaskExecute() {
+                        @Override
+                        public void onPosted(IMyCamera camera, Object data) {
+                            mCamera.start();
+                        }
+                    });
+                    break;
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
                     if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
                         mCamera.startLiveShow(mCamera.getVideoQuality(), monitor);
@@ -573,12 +588,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
                                 videoLoadProgressBar.setVisibility(View.VISIBLE);
                             }
                         });
-                        mCamera.asyncStop(new IMyCamera.TaskExecute() {
-                            @Override
-                            public void onPosted(IMyCamera c, Object data) {
-                                c.start();
-                            }
-                        });
+                        this.sendEmptyMessageDelayed(TwsDataValue.HANDLE_MESSAGE_RECONNECT, 3000);
                     }
                     TextView txt_state = (TextView) findViewById(R.id.txt_state);
                     if (txt_state != null) {
@@ -1123,10 +1133,9 @@ public class LiveView_HichipActivity extends BaseActivity implements
                 playState.setRecording(false);
                 if (filePath != null) {
                     File recordFile = new File(filePath);
-                    if(recordFile.exists()&& recordFile.isFile() && recordFile.length() < videoHeight*videoWidth*2/8/20 ){
+                    if (recordFile.exists() && recordFile.isFile() && recordFile.length() < videoHeight * videoWidth * 2 / 8 / 20) {
                         recordFile.delete();
-                    }
-                    else if(recordFile.exists() && recordFile.isFile()){
+                    } else if (recordFile.exists() && recordFile.isFile()) {
                         sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));
                     }
                 }
@@ -1172,9 +1181,9 @@ public class LiveView_HichipActivity extends BaseActivity implements
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    TextView txt_videoQuality = (TextView)findViewById(R.id.txt_videoQuality);
-                    if(txt_videoQuality != null){
-                        txt_videoQuality.setText(String.format("%d x %d",videoWidth,videoHeight));
+                    TextView txt_videoQuality = (TextView) findViewById(R.id.txt_videoQuality);
+                    if (txt_videoQuality != null) {
+                        txt_videoQuality.setText(String.format("%d x %d", videoWidth, videoHeight));
                     }
                     mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                         @Override

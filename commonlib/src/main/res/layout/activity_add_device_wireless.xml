@@ -130,7 +130,7 @@
                     android:layout_margin="5dp"
                     android:paddingBottom="15dp"
                     android:gravity="left|top"
-                    android:layout_height="200dp" >
+                    android:layout_height="wrap_content" >
                     <TextView
                         android:id="@+id/textView1"
                         android:layout_width="wrap_content"
@@ -140,6 +140,21 @@
                         android:textColor="@color/gray"
                         android:text="@string/tips_wireless_install" />
                 </RelativeLayout>
+            <RelativeLayout
+                android:layout_width="fill_parent"
+                android:layout_margin="5dp"
+                android:paddingBottom="15dp"
+                android:gravity="center"
+                android:layout_height="wrap_content" >
+                <TextView
+                    android:id="@+id/txt_connected"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:textSize="16dp"
+                    android:textColor="@color/colorPrimary"
+                    android:text="@string/btn_camera_connected_network" />
+            </RelativeLayout>
         </LinearLayout>
 
 </RelativeLayout>

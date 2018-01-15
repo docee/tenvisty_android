@@ -32,6 +32,7 @@ import com.tws.commonlib.controller.NavigationBar;
 public class SaveCameraActivity extends BaseActivity {
 
     private final int REQUEST_CODE_GETUID_BY_SCAN_BARCODE = 0;
+    private final int REQUEST_CODE_GETUID_BY_LAN_SEARCH = 1;
 
     private EditText edtUID;
     private EditText edtSecurityCode;
@@ -123,8 +124,22 @@ public class SaveCameraActivity extends BaseActivity {
 
 //				edtSecurityCode.requestFocus();
 
-            } else if (resultCode == RESULT_CANCELED) {
+            }
+            else if(resultCode == CaptureActivity.RESULT_CODE_SEARCH_LAN){
+                Intent intent1 = SaveCameraActivity.this.getIntent();
+                intent1.putExtra(TwsDataValue.EXTRAS_KEY_FROM,SaveCameraActivity.class.getName());
+                intent1.setClass(SaveCameraActivity.this,SearchCameraActivity.class);
+                startActivityForResult(intent1,REQUEST_CODE_GETUID_BY_LAN_SEARCH);
+            }
+
+            else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
+            }
+        }
+        else if(requestCode == REQUEST_CODE_GETUID_BY_LAN_SEARCH){
+            if(intent != null){
+                String uid = intent.getStringExtra(TwsDataValue.EXTRA_KEY_UID);
+                edtUID.setText(uid);
             }
         }
     }
@@ -140,6 +155,7 @@ public class SaveCameraActivity extends BaseActivity {
 
             Intent intent = new Intent();
             intent.setClass(SaveCameraActivity.this, CaptureActivity.class);
+            intent.putExtra(TwsDataValue.EXTRAS_KEY_FROM,SaveCameraActivity.class.getName());
             intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivityForResult(intent, 0);
         }

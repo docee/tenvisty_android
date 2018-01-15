@@ -7,6 +7,7 @@ import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Paint;
 import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -26,6 +27,7 @@ import android.view.SurfaceHolder.Callback;
 import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.zxing.BarcodeFormat;
@@ -44,7 +46,11 @@ import com.google.zxing.qrcode.QRCodeReader;
 import com.google.zxing.view.ViewfinderView;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.AddCameraActivity;
+import com.tws.commonlib.activity.AddCameraInputUidActivity;
+import com.tws.commonlib.activity.SaveCameraActivity;
+import com.tws.commonlib.activity.SearchCameraActivity;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
 import java.io.IOException;
@@ -78,6 +84,8 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     //	private Button cancelScanButton;
     public static final int RESULT_CODE_QR_SCAN = 0xA1;
     public static final int RESULT_CODE_ADD_MANUALLY = 0xA2;
+    public static final int RESULT_CODE_INPUT_UID_MANUALLY = 0xA3;
+    public static final int RESULT_CODE_SEARCH_LAN = 0xA4;
     public static final String INTENT_EXTRA_KEY_QR_SCAN = "qr_scan_result";
     private Camera camera;
     private Camera.Parameters params;
@@ -123,14 +131,32 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                 }
             }
         });
-        findViewById(R.id.image_add_manually).setOnClickListener(new View.OnClickListener() {
+        TextView txt_inputuid = (TextView) findViewById(R.id.txt_inputuid);
+        txt_inputuid.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG); //下划线
+        txt_inputuid.getPaint().setAntiAlias(true);//抗锯齿
+        txt_inputuid.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 inactivityTimer.onActivity();
-                CaptureActivity.this.setResult(RESULT_CODE_ADD_MANUALLY);
+                setResult(RESULT_CODE_INPUT_UID_MANUALLY);
                 CaptureActivity.this.finish();
             }
         });
+        findViewById(R.id.image_search).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                inactivityTimer.onActivity();
+                setResult(RESULT_CODE_SEARCH_LAN);
+                CaptureActivity.this.finish();
+            }
+        });
+        Intent intent = this.getIntent();
+        if(intent != null ){
+            String from = intent.getStringExtra(TwsDataValue.EXTRAS_KEY_FROM);
+            if(from != null && from.equals(SaveCameraActivity.class.getName())){
+                txt_inputuid.setVisibility(View.GONE);
+            }
+        }
         if (!TwsTools.checkPermission(this, Manifest.permission.CAMERA)) {
             TwsTools.showAlertDialog(this);
         }

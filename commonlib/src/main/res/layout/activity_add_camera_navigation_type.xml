@@ -2,16 +2,20 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical" android:layout_width="match_parent"
+    android:background="@color/lightgray"
     android:layout_height="match_parent">
     <com.tws.commonlib.controller.NavigationBar
         android:id="@+id/title_top"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
     <LinearLayout
+        android:id="@+id/ll_addcamera_wireless"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:background="@color/lightgray"
-        android:layout_marginTop="15dp">
+        android:background="@drawable/list_item_bg"
+        android:layout_marginTop="15dp"
+        android:clickable="true"
+        android:focusable="true">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -44,7 +48,8 @@
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:srcCompat="@android:drawable/btn_star" />
+                android:padding="10dp"
+                android:src="@drawable/wifi_page" />
 
         </LinearLayout>
 
@@ -58,16 +63,19 @@
 
             <ImageView
                 android:id="@+id/imageView"
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                app:srcCompat="@drawable/btn_wireless_set_wifi_pre" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/wifi_icon" />
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
+        android:id="@+id/ll_addcamera_wired"
         android:layout_width="match_parent"
         android:layout_height="150dp"
         android:layout_marginTop="10dp"
-        android:background="@color/lightgray">
+        android:background="@drawable/list_item_bg"
+        android:focusable="true"
+        android:clickable="true">
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="match_parent"
@@ -90,14 +98,15 @@
                 android:layout_marginLeft="30dp"
                 android:paddingBottom="5dp"
                 android:paddingTop="5dp"
-                android:text="add camera by ethenet"
+                android:text="add camera with ethenet"
                 android:textColor="@color/darkergray"
                 android:textSize="15dp" />
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                app:srcCompat="@android:drawable/btn_star" />
+                android:padding="10dp"
+                android:src="@drawable/ethnet_page" />
 
         </LinearLayout>
 
@@ -109,9 +118,9 @@
             android:layout_marginTop="5dp"
             android:orientation="vertical">
             <ImageView
-                android:layout_width="60dp"
-                android:layout_height="60dp"
-                app:srcCompat="@drawable/btn_wireless_set_wifi_pre" />
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_ethnet" />
     </LinearLayout>
 </LinearLayout>
 </LinearLayout>

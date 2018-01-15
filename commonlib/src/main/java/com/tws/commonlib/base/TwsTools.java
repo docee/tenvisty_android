@@ -413,16 +413,24 @@ public class TwsTools {
     }
 
     public static String takeInnerUid(String contents) {
-        if (contents.length() > 20) {
-            String temp = "";
+        if(contents != null){
+            if(contents.length() == 17 || contents.length() == 20){
 
-            for (int t = 0; t < contents.length(); t++) {
-                if (contents.substring(t, t + 1).matches("[A-Z0-9]{1}"))
-                    temp += contents.substring(t, t + 1);
             }
-            contents = temp;
+            else if (contents.length() > 17) {
+                String temp = "";
+
+                for (int t = 0; t < contents.length(); t++) {
+                    if (contents.substring(t, t + 1).matches("[A-Z0-9\\-]{1}"))
+                        temp += contents.substring(t, t + 1);
+                }
+                contents = temp;
+            }
         }
-        return contents;
+        if(contents == null || (contents.length()!=17 &&  contents.length() !=20)){
+            return null;
+        }
+        return contents.toUpperCase();
     }
 
     public static String getFileNameWithTime(String uid, int type) {

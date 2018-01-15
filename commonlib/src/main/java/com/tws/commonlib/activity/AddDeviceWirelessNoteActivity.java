@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
+import com.hichip.tools.HiSinVoiceData;
 import com.tws.commonlib.R;
 import com.tws.commonlib.controller.GifView;
 
@@ -22,6 +23,7 @@ public class AddDeviceWirelessNoteActivity extends BaseActivity{
 	@Override
 	protected  void  initView(){
 		super.initView();
+
 	}
 
 	/**
@@ -29,8 +31,8 @@ public class AddDeviceWirelessNoteActivity extends BaseActivity{
 	 * @param view
 	 */
 	public void configWifiSsid(View view) {
-		Intent intent = new Intent();
-		intent.setClass(AddDeviceWirelessNoteActivity.this, AddDeviceWirelessActivity.class);
+		Intent intent = this.getIntent();
+		intent.setClass(AddDeviceWirelessNoteActivity.this, AddDeviceWirelessSettingActivity.class);
 		startActivity(intent);
 	}
 }

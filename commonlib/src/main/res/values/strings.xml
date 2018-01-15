@@ -53,6 +53,7 @@
     <string name="title_camera_photos">Photos</string>
     <string name="title_scan_qrcode">Scan QR Code</string>
     <string name="title_add_camera">Add Camera</string>
+    <!--<string name="title_add_camera_navigation_type">Network Mode</string>-->
     <string name="title_modify_camera_password">Modify Camera Password</string>
     <string name="title_edit_camera_info">Edit Camera</string>
     <string name="title_event_list">View Event</string>
@@ -189,6 +190,7 @@
     <string name="tips_add_camera_duplicated_search">this camera is in your camera list, please tap other camera.</string>
     <string name="tips_modify_security_code_succ">Password changed successfully, device will reconnect soon.</string>
     <string name="tips_add_camera_wireless">Please power on the camera, and wait until you hear "Ding Dong" sound.</string>
+    <string name="tips_add_camera_wired">Please power on the camera, and connect ethnet cabel to camera.</string>
     <string name="tips_wireless_install">Note:\nOnly support 2.4GHz Wi-Fi.</string>
     <string name="tips_snapshot_ok">Snapshot successfully.</string>
     <string name="tips_camera_offline">Camera offline</string>
@@ -277,6 +279,8 @@
     <string name="btn_ptz_focusout">Focus out</string>
     <string name="btn_ptz_focusin">Focus in</string>
     <string name="btn_toView">To view</string>
+    <string name="btn_inputuid_maually">Input UID manually</string>
+    <string name="btn_camera_connected_network">Camera has been connected to network?</string>
 
     <string name="alert_all_field_can_not_empty">Please complete each password.</string>
     <string name="alert_old_password_is_wrong">The old password is wrong.</string>
@@ -330,7 +334,7 @@
     <string name="hint_camera_oldpassword">Old Password</string>
     <string name="hint_camera_newpassword">New Password</string>
     <string name="hint_camera_confirmpassword">Confirm Password</string>
-    <string name="hint_wifi_password">Password</string>
+    <string name="hint_wifi_password">Wi-Fi Password</string>
     <string name="hint_input_uid">UID</string>
     <string name="hint_input_password">Password</string>
     <string name="hint_input_camera_password">Camera Password</string>
@@ -360,6 +364,7 @@
     <string name="tip_alear_dowm">The video has been downloaded yet</string>
     <string name="tips_downlaoding_video">Downloading %s.</string>
     <string name="tips_down_file_route">You can view downloaded videos under this path: Image - Video - Download</string>
+    <string name="tips_inputuid_maually">Please enter the UID number on camera label.</string>
 
     <string name="tips_device_time_setting_synchroned_time">Synchronization Time Successfully </string>
     <string name="hint_mail_setting_sender">Email</string>

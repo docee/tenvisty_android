@@ -852,6 +852,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             Log.i("NSCamera", "register IOTC listener");
             mPlayStateListeners.add(listener);
         }
+        //this.registerPlayStateListener(this);
     }
 
     @Override
@@ -876,6 +877,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             Log.i("NSCamera", "unregister IOTC listener");
             mPlayStateListeners.remove(listener);
         }
+
+        //this.unregisterPlayStateListener(this);
     }
 
 

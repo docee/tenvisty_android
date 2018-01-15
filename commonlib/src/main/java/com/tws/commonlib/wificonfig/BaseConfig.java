@@ -21,6 +21,10 @@ public abstract class BaseConfig {
     protected String ssid;
     protected String pwd;
     protected int authMode = -1;
+    protected  Context context;
+    public void setContext(Context context){
+        this.context = context;
+    }
 
     public String getUid() {
         return uid;

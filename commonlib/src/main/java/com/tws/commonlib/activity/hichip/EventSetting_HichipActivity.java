@@ -236,17 +236,18 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == SENSITIVITY_SET) {
-            if (resultCode == SensitivitySettingActivity.SENSITIVITY_SET_SUCC) {
-                int level = data.getIntExtra("data", 0);
-                txt_sens.setText(sensLevelList[4 - level]);
-            }
-        }
-        else if(requestCode == MAIL_SET){
-            int isEmailOn = data.getIntExtra("intEnable", -1);
-            if(isEmailOn != -1){
-                param.u32EmailSnap = isEmailOn;
-                txt_email.setText(param.u32EmailSnap == 1 ? getString(R.string.on) :  getString(R.string.off));
+        if(data != null) {
+            if (requestCode == SENSITIVITY_SET) {
+                if (resultCode == SensitivitySettingActivity.SENSITIVITY_SET_SUCC) {
+                    int level = data.getIntExtra("data", 0);
+                    txt_sens.setText(sensLevelList[4 - level]);
+                }
+            } else if (requestCode == MAIL_SET) {
+                int isEmailOn = data.getIntExtra("intEnable", -1);
+                if (isEmailOn != -1) {
+                    param.u32EmailSnap = isEmailOn;
+                    txt_email.setText(param.u32EmailSnap == 1 ? getString(R.string.on) : getString(R.string.off));
+                }
             }
         }
     }

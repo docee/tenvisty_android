@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <item android:drawable="@drawable/btn_search_pre_trans"  android:state_pressed="true"/> <!-- pressed -->
+    <item android:drawable="@drawable/btn_search_pre_trans"  android:state_focused="true"/> <!-- focused -->
+    <item android:drawable="@drawable/btn_search_pre_trans"  android:state_selected="true"/> <!-- focused -->
+    <item android:drawable="@drawable/btn_search_nor_trans" /> <!-- normal -->
+    
+</selector>

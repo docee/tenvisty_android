@@ -43,7 +43,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_sens"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_sens_setting"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -87,7 +88,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_alarm_push"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -137,7 +139,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_sd_card_recording"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -188,10 +191,11 @@
 
                     <ImageView
                         android:layout_width="18dp"
-                        android:layout_height="18dp"
+                        android:layout_height="15dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkergray"
+                        app:srcCompat="@drawable/ic_email_alert"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -236,7 +240,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_save_picture_to_ftp"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -285,7 +290,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_ftp_save_video"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -336,7 +342,8 @@
                         android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
-                        android:src="@drawable/ic_push"/>
+                        android:tint="@color/darkgray"
+                        app:srcCompat="@drawable/ic_ftp_setting"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

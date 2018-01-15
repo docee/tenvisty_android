@@ -36,6 +36,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
     private final int CONFIG_WIFI_SUCCESS = 0;
     private final int CONFIG_WIFI_FAIL = 1;
     private final int CONFIG_WIFI_WRONG_PWD = 2;
+    private final int CONFIG_WIFI_RECONNECT = 3;
     private boolean addSuccess = false;
     private long startTime;
     private int times = 100;
@@ -50,7 +51,6 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON,
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         this.setContentView(R.layout.activity_add_device_wireless_setting);
-        wifiConfiger = new WiFiConfigureContext();
         this.setTitle(getString(R.string.title_add_camera));
         initView();
         percent = 0;
@@ -61,6 +61,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
             config_result = msg.what;
             switch (msg.what) {
                 case CONFIG_WIFI_SUCCESS:
+                    if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                        mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
+                    }
                     wifiConfiger.stopConfig();
                     if (!camera.isExist()) {
                         save();
@@ -71,6 +74,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                     times = 1;
                     break;
                 case CONFIG_WIFI_WRONG_PWD:
+                    if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                        mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
+                    }
                     wifiConfiger.stopConfig();
                     times = 1;
 
@@ -84,6 +90,11 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                     break;
                 case CONFIG_WIFI_FAIL:
 
+                    break;
+                case CONFIG_WIFI_RECONNECT:
+                    if(percent <100) {
+                        camera.start();
+                    }
                     break;
             }
         }
@@ -104,6 +115,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                 regularprogressbar.setProgress(percent);
                 handler.postDelayed(this, times * 10);//设置延迟时间，此处是1秒
             } else {
+                if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                    mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
+                }
                 wifiConfiger.stopConfig();
                 if (IMyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
                     //没有扫二维码，则提示用户是否依然听到摄像机叮咚声音
@@ -177,6 +191,12 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         super.initView();
         Bundle extras = this.getIntent().getExtras();
         dev_uid = extras.getString(TwsDataValue.EXTRA_KEY_UID);
+        if(dev_uid.length() == 20) {
+            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this,WiFiConfigureContext.VOICE_TYPE_FACEBER);
+        }
+        else{
+            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this,WiFiConfigureContext.VOICE_TYPE_HICHIP);
+        }
         wifiConfiger.setData(extras.getString("ssid"), extras.getString("password"), extras.getInt("authMode"));
         wifiConfiger.setUid(dev_uid);
         regularprogressbar = (SaundProgressBar) this.findViewById(R.id.regularprogressbar);
@@ -268,6 +288,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         super.onPause();
         handler.removeCallbacks(task);
         wifiConfiger.clearReceiveListner();
+        if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+            mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
+        }
         wifiConfiger.stopConfig();
     }
 
@@ -344,7 +367,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
     }
 
     @Override
-    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
+    public void receiveSessionInfo(final IMyCamera camera, int resultCode) {
         if (resultCode == NSCamera.CONNECTION_STATE_CONNECTED) {//如果判定输入的摄像头密码和用户正确则添加
             if (percent < 100) {
                 mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
@@ -364,7 +387,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                 camera.asyncStop(new IMyCamera.TaskExecute() {
                     @Override
                     public void onPosted(IMyCamera c,Object data) {
-                        c.start();
+                       mHandler.sendEmptyMessageDelayed(CONFIG_WIFI_RECONNECT,5000);
                     }
                 });
             }

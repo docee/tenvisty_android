@@ -97,6 +97,15 @@ public class SearchCameraActivity extends BaseActivity {
                     }
                 }
 
+                Intent intentFrom = SearchCameraActivity.this.getIntent();
+                if(intentFrom != null){
+                    String from = intentFrom.getStringExtra(TwsDataValue.EXTRAS_KEY_FROM);
+                    if(from != null && from.equals(SaveCameraActivity.class.getName())){
+                        setResult(RESULT_OK,new Intent().putExtra(TwsDataValue.EXTRA_KEY_UID,searchResult.uid));
+                        finish();
+                        return;
+                    }
+                }
                 //否则跳转至添加摄像机的界面
                 Bundle extras = new Bundle();
                 extras.putString(TwsDataValue.EXTRA_KEY_UID, searchResult.uid);

@@ -1,5 +1,7 @@
 package com.tws.commonlib.wificonfig;
 
+import android.content.Context;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +10,10 @@ import java.util.List;
  */
 
 public class WiFiConfigureContext {
+
+    public static  final int VOICE_TYPE_FACEBER = 0;
+    public static  final int VOICE_TYPE_HICHIP = 1;
+
     private List<BaseConfig> configList;
 
     public void setReceiveListner(BaseConfig.OnReceivedListener l) {
@@ -28,7 +34,19 @@ public class WiFiConfigureContext {
         this.configList.add(CooConfig.singleInstance());
         this.configList.add(FaceberConfig.singleInstance());
     }
-
+    public WiFiConfigureContext(Context context, int type) {
+        this.configList = new ArrayList<BaseConfig>();
+        if(type == VOICE_TYPE_FACEBER) {
+            this.configList.add(FaceberConfig.singleInstance());
+            this.configList.add(CooConfig.singleInstance());
+        }
+        else if(type == VOICE_TYPE_HICHIP){
+            HiVoiceConfig.singleInstance().setContext(context);
+            this.configList.add(HiVoiceConfig.singleInstance());
+        }
+        //
+        this.configList.add(HiSmartLink.singleInstance());
+    }
     public void add(BaseConfig config) {
         for (BaseConfig c : configList) {
             if (c.getClass() == config.getClass()) {

@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.text.method.HideReturnsTransformationMethod;
@@ -12,6 +13,7 @@ import android.text.method.PasswordTransformationMethod;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.google.zxing.activity.CaptureActivity;
 import com.tws.commonlib.R;
@@ -32,8 +34,10 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
     private EditText edtWifiSsid;
     private WifiManager mWifiManager;
     private final static int REQUEST_CODE_GETUID_BY_SCAN_BARCODE = 0;
+    private final static int REQUEST_CODE_GETUID_BY_SEARCHLAN = 2;
+    private final static int REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY = 3;
     private final static int GO_TO_CONFIG = 1;
-
+    private TextView txt_connected;
     private String uid;
     private ProgressDialog dialog;
     ConnectionChangeReceiver broadcast;
@@ -81,7 +85,8 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
             public void OnNavigationButtonClick(int which) {
                 switch (which) {
                     case NavigationBar.NAVIGATION_BUTTON_LEFT:
-                        back2Activity(AddDeviceWirelessNoteActivity.class);
+                        finish();
+                        //back2Activity(AddDeviceWirelessNoteActivity.class);
                         break;
                     case NavigationBar.NAVIGATION_BUTTON_RIGHT:
                         if (checkValue()) {
@@ -90,7 +95,7 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
                             intent.putExtra("ssid", getWifiSsid());
                             intent.putExtra("authMode", ConnectionState.getInstance(AddDeviceWirelessActivity.this).GetAutoMode());
                             intent.putExtra("password", getWifiPassword());
-                            intent.setClass(AddDeviceWirelessActivity.this, AddDeviceWirelessSettingActivity.class);
+                            intent.setClass(AddDeviceWirelessActivity.this, AddDeviceWirelessNoteActivity.class);
                             startActivityForResult(intent, GO_TO_CONFIG);
                         }
                         break;
@@ -104,6 +109,18 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
         this.edtWifiPassword = (EditText) this.findViewById(R.id.edtWifiPassword);
         edtWifiSsid.setText(ConnectionState.getInstance(this).getSsid());
         this.edtWifiPassword.requestFocus();
+        this.txt_connected = (TextView) findViewById(R.id.txt_connected);
+        txt_connected.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG); //下划线
+        txt_connected.getPaint().setAntiAlias(true);//抗锯齿
+        this.txt_connected.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = AddDeviceWirelessActivity.this.getIntent();
+                intent.putExtra(TwsDataValue.EXTRA_KEY_UID,uid);
+                intent.setClass(AddDeviceWirelessActivity.this,SaveCameraActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private boolean checkValue() {
@@ -172,32 +189,57 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
                 // String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
 
                 uid = TwsTools.takeInnerUid(contents);
-                boolean duplicated = false;
-                for (IMyCamera camera_ : TwsDataValue.cameraList()) {
-                    if (uid.equalsIgnoreCase(camera_.getUid())) {
-                        duplicated = true;
-                        break;
-                    }
-                }
-
-                if (duplicated) {
-                    //MyCamera.init();
-                    showAlert(getText(R.string.alert_camera_exist), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            finish();
+                if (uid != null) {
+                    boolean duplicated = false;
+                    for (IMyCamera camera_ : TwsDataValue.cameraList()) {
+                        if (uid.equalsIgnoreCase(camera_.getUid())) {
+                            duplicated = true;
+                            break;
                         }
-                    });
-                    return;
+                    }
+
+                    if (duplicated) {
+                        //MyCamera.init();
+                        showAlert(getText(R.string.alert_camera_exist), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                finish();
+                            }
+                        });
+                        return;
+                    }
                 }
 
 //				edtSecurityCode.requestFocus();
 
+            } else if (resultCode == CaptureActivity.RESULT_CODE_INPUT_UID_MANUALLY) {
+                Intent intent2 = AddDeviceWirelessActivity.this.getIntent();
+                intent2.setClass(AddDeviceWirelessActivity.this, AddCameraInputUidActivity.class);
+                startActivityForResult(intent2, REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY);
+            } else if (resultCode == CaptureActivity.RESULT_CODE_SEARCH_LAN) {
+                Intent intent2 = AddDeviceWirelessActivity.this.getIntent();
+                intent2.setClass(AddDeviceWirelessActivity.this, SearchCameraActivity.class);
+                startActivityForResult(intent2, REQUEST_CODE_GETUID_BY_SEARCHLAN);
             } else if (resultCode == CaptureActivity.RESULT_CODE_ADD_MANUALLY) {
                 uid = IMyCamera.NO_USE_UID;
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
                 finish();
+            }
+        } else if (requestCode == REQUEST_CODE_GETUID_BY_SEARCHLAN) {
+            if (resultCode == RESULT_CANCELED) {
+                // Handle cancel
+                finish();
+            }
+        } else if (requestCode == REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY) {
+            if (resultCode == RESULT_CANCELED) {
+                // Handle cancel
+                finish();
+            }
+            else if(resultCode == RESULT_OK){
+                if(intent != null){
+                    this.uid = intent.getStringExtra(TwsDataValue.EXTRA_KEY_UID);
+                }
             }
         }
     }

@@ -33,10 +33,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.hichip.tools.HiSinVoiceData;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.AddCameraActivity;
+import com.tws.commonlib.activity.AddCameraNavigationTypeActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
 import com.tws.commonlib.activity.hichip.DeviceSetting_HichipActivity;
@@ -353,7 +355,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(CameraFragment.this.getActivity(),
-                        AddCameraActivity.class);
+                        AddCameraNavigationTypeActivity.class);
                 startActivityForResult(intent, CAMERA_ADD_REQUEST_CODE);
             }
         });
