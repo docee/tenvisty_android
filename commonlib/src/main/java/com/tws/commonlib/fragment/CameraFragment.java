@@ -494,7 +494,10 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     }
                     startActivity(intent);
                 } else if (btnId == R.id.btn_play) {
-                    camera.asyncStartVideo(null);
+                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
+                        camera.sendIOCtrl(0, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (camera.getVideoQuality())));
+                    }
+                    //camera.asyncStartVideo(null);
                     if (camera.getEventNum() > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
                         int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
@@ -502,7 +505,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         manager.cancel(camera.getUid(), intId);
                     }
 
-                    intent.setClass(CameraFragment.this.getActivity(), camera instanceof MyCamera ? LiveViewActivity.class : LiveView_HichipActivity.class);
+                    intent.setClass(CameraFragment.this.getActivity(), camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P? LiveView_HichipActivity.class : LiveViewActivity.class);
                     startActivity(intent);
                 } else if (btnId == R.id.btn_modifyPassword) {
                     camera.stop();

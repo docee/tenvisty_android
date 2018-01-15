@@ -212,22 +212,23 @@ public class LiveViewActivity extends BaseActivity implements
                     intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
                     intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
                     LiveViewActivity.this.sendBroadcast(intent);
+                    mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
+                        @Override
+                        public void onPosted(IMyCamera c, Object data) {
+                            if (playState.isRecording()) {
+                                stopRecording();
+                            }
+                            if (playState.isSpeaking()) {
+                                c.stopSpeak();
+                            }
+                            if (playState.isListening()) {
+                                c.stopAudio();
+                            }
+                        }
+                    });
                 }
             });
-            mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
-                @Override
-                public void onPosted(IMyCamera c, Object data) {
-                    if (playState.isRecording()) {
-                        stopRecording();
-                    }
-                    if (playState.isSpeaking()) {
-                        c.stopSpeak();
-                    }
-                    if (playState.isListening()) {
-                        c.stopAudio();
-                    }
-                }
-            });
+
 //            mCamera.unregisterPlayStateListener(LiveViewActivity.this);
 //            mCamera.unregisterIOTCListener(LiveViewActivity.this);
         }
@@ -573,7 +574,7 @@ public class LiveViewActivity extends BaseActivity implements
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
                     if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
                         mCamera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (mCamera.getVideoQuality() == 0 ? 1 : 5)));
-                        mCamera.startVideo();
+                        //mCamera.startVideo();
                     } else if (requestCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
                             NSCamera.CONNECTION_STATE_DISCONNECTED || requestCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
                         mCamera.asyncStop(new IMyCamera.TaskExecute() {
@@ -594,6 +595,9 @@ public class LiveViewActivity extends BaseActivity implements
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_IO_RESP:
                     switch (requestCode) {
+                        case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_RESP:
+                            mCamera.startVideo();
+                            break;
                         case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_RESP:
                             presetList = new AVIOCTRLDEFs.SMsgAVIoctrlGetPreListResp(data);
                             break;
@@ -839,7 +843,7 @@ public class LiveViewActivity extends BaseActivity implements
                                         int videoQuality = position == 0 ? 1 : 5;
                                         playState.setVideoQuality(position);
                                         c.sendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (videoQuality)));
-                                        c.startVideo();
+                                        //c.startVideo();
                                     }
                                 });
                             }
@@ -1104,10 +1108,10 @@ public class LiveViewActivity extends BaseActivity implements
     String filePath = null;
 
     void startRecording() {
-        if (!isVideoShowing) {
-            showAlert(getString(R.string.alert_play_video_first));
-            return;
-        }
+//        if (!isVideoShowing) {
+//            showAlert(getString(R.string.alert_play_video_first));
+//            return;
+//        }
         if (!playState.isRecording()) {
             if (!isSDCardValid()) {
                 showAlert(getString(R.string.alert_snapshot_no_sdcard));
@@ -1183,9 +1187,14 @@ public class LiveViewActivity extends BaseActivity implements
                 }
                 videoWidth = w;
                 videoHeight = h;
+
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        TextView txt_videoQuality = (TextView)findViewById(R.id.txt_videoQuality);
+                        if(txt_videoQuality != null){
+                            txt_videoQuality.setText(String.format("%d x %d",videoWidth,videoHeight));
+                        }
                         mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                             @Override
                             public void onPosted(IMyCamera c, Object data) {

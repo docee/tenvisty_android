@@ -3,12 +3,14 @@ package com.tws.commonlib.adapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.Image;
 import android.os.Build;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -148,6 +150,16 @@ public class LocalPicItemListAdapter extends BaseAdapter {
         mImageFetcher.loadImage(model.thumbPath,holder.img_pic);
         if(model.isVideo()){
             holder.img_play.setVisibility(View.VISIBLE);
+            if(checkMode){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.img_play.setImageTintList(AppCompatResources.getColorStateList(convertView.getContext(),R.color.gray));
+                }
+            }
+            else{
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    holder.img_play.setImageTintList(AppCompatResources.getColorStateList(convertView.getContext(),R.color.white));
+                }
+            }
         }
         else{
             holder.img_play.setVisibility(View.GONE);

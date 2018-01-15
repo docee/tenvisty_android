@@ -7,9 +7,7 @@
 /build
 /captures
 .externalNativeBuild
-iOTCamera_New_Tenvis/build/generated/mockable-android-19.v3.jar
-iOTCamera_New_Tenvis/build/generated/mockable-android-19.v3.jar
-iOTCamera_New_Tenvis/build/generated/mockable-android-19.v3.jar
+iOTCamera_New_Tenvis/build
 push/build/outputs/logs/manifest-merger-debug-report.txt
 iOTCamera_New_Tenvis/build/generated/mockable-android-19.v3.jar
 *.class
@@ -29,3 +27,5 @@ iOTCamera_New_Tenvis/build/generated/source/r/release/com/tutk/IOTC/R.java
 iOTCamera_New_Tenvis/build/generated/source/buildConfig/release/com/tutk/IOTC/BuildConfig.java
 iOTCamera_New_Tenvis/build/intermediates/incremental/release-mergeJniLibs/merge-state
 build
+iOTCamera_New_Tenvis/build/
+*.xml

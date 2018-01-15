@@ -160,25 +160,19 @@ public class PhotoShowActivity extends BaseActivity implements OnTouchListener {
     public final synchronized void setImagesPath(String path) {
         pathsrcs.clear();
         File folder = new File(path);
-        File[] files = folder.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File file) {
-                return file.isDirectory() || file.getName().length() == 36 || file.getName().length() == 39;
-            }
-        });
+        File[] files = folder.listFiles();
         for (File f : files) {
             if (f.isDirectory()) {
-                File[] pics = f.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File file) {
-                        return file.getName().length() == 36 || file.getName().length() == 39;
-                    }
-                });
+                File[] pics = f.listFiles();
                 for (File pic : pics) {
-                    pathsrcs.add(pic.getAbsolutePath());
+                    if(pic.getName().length()>=36) {
+                        pathsrcs.add(pic.getAbsolutePath());
+                    }
                 }
             } else {
-                pathsrcs.add(f.getAbsolutePath());
+                if(f.getName().length()>=36) {
+                    pathsrcs.add(f.getAbsolutePath());
+                }
             }
         }
         Collections.sort(pathsrcs, new Comparator<String>() {

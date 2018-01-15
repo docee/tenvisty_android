@@ -313,10 +313,12 @@ public class ImageFetcher extends ImageResizer {
                     f = new File(videoPath);
                     if(f.exists()){
                         Bitmap bmp = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
-                        TwsTools.saveBitmap(bmp,urlString);
-                        if(bmp != null && !bmp.isRecycled()) {
-                            bmp.recycle();
-                            System.gc();
+                        if(bmp != null) {
+                            TwsTools.saveBitmap(bmp, urlString, true);
+                            if (bmp != null && !bmp.isRecycled()) {
+                                bmp.recycle();
+                                System.gc();
+                            }
                         }
                     }
                 }
@@ -328,10 +330,12 @@ public class ImageFetcher extends ImageResizer {
                     f = new File(videoPath);
                     if(f.exists()){
                         Bitmap bmp = ThumbnailUtils.createVideoThumbnail(videoPath, MediaStore.Images.Thumbnails.MINI_KIND);
-                        TwsTools.saveBitmap(bmp,urlString);
-                        if(bmp != null && !bmp.isRecycled()) {
-                            bmp.recycle();
-                            System.gc();
+                        if(bmp != null) {
+                            TwsTools.saveBitmap(bmp, urlString, true);
+                            if (bmp != null && !bmp.isRecycled()) {
+                                bmp.recycle();
+                                System.gc();
+                            }
                         }
                     }
                 }

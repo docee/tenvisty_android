@@ -109,6 +109,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
     LinearLayout lay_live_tools_top;
     LinearLayout lay_live_tools_bottom;
     boolean toolsVisible;
+    int videoWidth;
+    int videoHeight;
 
     public Button getBtn_stream() {
         return (Button) findViewById(R.id.btn_stream);
@@ -201,11 +203,11 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     intent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
                     intent.putExtra(TwsDataValue.EXTRA_KEY_UID, c.getUid());
                     LiveView_HichipActivity.this.sendBroadcast(intent);
+                    stopRecording();
+                    mCamera.stopVideo();
+                    mCamera.stopAudio();
                 }
             });
-            stopRecording();
-            mCamera.stopVideo();
-            mCamera.stopAudio();
             mCamera.unregisterPlayStateListener(LiveView_HichipActivity.this);
             mCamera.unregisterIOTCListener(LiveView_HichipActivity.this);
         }
@@ -1121,7 +1123,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
                 playState.setRecording(false);
                 if (filePath != null) {
                     File recordFile = new File(filePath);
-                    if(recordFile.exists() &&  recordFile.length() < 1024 && recordFile.isFile()){
+                    if(recordFile.exists()&& recordFile.isFile() && recordFile.length() < videoHeight*videoWidth*2/8/20 ){
                         recordFile.delete();
                     }
                     else if(recordFile.exists() && recordFile.isFile()){
@@ -1165,9 +1167,15 @@ public class LiveView_HichipActivity extends BaseActivity implements
             } else {
                 playState.setVideoQuality(1);
             }
+            videoWidth = w;
+            videoHeight = h;
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
+                    TextView txt_videoQuality = (TextView)findViewById(R.id.txt_videoQuality);
+                    if(txt_videoQuality != null){
+                        txt_videoQuality.setText(String.format("%d x %d",videoWidth,videoHeight));
+                    }
                     mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                         @Override
                         public void onPosted(IMyCamera c, Object data) {

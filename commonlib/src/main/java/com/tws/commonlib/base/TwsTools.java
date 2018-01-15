@@ -428,11 +428,11 @@ public class TwsTools {
     public static String getFileNameWithTime(String uid, int type) {
         String result = null;
         if (type == PATH_SNAPSHOT_MANUALLY) {
-            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ".jpg";
+            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmssSSS").format(new Date()) + ".jpg";
         } else if (type == PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) {
             result = uid;
         } else if (type == PATH_RECORD_MANUALLY) {
-            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + ".mp4";
+            result = uid + "_" + new SimpleDateFormat("yyyyMMddhhmmssSSS").format(new Date()) + ".mp4";
         }
         return result;
         //return new SimpleDateFormat("yyyyMMddhhmmss").format(new Date()) + (type == 0 ? ".jpg" : ".mp4");
@@ -478,8 +478,40 @@ public class TwsTools {
             return false;
         }
 
-        if (bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2) && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() - 1, bitmap.getHeight() - 1)) {
+        if (bitmap.getPixel(0, 0) ==-16777216 && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2) && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() - 1, bitmap.getHeight() - 1)) {
             return false;
+        }
+        File file = new File(fileName);
+        //long bmpSize = getBitmapSize(bitmap);
+        FileOutputStream out;
+        try {
+            out = new FileOutputStream(file);
+            if (bitmap.compress(Bitmap.CompressFormat.JPEG, 70, out)) {
+                out.flush();
+            }
+            out.close();
+            result = true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+
+        }
+        return result;
+    }
+
+    public static boolean saveBitmap(Bitmap bitmap, String fileName,boolean noCheck) {
+
+        boolean result = false;
+        if(!noCheck) {
+            if (bitmap == null || fileName.isEmpty() || bitmap.isRecycled()) {
+                return false;
+            }
+
+            if (bitmap.getPixel(0, 0) ==-16777216 &&  bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() / 2, bitmap.getHeight() / 2) && bitmap.getPixel(0, 0) == bitmap.getPixel(bitmap.getWidth() - 1, bitmap.getHeight() - 1)) {
+                return false;
+            }
         }
         File file = new File(fileName);
         //long bmpSize = getBitmapSize(bitmap);

@@ -23,13 +23,14 @@
             android:layout_height="wrap_content"
             android:layout_weight="1">
 
-            <!--<TextView-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="fill_parent"-->
-                <!--android:gravity="left"-->
-                <!--android:text="@string/txt_viewers"-->
-                <!--android:textColor="@color/white"-->
-                <!--android:textSize="18dp" />-->
+            <TextView
+                android:id="@+id/txt_videoQuality"
+                android:layout_width="wrap_content"
+                android:layout_height="fill_parent"
+                android:gravity="left"
+                android:text=""
+                android:textColor="@color/white"
+                android:textSize="14dp" />
 
             <!--<TextView-->
                 <!--android:id="@+id/txt_usernum"-->

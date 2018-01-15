@@ -161,9 +161,9 @@ public class CameraFolderActivity extends BaseActivity {
         mImageFetcher = new ImageFetcher(this, mImageThumbSize);
         DisplayMetrics dm = new DisplayMetrics();
         (this).getWindowManager().getDefaultDisplay().getMetrics(dm);
-        int width = (dm.widthPixels - TwsTools.dip2px(this,80))/3;
-        int  height = (int)(width/camera.getVideoRatio(this)) ;
-        mImageFetcher.setImageSize(width,height);
+        int width = (dm.widthPixels - TwsTools.dip2px(this, 80)) / 3;
+        int height = (int) (width / camera.getVideoRatio(this));
+        mImageFetcher.setImageSize(width, height);
         mImageFetcher.setLoadingImage(R.drawable.default_img);
         mImageFetcher.addImageCache(this.getSupportFragmentManager(), cacheParams);
     }
@@ -227,12 +227,20 @@ public class CameraFolderActivity extends BaseActivity {
         ll_first_top = (LinearLayout) findViewById(R.id.ll_first_top);
         SpinnerButton spinnerButton = (SpinnerButton) findViewById(R.id.spinner_type);
         spinnerButton.setTitles(new String[]{getString(R.string.spinner_photos), getString(R.string.spinner_videos)});
+        if (this.getIntent().getBooleanExtra("goto", false)) {
+            accSelect = 1;
+            spinnerButton.Click(1);
+        } else {
+            accSelect = 0;
+            spinnerButton.Click(0);
+        }
         spinnerButton.setSpinnerButtonListener(new SpinnerButton.SpinnerButtonListener() {
             @Override
             public void OnSpinnerButtonClick(int which) {
                 if (accSelect == which) {
                     return;
                 }
+                adapter.setCheckMode(false);
                 accSelect = which;
                 renderData();
             }
@@ -258,6 +266,7 @@ public class CameraFolderActivity extends BaseActivity {
             }
         });
         adapter = new DateScrollItemListAdapter(CameraFolderActivity.this, adapterSource);
+
         adapter.setImageFetcher(mImageFetcher);
         adapter.setStateChangedListner(new DateScrollItemListAdapter.onStateChangedListner() {
             @Override
@@ -278,7 +287,7 @@ public class CameraFolderActivity extends BaseActivity {
                             // makeThumbnailScaleUpAnimation() looks kind of ugly here as the loading spinner may
                             // show plus the thumbnail image in GridView is cropped. so using
                             // makeScaleUpAnimation() instead.
-                            ActivityOptions options = ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.getWidth(),view.getHeight());
+                            ActivityOptions options = ActivityOptions.makeScaleUpAnimation(view, 0, 0, view.getWidth(), view.getHeight());
                             CameraFolderActivity.this.startActivity(intent, options.toBundle());
                         } else {
                             startActivity(intent);
@@ -329,11 +338,6 @@ public class CameraFolderActivity extends BaseActivity {
             }
 
         });
-        if (this.getIntent().getBooleanExtra("goto", false)) {
-            spinnerButton.Click(1);
-        } else {
-            spinnerButton.Click(0);
-        }
 //        //if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 //        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 //            ((ImageView)(findViewById(R.id.img_delete))).setImageTintList(CameraFolderActivity.this.getColorStateList(R.color.select_tint_color));
@@ -478,61 +482,68 @@ public class CameraFolderActivity extends BaseActivity {
     void refreshSource() {
         adapterSource.clear();
         String dir = null;
+        String ends = null;
         if (accSelect == 0) {
             dir = getImagesPath();
+            ends = ".jpg";
         } else if (accSelect == 1) {
             dir = getVideosPath();
+            ends = ".mp4";
         }
         File folder = new File(dir);
         if (folder.exists()) {
-            File[] files = folder.listFiles(new FileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return file.isDirectory() || (file.getName().length() >= 36 && (accSelect == 1 ? (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi")) : (file.getName().endsWith(".jpg"))));
-                }
-            });
+            File[] files = folder.listFiles();
             if (files != null) {
                 for (File f : files) {
                     //下载的录像
                     if (f.isDirectory()) {
-                        File[] pics = f.listFiles(new FileFilter() {
-                            @Override
-                            public boolean accept(File file) {
-                                return file.isFile() && file.getName().length() >= 36 && (file.getName().endsWith(".mp4") || file.getName().endsWith(".avi"));
-                            }
-                        });
+                        File[] pics = f.listFiles();
                         for (File pic : pics) {
-                            String[] paras = pic.getName().split("_");
-                            String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
-                            String title = paras[1].substring(0, 8);
-                            Date time = TwsTools.Str2Date(paras[1], null);
-                            int type = 2;
-                            DateScrollItem sItem = findSouceItem(time, 2);
-                            if (sItem == null) {
-                                LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), 2);
-                                adapter.setImageFetcher(mImageFetcher);
-                                sItem = new DateScrollItem(time, date, title, adapter, 2);
-                                adapterSource.add(sItem);
+                            String fileName = pic.getName();
+                            if (fileName.endsWith(ends)) {
+                                try {
+                                    String[] paras = fileName.split("_");
+                                    String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
+                                    String title = paras[1].substring(0, 8);
+                                    Date time = TwsTools.Str2Date(paras[1], null);
+                                    int type = 2;
+                                    DateScrollItem sItem = findSouceItem(time, type);
+                                    if (sItem == null) {
+                                        LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
+                                        adapter.setImageFetcher(mImageFetcher);
+                                        sItem = new DateScrollItem(time, date, title, adapter, type);
+                                        adapterSource.add(sItem);
+                                    }
+                                    sItem.isRemoteRecord = true;
+                                    ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(pic.getAbsolutePath());
+                                } catch (Exception ex) {
+
+                                }
                             }
-                            sItem.isRemoteRecord = true;
-                            ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(pic.getAbsolutePath());
                         }
                     }
                     //手动抓拍、录像
                     else {
-                        String[] paras = f.getName().split("_");
-                        String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
-                        String title = paras[1].substring(0, 8);
-                        Date time = TwsTools.Str2Date(paras[1], null);
-                        int type = paras[1].endsWith(".mp4") ? 1 : 0;
-                        DateScrollItem sItem = findSouceItem(time, type);
-                        if (sItem == null) {
-                            LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
-                            adapter.setImageFetcher(mImageFetcher);
-                            sItem = new DateScrollItem(time, date, title, adapter, type);
-                            adapterSource.add(sItem);
+                        String fileName = f.getName();
+                        if (fileName.endsWith(ends)) {
+                            try {
+                                String[] paras = f.getName().split("_");
+                                String date = paras[1].substring(4, 6) + "/" + paras[1].substring(6, 8);
+                                String title = paras[1].substring(0, 8);
+                                Date time = TwsTools.Str2Date(paras[1], null);
+                                int type = paras[1].endsWith(".mp4") ? 1 : 0;
+                                DateScrollItem sItem = findSouceItem(time, type);
+                                if (sItem == null) {
+                                    LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
+                                    adapter.setImageFetcher(mImageFetcher);
+                                    sItem = new DateScrollItem(time, date, title, adapter, type);
+                                    adapterSource.add(sItem);
+                                }
+                                ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(f.getAbsolutePath());
+                            } catch (Exception ex) {
+
+                            }
                         }
-                        ((LocalPicItemListAdapter) sItem.subAdatper).addSourceItem(f.getAbsolutePath());
                     }
                 }
             }
