@@ -657,6 +657,11 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
+    public boolean isSessionConnected(){
+        return isConnected()||isPasswordWrong();
+    }
+
+    @Override
     public boolean isDisconnect() {
         return super.getConnectState() == CAMERA_CONNECTION_STATE_DISCONNECTED;
     }

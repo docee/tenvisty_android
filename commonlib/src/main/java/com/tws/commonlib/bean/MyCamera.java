@@ -152,7 +152,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public String getCameraStateDesc() {
-        if(this.getState() == CameraState.None|| this.getState() == null) {
+        if (this.getState() == CameraState.None || this.getState() == null) {
             if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.connect_state == CONNECTION_STATE_WAKINGUP) {
                 return App.getContext().getString(R.string.camera_state_connecting);
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
@@ -162,15 +162,12 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD) {
                 return App.getContext().getString(R.string.camera_state_passwordWrong);
             }
-        }
-        else{
-            if(this.getState() == CameraState.Rebooting || this.getState() == CameraState.WillRebooting){
+        } else {
+            if (this.getState() == CameraState.Rebooting || this.getState() == CameraState.WillRebooting) {
                 return App.getContext().getString(R.string.tips_rebooting);
-            }
-            else if(this.getState() == CameraState.Reseting || this.getState() == CameraState.WillReseting) {
+            } else if (this.getState() == CameraState.Reseting || this.getState() == CameraState.WillReseting) {
                 return App.getContext().getString(R.string.tips_reseting);
-            }
-            else if(this.getState() == CameraState.Upgrading || this.getState() == CameraState.WillUpgrading) {
+            } else if (this.getState() == CameraState.Upgrading || this.getState() == CameraState.WillUpgrading) {
                 return App.getContext().getString(R.string.tips_upgrading);
             }
 
@@ -180,7 +177,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public int getCameraStateBackgroundColor() {
-        if(this.getState() == CameraState.None|| this.getState() == null) {
+        if (this.getState() == CameraState.None || this.getState() == null) {
             if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.connect_state == CONNECTION_STATE_WAKINGUP) {
                 return R.drawable.shape_state_connecting;
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
@@ -190,8 +187,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD) {
                 return R.drawable.shape_state_pwderror;
             }
-        }
-        else{
+        } else {
             return R.drawable.shape_state_connecting;
         }
         return 0;
@@ -258,7 +254,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
 
     public CameraState getState() {
-        return cameraState == null?CameraState.None : cameraState;
+        return cameraState == null ? CameraState.None : cameraState;
     }
 
     public void setState(CameraState state) {
@@ -361,7 +357,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public void setSnapshot(Bitmap snapshot) {
-        if(this.snapshot != null && !this.snapshot.isRecycled()){
+        if (this.snapshot != null && !this.snapshot.isRecycled()) {
             this.snapshot.recycle();
             this.snapshot = null;
             System.gc();
@@ -1140,8 +1136,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 rebootTimeout = 120000;
                 cameraState = CameraState.WillUpgrading;
             }
-        }
-        else if(avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP){
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
             if (this.isFirstLogin()) {
                 this.setFirstLogin(false);
                 AVIOCTRLDEFs.SMsgAVIoctrlTime time = new AVIOCTRLDEFs.SMsgAVIoctrlTime(data);
@@ -1205,8 +1200,8 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 //            reconnect();
 //        }
         int accSessionState = sessionState;
-        if(SessionStateHashMap.containsKey(sessionState)){
-            accSessionState = (int)SessionStateHashMap.get(sessionState);
+        if (SessionStateHashMap.containsKey(sessionState)) {
+            accSessionState = (int) SessionStateHashMap.get(sessionState);
         }
         for (int i = 0; i < mIOTCListeners.size(); i++) {
             IIOTCListener listener = mIOTCListeners.get(i);
@@ -1515,6 +1510,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         return this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED;
     }
 
+    public boolean isSessionConnected() {
+        return isConnected() || isPasswordWrong();
+    }
+
     public void saveSnapShot(final int channel, final String filePath, final String fileName, final TaskExecute te) {
         this.asyncSnapshot(new TaskExecute() {
             @Override
@@ -1536,7 +1535,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 //                            }
                             bmp = null;
                             if (fileName.equalsIgnoreCase(c.getUid())) {
-                            c.setSnapshot(null);
+                                c.setSnapshot(null);
                             }
                         } else {
                             isErr = false;
@@ -1586,12 +1585,13 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public boolean setPushOpen(boolean open) {
-        if(this.pushNotificationStatus  <= 0){
+        if (this.pushNotificationStatus <= 0) {
             this.pushNotificationStatus = 1;
         }
         return true;
     }
-    public  CameraP2PType getP2PType(){
+
+    public CameraP2PType getP2PType() {
         return CameraP2PType.TutkP2P;
     }
 
@@ -1607,20 +1607,21 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     public static HashMap IOTCHashMap;
     public static HashMap SessionStateHashMap;
+
     static {
         SessionStateHashMap = new HashMap();
         IOTCHashMap = new HashMap();
 
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_NONE,TwsSessionState.CONNECTION_STATE_NONE);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECTING,TwsSessionState.CONNECTION_STATE_CONNECTING);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECTED,TwsSessionState.CONNECTION_STATE_CONNECTED);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_DISCONNECTED,TwsSessionState.CONNECTION_STATE_DISCONNECTED);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE,TwsSessionState.CONNECTION_STATE_UNKNOWN_DEVICE);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_WRONG_PASSWORD,TwsSessionState.CONNECTION_STATE_WRONG_PASSWORD);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_TIMEOUT,TwsSessionState.CONNECTION_STATE_TIMEOUT);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_UNSUPPORTED,TwsSessionState.CONNECTION_STATE_UNSUPPORTED);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECT_FAILED,TwsSessionState.CONNECTION_STATE_CONNECT_FAILED);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_SLEEPING,TwsSessionState.CONNECTION_STATE_SLEEPING);
-        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_WAKINGUP,TwsSessionState.CONNECTION_STATE_WAKINGUP);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_NONE, TwsSessionState.CONNECTION_STATE_NONE);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECTING, TwsSessionState.CONNECTION_STATE_CONNECTING);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECTED, TwsSessionState.CONNECTION_STATE_CONNECTED);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_DISCONNECTED, TwsSessionState.CONNECTION_STATE_DISCONNECTED);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE, TwsSessionState.CONNECTION_STATE_UNKNOWN_DEVICE);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_WRONG_PASSWORD, TwsSessionState.CONNECTION_STATE_WRONG_PASSWORD);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_TIMEOUT, TwsSessionState.CONNECTION_STATE_TIMEOUT);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_UNSUPPORTED, TwsSessionState.CONNECTION_STATE_UNSUPPORTED);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_CONNECT_FAILED, TwsSessionState.CONNECTION_STATE_CONNECT_FAILED);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_SLEEPING, TwsSessionState.CONNECTION_STATE_SLEEPING);
+        SessionStateHashMap.put(NSCamera.CONNECTION_STATE_WAKINGUP, TwsSessionState.CONNECTION_STATE_WAKINGUP);
     }
 }

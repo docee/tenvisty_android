@@ -1,5 +1,6 @@
 package com.tws.commonlib.activity;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -11,6 +12,7 @@ import com.google.zxing.activity.CaptureActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.A2bigA;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -58,7 +60,7 @@ public class AddCameraInputUidActivity extends BaseActivity {
 
     private void confirmUID() {
         String uid = edtUID.getText().toString();
-        if(uid.isEmpty()){
+        if (uid.isEmpty()) {
             showAlert(getString(R.string.alert_input_camera_uid));
             return;
         }
@@ -66,14 +68,33 @@ public class AddCameraInputUidActivity extends BaseActivity {
         if (uid == null) {
             showAlert(getString(R.string.alert_invalid_camera_uid));
         } else {
+            if (uid != null) {
+                boolean duplicated = false;
+                for (IMyCamera camera_ : TwsDataValue.cameraList()) {
+                    if (uid.equalsIgnoreCase(camera_.getUid())) {
+                        duplicated = true;
+                        break;
+                    }
+                }
+
+                if (duplicated) {
+                    showAlert(getText(R.string.alert_camera_exist), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            finish();
+                        }
+                    });
+                    return;
+                }
+            }
             Intent intent = this.getIntent();
             intent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
-            setResult(RESULT_OK,intent);
+            setResult(RESULT_OK, intent);
             finish();
         }
     }
 
-    public  void  clickLine(View view){
+    public void clickLine(View view) {
         ((LinearLayout) view).getChildAt(1).requestFocus();
     }
 }

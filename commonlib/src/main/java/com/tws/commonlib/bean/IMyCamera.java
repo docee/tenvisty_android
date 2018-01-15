@@ -76,6 +76,7 @@ public interface IMyCamera {
     public void save(Context context);
     public boolean sync2Db(Context context);
     public boolean isExist();
+    public boolean isSessionConnected();
     public boolean isConnected();
     public boolean isDisconnect();
     public boolean isPasswordWrong();

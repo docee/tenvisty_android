@@ -53,6 +53,7 @@ public class TwsDataValue {
     public static String XGToken = "";
     public static String UMToken = "";
     public static int[] SensValues = new int[]{80, 60, 40, 20, 0};
+    private static IMyCamera tryConnectcamera = null;
 
     public synchronized static List<IMyCamera> cameraList() {
         if (cameraList == null) {
@@ -61,6 +62,16 @@ public class TwsDataValue {
             // MainActivity.initCamera(GlobalConfig.GetInstance(MyApp.GetApp()).getAppContext());
         }
         return cameraList;
+    }
+
+    public synchronized static  void setTryConnectcamera(IMyCamera camera){
+        if (tryConnectcamera != camera && tryConnectcamera!=null) {
+           tryConnectcamera.stop();
+        }
+        tryConnectcamera =  camera;
+    }
+    public synchronized static  IMyCamera getTryConnectcamera(){
+        return tryConnectcamera;
     }
 
     public synchronized static List<IMyCamera> cameraList(boolean strong) {
