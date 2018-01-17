@@ -550,7 +550,7 @@ public class Camera extends NSCamera {
                 || (mThreadSendAudio != null && mThreadSendAudio.getState() != TERMINATED)) {
             try {
 
-                if(ch.threadRecording != null  && ch.threadRecording.getState() != TERMINATED){
+                if (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED) {
                     ch.threadRecording.stopThread();
                 }
                 Thread.sleep(5);
@@ -662,7 +662,7 @@ public class Camera extends NSCamera {
                             || (ch.threadDecVideo != null && ch.threadDecVideo.getState() != TERMINATED)
                             || (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED)) {
                         try {
-                            if(ch.threadRecording != null  && ch.threadRecording.getState() != TERMINATED){
+                            if (ch.threadRecording != null && ch.threadRecording.getState() != TERMINATED) {
                                 ch.threadRecording.stopThread();
                             }
                             Thread.sleep(5);
@@ -1089,10 +1089,10 @@ public class Camera extends NSCamera {
 
                     St_SInfo stSInfo = new St_SInfo();
                     // synchronized (mIOTCListeners) {
-//						for (int i = 0; i < mIOTCListeners.size(); i++) {
-//							IRegisterIOTCListener listener = mIOTCListeners.get(i);
-//							listener.receiveSessionInfo(Camera.this, CONNECTION_STATE_CONNECTED);
-//						}
+                    for (int i = 0; i < mIOTCListeners.size(); i++) {
+                        IRegisterIOTCListener listener = mIOTCListeners.get(i);
+                        listener.receiveSessionInfo(Camera.this, CONNECTION_STATE_FIND_DEVICE);
+                    }
                     // }
                     synchronized (mWaitObjectForConnected) {
                         mWaitObjectForConnected.notify();

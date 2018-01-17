@@ -36,12 +36,11 @@
         android:layout_height="0dp"
         android:gravity="center"
         android:layout_weight="2">
-        <com.tws.commonlib.controller.GifView
-            android:id="@+id/gif_configwifi_note"
-            android:layout_width="270dp"
-            android:layout_height="132dp"
-            app:gif="@raw/configwifi_note"
-            android:enabled="false" />
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:padding="40dp"
+            android:src="@drawable/img_camera_power"/>
         </LinearLayout>
 <LinearLayout
     android:layout_width="match_parent"

@@ -1,9 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.tws.tenvisty">
-
+    <!--uses-feature: name='android.hardware.camera'-->
+    <!--uses-feature: name='android.hardware.camera.autofocus'-->
+    <!--uses-feature: name='android.hardware.bluetooth'-->
+    <!--uses-implied-feature: name='android.hardware.bluetooth' reason='requested android.permission.BLUETOOTH permission, and targetSdkVersion > 4'-->
+    <!--uses-feature: name='android.hardware.faketouch'-->
+    <!--uses-implied-feature: name='android.hardware.faketouch' reason='default feature for all apps'-->
+    <!--uses-feature: name='android.hardware.microphone'-->
+    <!--uses-implied-feature: name='android.hardware.microphone' reason='requested android.permission.RECORD_AUDIO permission'-->
+    <!--uses-feature: name='android.hardware.screen.landscape'-->
+    <!--uses-implied-feature: name='android.hardware.screen.landscape' reason='one or more activities have specified a landscape orientation'-->
+    <!--uses-feature: name='android.hardware.screen.portrait'-->
+    <!--uses-implied-feature: name='android.hardware.screen.portrait' reason='one or more activities have specified a portrait orientation'-->
+    <!--uses-feature: name='android.hardware.wifi'-->
+    <!--uses-implied-feature: name='android.hardware.wifi' reason='requested android.permission.ACCESS_WIFI_STATE permission, and requested android.permission.CHANGE_-->
+    <!--FI_STATE permission'-->
+    <!--in-->
     <uses-feature android:name="android.hardware.camera" /> <!-- 使用照相机权限 -->
-    <uses-feature android:name="android.hardware.camera.autofocus" /> <!-- 自动聚焦权限 -->
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" /> <!-- 自动聚焦权限 -->
+    <uses-feature android:name="android.hardware.screen.landscape" android:required="false"></uses-feature>
+    <uses-feature android:name="android.hardware.bluetooth" android:required="false"></uses-feature>
+    <uses-feature android:name="android.hardware.microphone" android:required="false"></uses-feature>
     <uses-permission android:name="android.permission.VIBRATE" /> <!-- 震动权限 -->
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
@@ -82,6 +100,7 @@
         <activity
             android:name="com.tws.commonlib.activity.SearchCameraActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.AddCameraActivity"
@@ -90,6 +109,7 @@
         <activity
             android:name="com.tws.commonlib.activity.AddDeviceWirelessActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.AddDeviceWirelessNoteActivity"
@@ -128,10 +148,12 @@
         <activity
             android:name="com.tws.commonlib.activity.CameraFolderActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.PhotoShowActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.setting.DeviceSettingActivity"
@@ -276,6 +298,7 @@
         <activity
             android:name="com.tws.commonlib.activity.AddCameraNavigationTypeActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
+            android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.AddCameraInputUidActivity"
@@ -283,6 +306,10 @@
             android:screenOrientation="portrait"></activity>
         <activity
             android:name="com.tws.commonlib.activity.AddDeviceWiredActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize"
+            android:screenOrientation="portrait"></activity>
+        <activity
+            android:name="com.tws.commonlib.activity.AddDeviceWirelessSettingFailActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:screenOrientation="portrait"></activity>
 

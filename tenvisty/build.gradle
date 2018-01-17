@@ -6,7 +6,7 @@ android {
         applicationId "com.tws.tenvisty"
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 21
+        versionCode 25
         versionName "1.0.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

@@ -27,6 +27,7 @@
             android:layout_height="wrap_content"
             android:text="@string/tips_wireless_install_setting" />
 
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -34,13 +35,11 @@
             android:gravity="center"
             android:orientation="vertical"
             android:layout_alignBottom="@+id/txt_note2">
-            <com.tws.commonlib.controller.GifView
-                android:id="@+id/gif_configwifi_camera"
-                android:layout_width="243dp"
-                android:layout_height="94dp"
-                app:gif="@raw/configwifi_setting"
-                android:enabled="false" />
-
+            <ImageView
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:padding="10dp"
+                android:src="@drawable/img_camera_config_wifi"/>
             <com.tws.commonlib.controller.widget.SaundProgressBar
                 android:id="@+id/regularprogressbar"
                 style="@style/Widget.ProgressBar.RegularProgressBar"

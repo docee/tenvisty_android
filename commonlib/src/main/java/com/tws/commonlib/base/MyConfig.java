@@ -236,6 +236,16 @@ public class MyConfig {
     public static String getXinggeCompanyName(){
         return "tenvisty";
     }
+
+    public static int getPushSdkIniteState() {
+        return pushSdkIniteState;
+    }
+
+    public static void setPushSdkIniteState(int pushSdkIniteState) {
+        MyConfig.pushSdkIniteState = pushSdkIniteState;
+    }
+
+    private static int pushSdkIniteState;
     //    /**
 //     * logo图标的资源id
 //     */

@@ -9,8 +9,8 @@
     </string-array>
 
     <string-array name="connect_state">
-        <item>Connecting...</item>
-        <item>Connecting...</item>
+        <item>Connecting&#8230;</item>
+        <item>Connecting&#8230;</item>
         <item>Online</item>
         <item>Disconnected</item>
         <item>Disconnected</item>
@@ -19,7 +19,7 @@
         <item>Disconnected</item>
         <item>Disconnected</item>
         <item>SLEEPING</item>
-        <item>Waking Up...</item>
+        <item>Waking Up&#8230;</item>
     </string-array>
     <string-array name="motion_detection_sensitivity">
         <item>Highest</item>

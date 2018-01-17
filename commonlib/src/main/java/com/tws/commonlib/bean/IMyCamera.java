@@ -40,7 +40,8 @@ public interface IMyCamera {
     public int clearEventNum(Context context);
     public String getSoftVersion();
     public  void setSoftVersion(String version);
-
+    //只连接，不登录
+    public void connect();
     public Bitmap getSnapshot();
     public void setSnapshot(Bitmap snapshot);
     public void asyncSnapshot(final TaskExecute te, final int channel);

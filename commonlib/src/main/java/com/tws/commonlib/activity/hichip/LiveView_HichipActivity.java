@@ -410,6 +410,12 @@ public class LiveView_HichipActivity extends BaseActivity implements
         }
         initBtn();
 
+        if(videoWidth != 0 && videoHeight != 0) {
+            TextView txt_videoQuality = (TextView) findViewById(R.id.txt_videoQuality);
+            if (txt_videoQuality != null) {
+                txt_videoQuality.setText(String.format("%d x %d", videoWidth, videoHeight));
+            }
+        }
     }
 
 
@@ -588,7 +594,9 @@ public class LiveView_HichipActivity extends BaseActivity implements
                                 videoLoadProgressBar.setVisibility(View.VISIBLE);
                             }
                         });
-                        this.sendEmptyMessageDelayed(TwsDataValue.HANDLE_MESSAGE_RECONNECT, 3000);
+                        if(!this.hasMessages(TwsDataValue.HANDLE_MESSAGE_RECONNECT)) {
+                            this.sendEmptyMessageDelayed(TwsDataValue.HANDLE_MESSAGE_RECONNECT, 3000);
+                        }
                     }
                     TextView txt_state = (TextView) findViewById(R.id.txt_state);
                     if (txt_state != null) {

@@ -27,6 +27,7 @@ public class NSCamera {
     public static final int CONNECTION_STATE_CONNECT_FAILED = 8;
     public static final int CONNECTION_STATE_SLEEPING = 9;
     public static final int CONNECTION_STATE_WAKINGUP = 10;
+    public static final int CONNECTION_STATE_FIND_DEVICE = 11;
 
     public CAMERA_MODEL cameraModel;
     public String databaseId;

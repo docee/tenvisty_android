@@ -1,5 +1,6 @@
 package com.tws.commonlib.activity;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -33,7 +34,7 @@ import com.tws.commonlib.controller.NavigationBar;
 
 //import com.tenvis.P2P.global.SmartLink;
 
-public class AddDeviceWirelessActivity extends BaseActivity implements INetworkChangeCallback,IIOTCListener {
+public class AddDeviceWirelessActivity extends BaseActivity implements INetworkChangeCallback {
     private EditText edtWifiPassword;
     private Button btnShowPassword;
     private EditText edtWifiSsid;
@@ -44,9 +45,9 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
     private final static int GO_TO_CONFIG = 1;
     private TextView txt_connected;
     private String uid;
-    private ProgressDialog dialog;
     ConnectionChangeReceiver broadcast;
     IntentFilter intentFilter;
+    AlertDialog dialogAlert;
 
     private String getWifiSsid() {
         if (edtWifiSsid != null) {
@@ -67,13 +68,18 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
         ConnectionState.getInstance(this).registerIOSessionListener(this);
         this.setContentView(R.layout.activity_add_device_wireless);
         //if (ConnectionState.getInstance(this).isSupportedWifi()) {
-            this.setTitle(getResources().getString(R.string.title_add_camera));
-            initView();
-            ScanQCR();
-//        } else {
-//            finish();
-//        }
+        this.setTitle(getResources().getString(R.string.title_add_camera));
+        initView();
+        //ConnectionState.getInstance(AddDeviceWirelessActivity.this).CheckConnectState();
+        //registerBroadReceiver();
+        registerBroadReceiver();
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+//        ConnectionState.getInstance(this).CheckConnectState();
+//        edtWifiSsid.setText(ConnectionState.getInstance(this).getSsid());
     }
 
     @Override
@@ -93,8 +99,7 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
                         break;
                     case NavigationBar.NAVIGATION_BUTTON_RIGHT:
                         if (checkValue()) {
-                            Intent intent = new Intent();
-                            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
+                            Intent intent = AddDeviceWirelessActivity.this.getIntent();
                             intent.putExtra("ssid", getWifiSsid());
                             intent.putExtra("authMode", ConnectionState.getInstance(AddDeviceWirelessActivity.this).GetAutoMode());
                             intent.putExtra("password", getWifiPassword());
@@ -110,7 +115,7 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
         this.btnShowPassword = (Button) this.findViewById(R.id.btnShowPassword);
         this.edtWifiSsid = (EditText) this.findViewById(R.id.edtWifiSsid);
         this.edtWifiPassword = (EditText) this.findViewById(R.id.edtWifiPassword);
-        edtWifiSsid.setText(ConnectionState.getInstance(this).getSsid());
+        // edtWifiSsid.setText(ConnectionState.getInstance(this).getSsid());
         this.edtWifiPassword.requestFocus();
         this.txt_connected = (TextView) findViewById(R.id.txt_connected);
         txt_connected.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG); //下划线
@@ -119,11 +124,11 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
             @Override
             public void onClick(View view) {
                 Intent intent = AddDeviceWirelessActivity.this.getIntent();
-                intent.putExtra(TwsDataValue.EXTRA_KEY_UID,uid);
-                intent.setClass(AddDeviceWirelessActivity.this,SaveCameraActivity.class);
+                intent.setClass(AddDeviceWirelessActivity.this, SaveCameraActivity.class);
                 startActivity(intent);
             }
         });
+        this.uid = this.getIntent().getStringExtra(TwsDataValue.EXTRA_KEY_UID);
     }
 
     private boolean checkValue() {
@@ -174,155 +179,33 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
     }
 
 
-    public void ScanQCR() {
-        Intent intent = new Intent();
-        intent.putExtra("hasskip", true);
-        intent.setClass(AddDeviceWirelessActivity.this, CaptureActivity.class);
-        startActivityForResult(intent, 0);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-
-        if (requestCode == REQUEST_CODE_GETUID_BY_SCAN_BARCODE) {//扫描二维码结果
-
-            if (resultCode == CaptureActivity.RESULT_CODE_QR_SCAN) {
-
-                String contents = intent.getStringExtra(CaptureActivity.INTENT_EXTRA_KEY_QR_SCAN);
-                // String format = intent.getStringExtra("SCAN_RESULT_FORMAT");
-
-                uid = TwsTools.takeInnerUid(contents);
-                if (uid != null) {
-                    boolean duplicated = false;
-                    for (IMyCamera camera_ : TwsDataValue.cameraList()) {
-                        if (uid.equalsIgnoreCase(camera_.getUid())) {
-                            duplicated = true;
-                            break;
-                        }
-                    }
-
-                    if (duplicated) {
-                        //MyCamera.init();
-                        showAlert(getText(R.string.alert_camera_exist), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                finish();
-                            }
-                        });
-                        return;
-                    }
-                    else{
-                        checkUID();
-                    }
-                }
-
-//				edtSecurityCode.requestFocus();
-
-            } else if (resultCode == CaptureActivity.RESULT_CODE_INPUT_UID_MANUALLY) {
-                Intent intent2 = AddDeviceWirelessActivity.this.getIntent();
-                intent2.setClass(AddDeviceWirelessActivity.this, AddCameraInputUidActivity.class);
-                startActivityForResult(intent2, REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY);
-            } else if (resultCode == CaptureActivity.RESULT_CODE_SEARCH_LAN) {
-                Intent intent2 = AddDeviceWirelessActivity.this.getIntent();
-                intent2.setClass(AddDeviceWirelessActivity.this, SearchCameraActivity.class);
-                startActivityForResult(intent2, REQUEST_CODE_GETUID_BY_SEARCHLAN);
-            } else if (resultCode == CaptureActivity.RESULT_CODE_ADD_MANUALLY) {
-                uid = IMyCamera.NO_USE_UID;
-            } else if (resultCode == RESULT_CANCELED) {
-                // Handle cancel
-                finish();
-            }
-        } else if (requestCode == REQUEST_CODE_GETUID_BY_SEARCHLAN) {
-            if (resultCode == RESULT_CANCELED) {
-                // Handle cancel
-                finish();
-            }
-        } else if (requestCode == REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY) {
-            if (resultCode == RESULT_CANCELED) {
-                // Handle cancel
-                finish();
-            }
-            else if(resultCode == RESULT_OK){
-                if(intent != null){
-                    this.uid = intent.getStringExtra(TwsDataValue.EXTRA_KEY_UID);
-                    if (uid != null) {
-                        boolean duplicated = false;
-                        for (IMyCamera camera_ : TwsDataValue.cameraList()) {
-                            if (uid.equalsIgnoreCase(camera_.getUid())) {
-                                duplicated = true;
-                                break;
-                            }
-                        }
-
-                        if (duplicated) {
-                            //MyCamera.init();
-                            showAlert(getText(R.string.alert_camera_exist), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    finish();
-                                }
-                            });
-                            return;
-                        }
-                        else{
-                            checkUID();
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public void  checkUID(){
-        if(TwsDataValue.getTryConnectcamera() != null){
-            TwsDataValue.getTryConnectcamera().unregisterIOTCListener(this);
-        }
-        IMyCamera camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getString(R.string.hint_input_camera_name),this.uid,"admin","admin");
-        TwsDataValue.setTryConnectcamera(camera);
-        camera.registerIOTCListener(this);
-        camera.start();
-        showLoadingProgress(getString(R.string.process_upgrading_check), false, 10000, new TwsProgressDialog.OnTimeOutListener() {
-            @Override
-            public void onTimeOut(TwsProgressDialog dialog) {
-                if(TwsDataValue.getTryConnectcamera().isSessionConnected()){
-                    TwsDataValue.getTryConnectcamera().unregisterIOTCListener(AddDeviceWirelessActivity.this);
-                    AddDeviceWirelessActivity.this.txt_connected.performClick();
-                    TwsDataValue.setTryConnectcamera(null);
-                    AddDeviceWirelessActivity.this.finish();
-                }
-                else{
-                    //ConnectionState.getInstance(AddDeviceWirelessActivity.this).CheckConnectState();
-                    registerBroadReceiver();
-                }
-            }
-        });
-    }
-
     private boolean checkWifiResult() {
-
         if (edtWifiSsid != null) {
             edtWifiSsid.setText(ConnectionState.getInstance(this).getSsid());
         }
 
+        if (dialogAlert != null && dialogAlert.isShowing()) {
+            dialogAlert.dismiss();
+        }
         if (!ConnectionState.getInstance(this).isSupportedWifi()) {
             //未连接wifi
             if (!ConnectionState.getInstance(this).isWifiConnected()) {
-                showAlert(getString(R.string.alert_connect_to_wifi_first));
+                //  dialogAlert = showAlert(getString(R.string.alert_connect_to_wifi_first));
                 //TwsToast.showToast(this, getString(R.string.alert_connect_to_wifi_first));
             }
             //SSID包含不支持的字符
             else if (!ConnectionState.getInstance(this).isSupportedSsid()) {
-                showAlert(String.format(getString(R.string.alert_wifi_ssid_supportchar), ConnectionState.getInstance(this).getNotSupportedChar(ConnectionState.getInstance(this).getSsid())));
+                // dialogAlert = showAlert(String.format(getString(R.string.alert_wifi_ssid_supportchar), ConnectionState.getInstance(this).getNotSupportedChar(ConnectionState.getInstance(this).getSsid())));
                 //TwsToast.showToast(this, String.format(getString(R.string.alert_wifi_ssid_supportchar), ConnectionState.getInstance(this).getNotSupportedChar(ConnectionState.getInstance(this).getSsid())));
             }
             //连接的不是2.4G wifi
             else if (!ConnectionState.getInstance(this).is24GWifi()) {
-                showAlert(getString(R.string.alert_wifi_onlysupport_24g));
+                //dialogAlert = showAlert(getString(R.string.alert_wifi_onlysupport_24g));
                 //TwsToast.showToast(this, getString(R.string.alert_wifi_onlysupport_24g));
             }
             //只支持wpa/wpa2加密
             else if (!ConnectionState.getInstance(this).isWpa()) {
-                showAlert(getString(R.string.alert_wifi_onlysupport_wpa));
+                //dialogAlert = showAlert(getString(R.string.alert_wifi_onlysupport_wpa));
                 //TwsToast.showToast(this, getString(R.string.alert_wifi_onlysupport_wpa));
             }
 //		      Intent intent =  new Intent(Settings.ACTION_WIFI_SETTINGS);
@@ -347,7 +230,6 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
             unregisterReceiver(broadcast);
         }
         ConnectionState.getInstance(this).unregisterIOSessionListener(this);
-        TwsDataValue.setTryConnectcamera(null);
     }
 
     void registerBroadReceiver() {
@@ -357,74 +239,5 @@ public class AddDeviceWirelessActivity extends BaseActivity implements INetworkC
         registerReceiver(broadcast, intentFilter);
     }
 
-    Handler handler = new Handler(){
-        @Override
-        public void handleMessage(Message msg){
-            switch (msg.what){
-                case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
-                    if(TwsDataValue.getTryConnectcamera().isSessionConnected()){
-                        TwsDataValue.getTryConnectcamera().unregisterIOTCListener(AddDeviceWirelessActivity.this);
-                        AddDeviceWirelessActivity.this.txt_connected.performClick();
-                        TwsDataValue.setTryConnectcamera(null);
-                        AddDeviceWirelessActivity.this.finish();
-                    }
-                    else if(!TwsDataValue.getTryConnectcamera().isConnecting()){
-                        dismissLoadingProgress();
-                       // ConnectionState.getInstance(AddDeviceWirelessActivity.this).CheckConnectState();
-                        registerBroadReceiver();
-                    }
-                    break;
-            }
-        }
-    };
 
-    @Override
-    public void receiveFrameData(IMyCamera camera, int avChannel, Bitmap bmp) {
-
-    }
-
-    @Override
-    public void receiveFrameInfo(IMyCamera camera, int avChannel, long bitRate, int frameRate, int onlineNm, int frameCount, int incompleteFrameCount) {
-
-    }
-
-    @Override
-    public void receiveSessionInfo(IMyCamera camera, int resultCode) {
-        Bundle bundle = new Bundle();
-        Message msg = handler.obtainMessage();
-        msg.what = TwsDataValue.HANDLE_MESSAGE_SESSION_STATE;
-        msg.arg1 = resultCode;
-        msg.setData(bundle);
-        handler.sendMessage(msg);
-    }
-
-    @Override
-    public void receiveChannelInfo(IMyCamera camera, int avChannel, int resultCode) {
-
-    }
-
-    @Override
-    public void receiveIOCtrlData(IMyCamera camera, int avChannel, int avIOCtrlMsgType, byte[] data) {
-
-    }
-
-    @Override
-    public void initSendAudio(IMyCamera paramCamera, boolean paramBoolean) {
-
-    }
-
-    @Override
-    public void receiveOriginalFrameData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte1, int paramInt2, byte[] paramArrayOfByte2, int paramInt3) {
-
-    }
-
-    @Override
-    public void receiveRGBData(IMyCamera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3) {
-
-    }
-
-    @Override
-    public void receiveRecordingData(IMyCamera paramCamera, int avChannel, int paramInt1, String path) {
-
-    }
 }

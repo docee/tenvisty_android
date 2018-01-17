@@ -56,6 +56,7 @@
                     android:maxLength="20"
                     android:textSize="15dp"
                     android:maxLines="1"
+                    android:enabled="false"
                     android:hint="@string/hint_input_camera_uid"
                     android:digits="@string/filter_vcode"
                     android:cursorVisible="true"
@@ -68,6 +69,7 @@
                     android:layout_height="30dp"
                     android:layout_alignParentBottom="true"
                     android:layout_alignParentRight="true"
+                    android:visibility="gone"
                     android:background="@drawable/qcode" />
             </RelativeLayout>
 

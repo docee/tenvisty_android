@@ -1,6 +1,7 @@
 package com.tws.commonlib.bean;
 
 import android.Manifest;
+import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
@@ -23,7 +24,9 @@ import com.hichip.push.HiPushSDK;
 import com.hichip.sdk.HiChipP2P;
 import com.hichip.sdk.HiChipSDK;
 import com.hichip.tools.Packet;
+import com.tencent.android.tpush.XGIOperateCallback;
 import com.tencent.android.tpush.XGPushConfig;
+import com.tencent.android.tpush.XGPushManager;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.App;
 import com.tws.commonlib.R;
@@ -213,6 +216,22 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public void start() {
+        if (getUid() != null && getUid().length() > 4) {
+            String temp = getUid().substring(0, 5);
+            String str = getUid().substring(0, 4);
+            if (temp.equalsIgnoreCase("FDTAA") || str.equalsIgnoreCase("DEAA") || str.equalsIgnoreCase("AAES")) {
+                return;
+            } else {
+                super.connect();
+                return;
+            }
+        } else {
+            return;
+        }
+    }
+
+    @Override
+    public void connect() {
         if (getUid() != null && getUid().length() > 4) {
             String temp = getUid().substring(0, 5);
             String str = getUid().substring(0, 4);
@@ -567,7 +586,10 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             }
 
         };
-
+        if (TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
+            MyCamera.initXGPush(App.getContext());
+            return;
+        }
         this.bindPushState(true, bindPushResult_open);
     }
 
@@ -595,6 +617,9 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             }
 
         };
+        NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        int intId = this.getIntId();
+        manager.cancel(this.getUid(), intId);
         this.bindPushState(false, bindPushResult_close);
         setPushState(0);
         sync2Db(App.getContext());
@@ -607,7 +632,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     @Override
     public boolean setPushOpen(boolean open) {
-        this.pushState = open?1:0;
+        this.pushState = open ? 1 : 0;
         return true;
     }
 
@@ -657,8 +682,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public boolean isSessionConnected(){
-        return isConnected()||isPasswordWrong();
+    public boolean isSessionConnected() {
+        return super.getConnectState() == CAMERA_CONNECTION_STATE_CONNECTED || isConnected() || isPasswordWrong();
     }
 
     @Override
@@ -1056,8 +1081,8 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         if (type == HiChipDefines.HI_P2P_SET_TIME_PARAM) {
             this.setInitTime(false);
         }
-        if(type == HiChipDefines.HI_P2P_ALARM_EVENT){
-            TwsTools.showAlarmNotification(App.getContext(),getUid(),1,System.currentTimeMillis());
+        if (type == HiChipDefines.HI_P2P_ALARM_EVENT) {
+            TwsTools.showAlarmNotification(App.getContext(), getUid(), 1, System.currentTimeMillis());
         }
     }
 

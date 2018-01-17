@@ -35,6 +35,8 @@ import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.view.TwsListView;
 
+import java.io.BufferedOutputStream;
+
 public class BaseActivity extends AppCompatActivity {
     protected TwsProgressDialog progressDialog;
     private final static int GO_ACTIVITY = 999;
@@ -51,7 +53,7 @@ public class BaseActivity extends AppCompatActivity {
 //            MainActivity.initSystemBar(this);
 //        }
 
-        if(getIntent() != null && getIntent().getExtras() != null) {
+        if (getIntent() != null && getIntent().getExtras() != null) {
             for (IMyCamera c : TwsDataValue.cameraList()) {
                 if (c.getUid().equals(getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID))) {
                     camera = c;
@@ -189,20 +191,22 @@ public class BaseActivity extends AppCompatActivity {
     }
 
 
-    public void showAlert(CharSequence message) {
-        if(!this.isFinishing()) {
+    public AlertDialog showAlert(CharSequence message) {
+        if (!this.isFinishing()) {
             AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
             dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
             dlgBuilder.setTitle(R.string.warning);
             dlgBuilder.setMessage(message);
 
-            dlgBuilder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
+            AlertDialog dialog = dlgBuilder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
 
                 }
             }).show();
+            return dialog;
         }
+        return null;
     }
 
     public void showAlert(CharSequence message, DialogInterface.OnClickListener listener) {
@@ -211,7 +215,16 @@ public class BaseActivity extends AppCompatActivity {
         dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
         dlgBuilder.setTitle(R.string.warning);
         dlgBuilder.setMessage(message);
+        dlgBuilder.setPositiveButton(getText(R.string.ok), listener).show();
+    }
 
+    public void showAlert(CharSequence message,String title, boolean cancelable, DialogInterface.OnClickListener listener) {
+
+        AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
+        dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+        dlgBuilder.setTitle(title);
+        dlgBuilder.setCancelable(cancelable);
+        dlgBuilder.setMessage(message);
         dlgBuilder.setPositiveButton(getText(R.string.ok), listener).show();
     }
 
@@ -224,7 +237,7 @@ public class BaseActivity extends AppCompatActivity {
         mDlgBuilder.setPositiveButton(okch, listener).setNegativeButton(cancel, listener).show();
     }
 
-    public void showAlert(CharSequence message, int startPos, int length, int color) {
+    public AlertDialog showAlert(CharSequence message, int startPos, int length, int color) {
 
         AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
         dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
@@ -236,11 +249,12 @@ public class BaseActivity extends AppCompatActivity {
                 Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
 
         dlgBuilder.setMessage(spanBuilder);
-        dlgBuilder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
+        AlertDialog dialog = dlgBuilder.setPositiveButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
             }
         }).show();
+        return dialog;
     }
 
     public interface MyDismiss {
@@ -359,7 +373,12 @@ public class BaseActivity extends AppCompatActivity {
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
-
+    protected void back2Activity(Class<?> toClass,Bundle bundle) {
+        Intent intent = new Intent(this, toClass);
+        intent.putExtras(bundle);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+    }
     protected void refreshList() {
         Intent intent = new Intent();
         intent.setAction(TwsDataValue.ACTION_CAMERA_INIT_END);

@@ -14,7 +14,9 @@ import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
+import com.tws.commonlib.activity.hichip.EventSetting_HichipActivity;
 import com.tws.commonlib.base.CameraClient;
+import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -137,8 +139,7 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
 
     void setPush(boolean push) {
         if (push) {
-            showLoadingProgress();
-            camera.openPush(new CameraClient.ServerResultListener2() {
+            final CameraClient.ServerResultListener2 succListener =   new CameraClient.ServerResultListener2() {
                 @Override
                 public void serverResult(String resultString, JSONObject jsonArray) {
                     if (EventSettingActivity.this != null && !EventSettingActivity.this.isFinishing()) {
@@ -151,7 +152,8 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
                         });
                     }
                 }
-            }, new CameraClient.ServerResultListener2() {
+            };
+            final CameraClient.ServerResultListener2 failListener =  new CameraClient.ServerResultListener2() {
                 @Override
                 public void serverResult(String resultString, JSONObject jsonArray) {
                     if (EventSettingActivity.this != null && !EventSettingActivity.this.isFinishing()) {
@@ -165,7 +167,26 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
                         });
                     }
                 }
+            };
+            showLoadingProgress(getString(R.string.process_setting), true, 30000, new TwsProgressDialog.OnTimeOutListener() {
+                @Override
+                public void onTimeOut(TwsProgressDialog dialog) {
+                    showLoadingProgress(getString(R.string.process_setting), true, 30000, new TwsProgressDialog.OnTimeOutListener() {
+                        @Override
+                        public void onTimeOut(TwsProgressDialog dialog) {
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    togbtn_push.setChecked(false);
+                                    showAlert(getString(R.string.alert_setting_fail));
+                                }
+                            });
+                        }
+                    });
+                    camera.openPush(succListener, failListener);
+                }
             });
+            camera.openPush(succListener, failListener);
         } else {
             camera.closePush(EventSettingActivity.this);
         }

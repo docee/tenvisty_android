@@ -98,6 +98,7 @@ public class SaveCameraActivity extends BaseActivity {
             }
         });
         btnShowPassword = (Button) findViewById(R.id.btnShowPassword);
+        edtSecurityCode.requestFocus();
     }
 
     @Override

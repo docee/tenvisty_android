@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.google.zxing.activity.CaptureActivity;
@@ -95,6 +96,6 @@ public class AddCameraInputUidActivity extends BaseActivity {
     }
 
     public void clickLine(View view) {
-        ((LinearLayout) view).getChildAt(1).requestFocus();
+        ((RelativeLayout) view).getChildAt(1).requestFocus();
     }
 }

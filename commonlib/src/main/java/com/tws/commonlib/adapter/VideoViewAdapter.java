@@ -163,7 +163,7 @@ public class VideoViewAdapter extends SimpleAdapter {
                 if (camera.getState() == CameraState.None) {
                     if (camera.isPasswordWrong()) {
                         holder.ll_tip_password_wrong.setVisibility(View.VISIBLE);
-                    } else if (camera.isConnecting() || camera.isNotConnect()) {
+                    } else if (camera.isConnecting()) {
                         holder.ll_tip_connecting.setVisibility(View.VISIBLE);
                     } else {
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);

@@ -796,7 +796,11 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         super.connect(uid);
         mUID = uid;
     }
-
+    @Override
+    public void connect() {
+        super.connect(getUid());
+        mUID = getUid();
+    }
     AsyncTask connectTask;
 
     public void asyncConnect(final String uid) {
@@ -1290,6 +1294,16 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     public void openPush(final CameraClient.ServerResultListener2 succListner, final CameraClient.ServerResultListener2 errorListner) {
 
+        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty())&&(TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
+            if(TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
+                MyCamera.initXGPush(App.getContext());
+            }
+            else{
+                MyCamera.initUMPush(App.getContext());
+            }
+            return;
+        }
+
         CameraClient.shareCameraClient().openPushCamera(App.getContext(), uid, new CameraClient.ServerResultListener2() {
             @Override
             public void serverResult(String resultString, JSONObject jsonArray) {
@@ -1321,6 +1335,15 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         manager.cancel(this.getUid(), intId);
         this.pushNotificationStatus = 0;
         this.sync2Db(App.getContext());
+        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty())&&(TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
+            if(TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
+                MyCamera.initXGPush(App.getContext());
+            }
+            else{
+                MyCamera.initUMPush(App.getContext());
+            }
+            return;
+        }
         CameraClient.shareCameraClient().closePushCamera(uid);
     }
 
@@ -1379,7 +1402,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public static void initXGPush(final Context context) {
-        //MyConfig.setPushSdkIniteState(1);
+        if(MyConfig.getPushSdkIniteState() == 1){
+            return;
+        }
+        MyConfig.setPushSdkIniteState(1);
         // 开启logcat输出，方便debug，发布时请关闭
         XGPushConfig.enableDebug(context, false);
         // 如果需要知道注册是否成功，请使用registerPush(getApplicationContext(), XGIOperateCallback)带callback版本
@@ -1410,12 +1436,12 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 //TwsToast.showToast(context, token);
 
                 //TwsToast.showToast(context, token);
-                //MyConfig.setPushSdkIniteState(2);
+                MyConfig.setPushSdkIniteState(2);
             }
 
             @Override
             public void onFail(Object data, int errCode, String msg) {
-                // MyConfig.setPushSdkIniteState(0);
+                MyConfig.setPushSdkIniteState(0);
             }
         });
 
@@ -1436,7 +1462,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
          * 设置组件化的Log开关
          * 参数: boolean 默认为false，如需查看LOG设置为true
          */
-        UMConfigure.setLogEnabled(true);
+        UMConfigure.setLogEnabled(false);
         /**
          * 设置日志加密
          * 参数：boolean 默认为false（不加密）
@@ -1511,7 +1537,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public boolean isSessionConnected() {
-        return isConnected() || isPasswordWrong();
+        return this.connect_state == NSCamera.CONNECTION_STATE_FIND_DEVICE ||  isConnected() || isPasswordWrong();
     }
 
     public void saveSnapShot(final int channel, final String filePath, final String fileName, final TaskExecute te) {

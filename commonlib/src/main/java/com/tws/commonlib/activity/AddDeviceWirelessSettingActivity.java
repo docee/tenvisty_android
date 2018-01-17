@@ -29,7 +29,6 @@ import java.util.Calendar;
 import java.util.TimeZone;
 
 public class AddDeviceWirelessSettingActivity extends BaseActivity implements IIOTCListener {
-    private int timeout = 60;
     private int percent = 0;
     private IMyCamera camera;
     private boolean succeeded = false;
@@ -61,7 +60,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
             config_result = msg.what;
             switch (msg.what) {
                 case CONFIG_WIFI_SUCCESS:
-                    if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                    if (mHandler.hasMessages(CONFIG_WIFI_RECONNECT)) {
                         mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
                     }
                     wifiConfiger.stopConfig();
@@ -74,7 +73,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                     times = 1;
                     break;
                 case CONFIG_WIFI_WRONG_PWD:
-                    if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                    if (mHandler.hasMessages(CONFIG_WIFI_RECONNECT)) {
                         mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
                     }
                     wifiConfiger.stopConfig();
@@ -92,7 +91,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
 
                     break;
                 case CONFIG_WIFI_RECONNECT:
-                    if(percent <100) {
+                    if (percent < 100) {
                         camera.start();
                     }
                     break;
@@ -104,83 +103,28 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
     private Runnable task = new Runnable() {
         public void run() {
             long nowTime = Calendar.getInstance(TimeZone.getTimeZone("gmt")).getTimeInMillis();
-            long waitTime = (nowTime - startTime) / 1000;
-            if (waitTime >= timeout) {
-                if (times > 40) {
-                    times -= 10;
-                }
-            }
             if (percent < regularprogressbar.getMax()) {
                 percent++;
                 regularprogressbar.setProgress(percent);
                 handler.postDelayed(this, times * 10);//设置延迟时间，此处是1秒
             } else {
-                if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+                if (mHandler.hasMessages(CONFIG_WIFI_RECONNECT)) {
                     mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
                 }
                 wifiConfiger.stopConfig();
-                if (IMyCamera.NO_USE_UID.equalsIgnoreCase(dev_uid)) {
-                    //没有扫二维码，则提示用户是否依然听到摄像机叮咚声音
-                    showAlertnew(android.R.drawable.ic_dialog_alert, null, getString(R.string.dialog_msg_onekey_configwifi_soundstop), getString(R.string.no), getString(R.string.yes),
-                            new DialogInterface.OnClickListener() {
-
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-                                    switch (which) {
-                                        case DialogInterface.BUTTON_NEGATIVE:
-                                            showAlertnew(android.R.drawable.ic_dialog_alert, null, getString(R.string.dialog_msg_onekey_configwifi_fail), getString(R.string.title_userhelp), getString(R.string.dialog_btn_retry),
-                                                    new DialogInterface.OnClickListener() {
-
-                                                        @Override
-                                                        public void onClick(DialogInterface dialog, int which) {
-                                                            switch (which) {
-                                                                case DialogInterface.BUTTON_POSITIVE:
-                                                                    AddDeviceWirelessSettingActivity.this.finish();
-                                                                    break;
-                                                                case DialogInterface.BUTTON_NEGATIVE:
-                                                                    go2Help();
-                                                                    break;
-                                                            }
-
-                                                        }
-                                                    });
-                                            break;
-                                        case DialogInterface.BUTTON_POSITIVE:
-                                            AddDeviceWirelessSettingActivity.this.finish();
-                                            back2Search();
-                                            TwsToast.showToast(AddDeviceWirelessSettingActivity.this, getString(R.string.toast_search_in_lan));
-                                            break;
-                                    }
-
-                                }
-                            });
+                if (config_result == CONFIG_WIFI_SUCCESS) {
+                    back2List();
+                } else if (config_result == CONFIG_WIFI_WRONG_PWD) {
+                    back2List();
                 } else {
-                    if (config_result == CONFIG_WIFI_SUCCESS) {
-                        back2List();
-                    } else if (config_result == CONFIG_WIFI_WRONG_PWD) {
-                        back2List();
-                    } else {
-                        if (camera != null) {
-                            camera.asyncStop(null);
-                            camera.registerIOTCListener(AddDeviceWirelessSettingActivity.this);
-                        }
-                        showAlertnew(android.R.drawable.ic_dialog_alert, null, getString(R.string.dialog_msg_onekey_configwifi_fail), getString(R.string.title_userhelp), getString(R.string.dialog_btn_retry),
-                                new DialogInterface.OnClickListener() {
-
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        switch (which) {
-                                            case DialogInterface.BUTTON_POSITIVE:
-                                                AddDeviceWirelessSettingActivity.this.finish();
-                                                break;
-                                            case DialogInterface.BUTTON_NEGATIVE:
-                                                go2Help();
-                                                break;
-                                        }
-
-                                    }
-                                });
+                    if (camera != null) {
+                        camera.asyncStop(null);
+                        camera.unregisterIOTCListener(AddDeviceWirelessSettingActivity.this);
                     }
+                    percent = 0;
+                    Intent intent = AddDeviceWirelessSettingActivity.this.getIntent();
+                    intent.setClass(AddDeviceWirelessSettingActivity.this, AddDeviceWirelessSettingFailActivity.class);
+                    startActivity(intent);
                 }
             }
         }
@@ -191,11 +135,10 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         super.initView();
         Bundle extras = this.getIntent().getExtras();
         dev_uid = extras.getString(TwsDataValue.EXTRA_KEY_UID);
-        if(dev_uid.length() == 20) {
-            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this,WiFiConfigureContext.VOICE_TYPE_FACEBER);
-        }
-        else{
-            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this,WiFiConfigureContext.VOICE_TYPE_HICHIP);
+        if (dev_uid.length() == 20) {
+            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this, WiFiConfigureContext.VOICE_TYPE_FACEBER);
+        } else {
+            wifiConfiger = new WiFiConfigureContext(AddDeviceWirelessSettingActivity.this, WiFiConfigureContext.VOICE_TYPE_HICHIP);
         }
         wifiConfiger.setData(extras.getString("ssid"), extras.getString("password"), extras.getInt("authMode"));
         wifiConfiger.setUid(dev_uid);
@@ -210,33 +153,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         regularprogressbar.setProgressIndicator(indicator);
         regularprogressbar.setProgress(0);
         regularprogressbar.setVisibility(View.VISIBLE);
-        if (MyConfig.getWirelessInstallHelpUrl() != null) {
-            final NavigationBar title = (NavigationBar) findViewById(R.id.title_top);
-            title.setButton(NavigationBar.NAVIGATION_BUTTON_RIGHT);
-            title.setRightBtnBackground(android.R.drawable.ic_menu_help);
-            title.setNavigationBarButtonListener(new NavigationBar.NavigationBarButtonListener() {
 
-                @Override
-                public void OnNavigationButtonClick(int which) {
-                    switch (which) {
-                        case NavigationBar.NAVIGATION_BUTTON_RIGHT:
-                            go2Help();
-                            break;
-                    }
-                }
-            });
-        }
-    }
-
-    private void go2Help() {
-        Intent intent = new Intent();
-        intent.setClass(this, WebBrowserActivity.class);
-        String title = this.getString(R.string.title_userhelp);
-        String url = MyConfig.getWirelessInstallHelpUrl();
-        intent.putExtra("title", title);
-        intent.putExtra("url", url);
-        this.finish();
-        startActivity(intent);
     }
 
     public void setWifi() throws Exception {
@@ -246,7 +163,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         wifiConfiger.setReceiveListner(new BaseConfig.OnReceivedListener() {
             @Override
             public void OnReceived(final String status, final String ip, final String UID) {
-                if (!addSuccess && dev_uid.equalsIgnoreCase(IMyCamera.NO_USE_UID) || dev_uid.equalsIgnoreCase(UID)) {
+                if (!addSuccess && dev_uid.equalsIgnoreCase(UID)) {
                     addSuccess = true;
                     wifiConfiger.setReceiveListner(null);
 
@@ -288,7 +205,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         super.onPause();
         handler.removeCallbacks(task);
         wifiConfiger.clearReceiveListner();
-        if(mHandler.hasMessages(CONFIG_WIFI_RECONNECT)){
+        if (mHandler.hasMessages(CONFIG_WIFI_RECONNECT)) {
             mHandler.removeMessages(CONFIG_WIFI_RECONNECT);
         }
         wifiConfiger.stopConfig();
@@ -319,28 +236,8 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
     }
 
 
-
-
     private void save() {
-        /**
-         * 判断是否已经添加过该摄像机
-         */
-        boolean duplicated = false;
-        for (IMyCamera camera_ : TwsDataValue.cameraList()) {
-
-            if (camera.getUid().equalsIgnoreCase(camera_.getUid())) {
-                duplicated = true;
-                break;
-            }
-        }
-
-        if (duplicated) {
-            //MyCamera.init();
-            //showAlert(getText(R.string.alert_camera_exist));
-            return;
-        }
-
-		/* add value to server data base */
+        /* add value to server data base */
 
         camera.save(AddDeviceWirelessSettingActivity.this);
 
@@ -352,7 +249,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
         camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
         //看是否能正确启动摄像机
         camera.registerIOTCListener(this);
-        camera.start();
+        camera.connect();
     }
 
 
@@ -376,6 +273,10 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
             if (percent < 100) {
                 mHandler.obtainMessage(CONFIG_WIFI_WRONG_PWD).sendToTarget();
             }
+        } else if (resultCode == NSCamera.CONNECTION_STATE_FIND_DEVICE) {
+            if (percent < 100) {
+                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
+            }
         } else if (resultCode == NSCamera.CONNECTION_STATE_SLEEPING) {//连接摄像机的时候发现密码错误，弹出相应提示框
             if (percent < 100) {
                 mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
@@ -386,8 +287,8 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
             if (percent < 100) {
                 camera.asyncStop(new IMyCamera.TaskExecute() {
                     @Override
-                    public void onPosted(IMyCamera c,Object data) {
-                       mHandler.sendEmptyMessageDelayed(CONFIG_WIFI_RECONNECT,5000);
+                    public void onPosted(IMyCamera c, Object data) {
+                        mHandler.sendEmptyMessageDelayed(CONFIG_WIFI_RECONNECT, 5000);
                     }
                 });
             }

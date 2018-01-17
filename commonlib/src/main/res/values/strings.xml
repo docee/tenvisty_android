@@ -28,12 +28,13 @@
     <string name="modify">modify</string>
     <string name="delete">Delete</string>
     <string name="ready">Ready</string>
+    <string name="retry">Retry</string>
     <string name="camera">Camera</string>
     <string name="loading">Loading&#8230;</string>
     <string name="share">Share</string>
     <string name="send">Send</string>
     <string name="selectall">Select All</string>
-    <string name="edit">Edit</string>ng>
+    <string name="edit">Edit</string>
     <string name="done">Done</string>
     <string name="reset">Reset</string>
     <string name="reboot">Reboot</string>
@@ -53,6 +54,7 @@
     <string name="title_camera_photos">Photos</string>
     <string name="title_scan_qrcode">Scan QR Code</string>
     <string name="title_add_camera">Add Camera</string>
+    <string name="title_add_camera_fail">Add Camera Failed</string>
     <!--<string name="title_add_camera_navigation_type">Network Mode</string>-->
     <string name="title_modify_camera_password">Modify Camera Password</string>
     <string name="title_edit_camera_info">Edit Camera</string>
@@ -127,7 +129,7 @@
     <string name="lab_other_setting_inverse">Flip</string>
     <string name="lab_other_setting_alarm_led">Led</string>
     <string name="lab_other_setting_sdcard">SD Card</string>
-    <string name="lab_other_setting_devinfo">Device Infomation</string>
+    <string name="lab_other_setting_devinfo">Device Information</string>
     <string name="lab_camera_model">Model</string>
     <string name="lab_camera_version">Version</string>
     <string name="lab_camera_version_soft">Software Version</string>
@@ -179,9 +181,9 @@
     <string name="process_mail_connecting">Connecting&#8230;</string>
     <string name="process_mail_verifying">verifying</string>
     <string name="process_mail_sending">Sending</string>
-    <string name="process_rebooting">Rebooting...</string>
-    <string name="process_reseting">Resetting...</string>
-    <string name="process_upgrading_check">checking...</string>
+    <string name="process_rebooting">Rebooting&#8230;</string>
+    <string name="process_reseting">Resetting&#8230;</string>
+    <string name="process_upgrading_check">checking&#8230;</string>
     <string name="process_connecting">Connecting&#8230;</string>
     <string name="process_setting">Setting&#8230;</string>
     <string name="process_testting">Testing&#8230;</string>
@@ -189,8 +191,8 @@
     <string name="tips_add_camera_duplicated">This camera already exists, please enter another one.</string>
     <string name="tips_add_camera_duplicated_search">this camera is in your camera list, please tap other camera.</string>
     <string name="tips_modify_security_code_succ">Password changed successfully, device will reconnect soon.</string>
-    <string name="tips_add_camera_wireless">Please power on the camera, and wait until you hear "Ding Dong" sound.</string>
-    <string name="tips_add_camera_wired">Please power on the camera, and connect ethnet cabel to camera.</string>
+    <string name="tips_add_camera_wireless">Please power on the camera, and wait till the music comes out.</string>
+    <string name="tips_add_camera_wired">Please power on the camera and plug into the Ethernet cable (Yellow &#038; Green light will on if all is OK).</string>
     <string name="tips_wireless_install">Note:\nOnly support 2.4GHz Wi-Fi.</string>
     <string name="tips_snapshot_ok">Snapshot successfully.</string>
     <string name="tips_camera_offline">Camera offline</string>
@@ -202,7 +204,7 @@
     <string name="tips_sd_card_setting">Format command will ERASE all data of SD Card</string>
     <string name="tips_copyright">Copyright 2017 All rights reserved.</string>
     <string name="tips_wireless_install_operate">Please enter the Wi-Fi password.</string>
-    <string name="tips_wireless_install_setting">Please turn up the phone volume near the camera</string>
+    <string name="tips_wireless_install_setting">Keep phone near to camera and turn up the phone volume</string>
     <string name="tips_folder_desc" formatted="false">%s photos, %s videos</string>
     <string name="tips_no_photo_video">no photos and videos</string>
     <string name="tips_update_getinfo_fail">Accessing firmware info failed, please try later.</string>
@@ -219,12 +221,19 @@
     <string name="tips_recordtime_none_title">NONE</string>
     <string name="tips_recordtime_none_desc">Device will stop recording on SD Card</string>
     <string name="tips_recordtime_allday_title">ALL DAY</string>
-    <string name="tips_recordtime_allday_desc">24/7 Continous Record</string>
+    <string name="tips_recordtime_allday_desc">24/7 Continuous Record</string>
     <string name="tips_recordtime_custom_title">CUSTOM SETTING</string>
     <string name="tips_recordtime_custom_desc">Set your own recording time</string>
     <string name="tips_recordtime_bigger">End time should be after start time</string>
     <string name="tips_device_time_setting_reboot_camera">Notice: Change timezone will reboot device</string>
     <string name="tips_play_progress">Play progress: </string>
+    <string name="tips_add_camera_type_wireless_desc">Add camera by 2.4GHz Wi-Fi.</string>
+    <string name="tips_add_camera_type_wireless_title">Wireless</string>
+    <string name="tips_add_camera_type_wired_desc">Add camera by Ethernet cable.\n(Only support by Ethernet port device)</string>
+    <string name="tips_add_camera_type_wired_title">Wired</string>
+    <string name="tips_add_camera_fail_title">Wi-Fi Configure Failed</string>
+    <string name="tips_add_camera_fail_1">Notes for Wi-Fi configuration of IP camera:\n1. Please confirm your Wi-Fi is 2.4GHz.\n2. The Wi-Fi Encryption must be WPA/WPA2.\n3. Make sure no unsupported characters＂ \ ` $（$[ $ included in Wi-Fi password and SSID.\n4. DHCP is enabled in Router.\n5. Please keep camera near to your router &#038; your phone and connect to stable network.\n6. The indoor camera will beep when configuring Wi-Fi, please turn up phone volume for better configuration. If you need configure an outdoor IP camera, please power the camera and press the reset button about 10 seconds to restore factory settings before configuration.</string>
+    <string name="tips_add_camera_fail_2">Notes for Wi-Fi configuration of IP camera:\n1. Please make sure your Wi-Fi password is conrrect.\n2. Please confirm your Wi-Fi is 2.4GHz.\n3. DHCP is enabled in Router.\n4. Please keep camera near to your router &#038; your phone and connect to stable network.\n</string>
 
     <string name="dialog_msg_strict_modify_pwd">Your camera [%s] uses default password, please change the password for security.</string>
     <!-- 分享 -->
@@ -258,6 +267,9 @@
     <string name="dialog_msg_ftptest_falied">Test failed, please check your FTP settings.</string>
     <string name="dialog_msg_record_selectdownload">Please select the record.</string>
     <string name="dialog_msg_download_complete">Download complete, you can view downloaded videos under this path: Image - Video - Download</string>
+    <string name="dialog_msg_add_camera_connected">Camera is online, please enter its password to add.</string>
+
+
 
     <string name="btn_config_wifi">Configure Wi-Fi</string>
     <string name="btn_manually_add_camera">Manually add</string>
@@ -323,13 +335,7 @@
     <string name="alert_wifi_config_fail">Wi-Fi config failed, please check your password and try again</string>
     <string name="alert_device_time_setting_reboot_camera">Change timezone daylight setting will reboot device</string>
 
-
     <string name="alert_recording_time_range">15&#8211;%d seconds time range </string>
-    <!--<string name="alert_all_field_can_not_empty">All fields can not be empty.</string>-->
-    <!--<string name="alert_old_password_is_wrong">The old password is wrong.</string>-->
-    <!--<string name="alert_new_passwords_do_not_match">New passwords do not match.</string>-->
-    <!--<string name="alert_new_passwords_contain_special">The new password contains special characters.</string>-->
-    <!--<string name="tips_modify_security_code_ok">Modify security code successfully, and it will reconnect later.</string>-->
 
     <string name="hint_camera_oldpassword">Old Password</string>
     <string name="hint_camera_newpassword">New Password</string>
@@ -341,9 +347,9 @@
     <string name="hint_input_camera_uid">Camera UID</string>
     <string name="hint_input_camera_name">Camera Name</string>
 
-    <string name="tips_modify_camera_pwd">Please make sure your password length is 6-12 characters and contains at least two combinations of below characters.\n    1.capital\n    2.small letter\n    3.number\n    4.special character：~!@$%^()_-,|/*.</string>
+    <string name="tips_modify_camera_pwd">Please make sure your password length is 6&#8211;12 characters and contains at least two combinations of below characters.\n    1.capital\n    2.small letter\n    3.number\n    4.special character：~!@$%^()_-,|/*.</string>
     <string name="tips_connected_internet">Camera has been connected to Internet?</string>
-    <string name="tips_setting_wifi_wait">Configuring Wi-Fi, please wait...</string>
+    <string name="tips_setting_wifi_wait">Configuring Wi-Fi, please wait&#8230;</string>
     <string name="tips_search_lan">Camera On LAN</string>
     <string name="tips_setting_succ">setting successfully </string>
     <string name="tips_setting_failed">setting failed </string>
@@ -353,12 +359,12 @@
     <string name="tips_preset_set_fail">Preset setting failed</string>
     <string name="tips_preset_call_fail">Preset calling failed</string>
     <string name="tips_preset_call_succ">Preset calling successfully</string>
-    <string name="tips_rebooting">Rebooting...</string>
-    <string name="tips_reseting">Resetting...</string>
-    <string name="tips_upgrading">Upgrading...</string>
-    <string name="tips_rebooting_wait">Rebooting...</string>
-    <string name="tips_reseting_wait">Resetting...</string>
-    <string name="tips_upgrading_wait">Upgrading...</string>
+    <string name="tips_rebooting">Rebooting&#8230;</string>
+    <string name="tips_reseting">Resetting&#8230;</string>
+    <string name="tips_upgrading">Upgrading&#8230;</string>
+    <string name="tips_rebooting_wait">Rebooting&#8230;</string>
+    <string name="tips_reseting_wait">Resetting&#8230;</string>
+    <string name="tips_upgrading_wait">Upgrading&#8230;</string>
     <string name="tips_upgrading_percent">Upgrading %s%%</string>
     <string name="tips_no_sdcard">No SDCard found in your device.</string>
     <string name="tip_alear_dowm">The video has been downloaded yet</string>
@@ -417,7 +423,7 @@
     <string name="option_search_custom">Custom</string>
 
 
-    <string name="camera_state_connecting">Connecting...</string>
+    <string name="camera_state_connecting">Connecting&#8230;</string>
     <string name="camera_state_connected">Online</string>
     <string name="camera_state_disconnect">Disconnected</string>
     <string name="camera_state_passwordWrong">Wrong Password</string>

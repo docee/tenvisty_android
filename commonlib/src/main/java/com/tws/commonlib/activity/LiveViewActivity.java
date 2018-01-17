@@ -412,6 +412,12 @@ public class LiveViewActivity extends BaseActivity implements
             txt_state.setText(mCamera.getCameraStateDesc());
         }
         initBtn();
+        if(videoWidth != 0 && videoHeight != 0) {
+            TextView txt_videoQuality = (TextView) findViewById(R.id.txt_videoQuality);
+            if (txt_videoQuality != null) {
+                txt_videoQuality.setText(String.format("%d x %d", videoWidth, videoHeight));
+            }
+        }
 
     }
 

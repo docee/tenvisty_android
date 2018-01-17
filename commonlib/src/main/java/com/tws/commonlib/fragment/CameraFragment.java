@@ -632,6 +632,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     @Override
     public void onResume() {
         super.onResume();
+        TwsDataValue.setTryConnectcamera(null);
         refreshTitle();
         refreshItems();
         for (IMyCamera camera : TwsDataValue.cameraList()) {
