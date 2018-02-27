@@ -330,12 +330,13 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         if (view != null) {
             TextView txt_title = view.findViewById(R.id.txt_title);
             if(txt_title != null) {
-                if(TwsDataValue.cameraList().size() > 0) {
-                    txt_title.setText(getString(R.string.title_camera_list) + String.format("(%d)", TwsDataValue.cameraList().size()));
-                }
-                else{
-                    txt_title.setText(getString(R.string.title_camera_list));
-                }
+                txt_title.setText(getString(R.string.title_camera_list) + String.format("(%d)", TwsDataValue.cameraList().size()));
+//                if(TwsDataValue.cameraList().size() > 0) {
+//                    txt_title.setText(getString(R.string.title_camera_list) + String.format("(%d)", TwsDataValue.cameraList().size()));
+//                }
+//                else{
+//                    txt_title.setText(getString(R.string.title_camera_list));
+//                }
             }
         }
     }

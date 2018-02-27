@@ -1,9 +1,11 @@
 package com.tws.commonlib.base;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentValues;
@@ -15,6 +17,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
@@ -684,13 +687,55 @@ public class TwsTools {
         return id * 200;
     }
 
+    @SuppressLint("WrongConstant")
     public static int showAlarmNotification(Context context, String uid, int evtType, long evtTime) {
+//        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+//            String channelID = "12";
+////
+//            String channelName = "channel_name";
+//
+//            @SuppressLint("WrongConstant") NotificationChannel channel = null;
+//            channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+//            channel.setDescription("description");
+//            channel.enableLights(true);
+//            channel.setLightColor(Color.RED);
+//            channel.enableVibration(true);
+//            channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+//            NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+//            manager.createNotificationChannel(channel);
+//
+//            Notification.Builder builder =new Notification.Builder(context);
+//
+//            builder.setContentText("content");
+//            builder.setContentTitle("title");
+//
+////创建通知时指定channelID
+//
+//            builder.setChannelId(channelID);
+//            builder.setSmallIcon(MyConfig.getAppIconSource());
+//            builder.setAutoCancel(true);
+//            builder.setWhen(System.currentTimeMillis());
+//            Intent intent = new Intent(context, com.tws.commonlib.start.MainActivity.class);
+//            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, "aaaaaaaaaabbbbbbbbbb");
+//            intent.putExtra("eventTime", evtTime);
+//            int notificationId = 111;
+//            PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId + evtType, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+//            builder.setContentIntent(pendingIntent);
+//            Notification notification = builder.build();
+//
+//            manager.notify("aaaaaaaaaabbbbbbbbbb",0,notification);
+//            Intent newIntent = new Intent();
+//            newIntent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
+//            newIntent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+//            context.sendBroadcast(newIntent);
+//        }
+
 
         try {
             IMyCamera camera = null;
-            for (IMyCamera _caemra : TwsDataValue.cameraList()) {
-                if (uid != null && uid.equals(_caemra.getUid())) {
-                    camera = _caemra;
+            for (IMyCamera _camera : TwsDataValue.cameraList()) {
+                if (uid != null && uid.equals(_camera.getUid())) {
+                    camera = _camera;
                     break;
                 }
             }
@@ -704,7 +749,24 @@ public class TwsTools {
             }
             String[] alarmList = context.getResources().getStringArray(R.array.tips_alarm_list_array);
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+            NotificationCompat.Builder builder = null;
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                String channelID = MyConfig.getPackageName();
+                String channelName = MyConfig.getAppName();
+                builder = new NotificationCompat.Builder(context,channelID);
+                @SuppressLint("WrongConstant") NotificationChannel channel = null;
+                channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
+                channel.setDescription(alarmList[0]);
+                channel.enableLights(true);
+                channel.setLightColor(Color.RED);
+                channel.enableVibration(true);
+                channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+                manager.createNotificationChannel(channel);
+                builder.setChannelId(channelID);
+            }
+            else{
+                builder = new NotificationCompat.Builder(context);
+            }
 //            if(alarmList[evtType] == null){
 //
 //            }

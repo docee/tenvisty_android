@@ -2,6 +2,7 @@ package com.google.zxing.activity;
 
 import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.database.Cursor;
@@ -12,6 +13,7 @@ import android.hardware.Camera;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -50,6 +52,7 @@ import com.tws.commonlib.activity.AddCameraInputUidActivity;
 import com.tws.commonlib.activity.SaveCameraActivity;
 import com.tws.commonlib.activity.SearchCameraActivity;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 
@@ -385,6 +388,20 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                 handler.sendEmptyMessageDelayed(R.id.restart_preview, 5000);
                 return;
             }
+            else{
+                boolean duplicated = false;
+                for (IMyCamera camera_ : TwsDataValue.cameraList()) {
+                    if (resultString.equalsIgnoreCase(camera_.getUid())) {
+                        duplicated = true;
+                        break;
+                    }
+                }
+                if (duplicated) {
+                    Toast.makeText(CaptureActivity.this, getString(R.string.alert_camera_exist), Toast.LENGTH_SHORT).show();
+                    handler.sendEmptyMessageDelayed(R.id.restart_preview, 5000);
+                    return;
+                }
+            }
             Intent resultIntent = new Intent();
             Bundle bundle = new Bundle();
             bundle.putString(INTENT_EXTRA_KEY_QR_SCAN, resultString);
@@ -398,18 +415,47 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
         CaptureActivity.this.finish();
     }
 
-    private void initCamera(SurfaceHolder surfaceHolder) {
-        try {
-            CameraManager.get().openDriver(surfaceHolder);
-        } catch (IOException ioe) {
-            return;
-        } catch (RuntimeException e) {
-            return;
-        }
-        if (handler == null) {
-            handler = new CaptureActivityHandler(this, decodeFormats,
-                    characterSet);
-        }
+    private void initCamera(final SurfaceHolder surfaceHolder) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... arg0) {
+                if (isCancelled()) {
+                    return null;
+                }
+                try {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            try {
+                                CameraManager.get().openDriver(surfaceHolder);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }  catch (RuntimeException e) {
+                    return null;
+                }
+                if (handler == null) {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            handler = new CaptureActivityHandler(CaptureActivity.this, decodeFormats,
+                                    characterSet);
+                        }
+                    });
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                super.onPostExecute(result);
+            }
+        }.execute();
+
     }
 
     @Override
@@ -422,6 +468,7 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     public void surfaceCreated(SurfaceHolder holder) {
         if (!hasSurface) {
             hasSurface = true;
+
             initCamera(holder);
         }
 

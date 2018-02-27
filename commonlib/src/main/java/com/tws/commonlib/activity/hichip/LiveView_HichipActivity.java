@@ -55,6 +55,7 @@ import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.IPlayStateListener;
 import com.tws.commonlib.bean.TwsDataValue;
+import com.tws.commonlib.bean.TwsSessionState;
 
 import java.io.File;
 import java.util.Timer;
@@ -292,6 +293,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         monitor = (HiLiveViewGLMonitor) findViewById(R.id.monitor);
         monitor.setOnTouchListener(this);
         monitor.setCamera(mCamera);
+        monitor.resizeVideoWrapper(LiveView_HichipActivity.this.mCamera);
         mCamera.setLiveShowMonitor(monitor);
 //        if (videoHeigth != 0 && videoWidth != 0) {
 //            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
@@ -321,7 +323,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         if (((HichipCamera) camera).hasListen(LiveView_HichipActivity.this)) {
             getBtn_listen().setVisibility(View.VISIBLE);
         } else {
-            getBtn_talk().setVisibility(View.INVISIBLE);
+            getBtn_listen().setVisibility(View.INVISIBLE);
         }
         if (findViewById(R.id.ll_talk) != null) {
             if (((HichipCamera) camera).hasListen(LiveView_HichipActivity.this)) {
@@ -388,6 +390,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         monitor = (HiLiveViewGLMonitor) findViewById(R.id.monitor);
         monitor.setOnTouchListener(this);
         monitor.setCamera(mCamera);
+        monitor.resizeVideoWrapper(LiveView_HichipActivity.this.mCamera);
         mCamera.setLiveShowMonitor(monitor);
 //        if (videoHeigth != 0 && videoWidth != 0) {
 //            monitor.saveMatrix(0, 0, videoWidth, videoHeigth);
@@ -584,10 +587,10 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     });
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
-                    if (requestCode == NSCamera.CONNECTION_STATE_CONNECTED) {
+                    if (requestCode == TwsSessionState.CONNECTION_STATE_CONNECTED) {
                         mCamera.startLiveShow(mCamera.getVideoQuality(), monitor);
-                    } else if (requestCode == NSCamera.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
-                            NSCamera.CONNECTION_STATE_DISCONNECTED || requestCode == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
+                    } else if (requestCode == TwsSessionState.CONNECTION_STATE_CONNECT_FAILED || requestCode ==
+                            TwsSessionState.CONNECTION_STATE_DISCONNECTED || requestCode == TwsSessionState.CONNECTION_STATE_UNKNOWN_DEVICE) {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
@@ -833,13 +836,24 @@ public class LiveView_HichipActivity extends BaseActivity implements
                         if (!playState.isRecording()) {
                             if (playState.getVideoQuality() != position) {
                                 playState.setVideoQuality(position);
-
-                                mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
+                                runOnUiThread(new Runnable() {
                                     @Override
-                                    public void onPosted(IMyCamera c, Object data) {
-                                        mCamera.stop();
+                                    public void run() {
+                                        videoLoadProgressBar.setVisibility(View.VISIBLE);
                                     }
                                 });
+                                mCamera.asyncStop(new IMyCamera.TaskExecute() {
+                                    @Override
+                                    public void onPosted(IMyCamera camera, Object data) {
+                                        mCamera.start();
+                                    }
+                                });
+//                                mCamera.asyncStopVideo(new IMyCamera.TaskExecute() {
+//                                    @Override
+//                                    public void onPosted(IMyCamera c, Object data) {
+//                                        mCamera.stop();
+//                                    }
+//                                });
                             }
                         }
                         popupWindow.dismiss();

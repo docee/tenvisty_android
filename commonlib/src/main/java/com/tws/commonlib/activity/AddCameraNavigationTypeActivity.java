@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.View;
 
 import com.google.zxing.activity.CaptureActivity;
+import com.google.zxing.decoding.Intents;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IMyCamera;
@@ -27,6 +28,7 @@ public class AddCameraNavigationTypeActivity extends BaseActivity implements Vie
     public static final int UID_FROM_SCANQRCODE = 1;
     public static final int UID_FROM_INPUT_MANUAL = 2;
     private int uidFrom;
+    private  boolean needScanQRCode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,7 @@ public class AddCameraNavigationTypeActivity extends BaseActivity implements Vie
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent intent) {
-
+        needScanQRCode = false;
         if (requestCode == REQUEST_CODE_GETUID_BY_SCAN_BARCODE) {//扫描二维码结果
 
             if (resultCode == CaptureActivity.RESULT_CODE_QR_SCAN) {
@@ -99,12 +101,14 @@ public class AddCameraNavigationTypeActivity extends BaseActivity implements Vie
         } else if (requestCode == REQUEST_CODE_GETUID_BY_SEARCHLAN) {
             if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
-                finish();
+                needScanQRCode = true;
+                //finish();
             }
         } else if (requestCode == REQUEST_CODE_GETUID_BY_INPUT_UID_MANUALLY) {
             if (resultCode == RESULT_CANCELED) {
                 // Handle cancel
-                finish();
+               // finish();
+                needScanQRCode = true;
             } else if (resultCode == RESULT_OK) {
                 if (intent != null) {
                     this.uid = intent.getStringExtra(TwsDataValue.EXTRA_KEY_UID);
@@ -125,6 +129,19 @@ public class AddCameraNavigationTypeActivity extends BaseActivity implements Vie
         IMyCamera camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getString(R.string.hint_input_camera_name), uid, "admin", "admin");
         TwsDataValue.setTryConnectcamera(camera);
         camera.connect();
+    }
+
+    public void onResume(){
+        super.onResume();
+
+        if(needScanQRCode){
+            ScanQCR();
+        }
+    }
+
+    public  void  onPause(){
+        super.onPause();
+        needScanQRCode = true;
     }
 
 }

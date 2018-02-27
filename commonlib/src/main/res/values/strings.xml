@@ -79,7 +79,7 @@
     <string name="title_sub_device_time">Device Time</string>
     <string name="title_sub_device_timezone">Device Time Zone</string>
     <string name="title_camera_setting_record_timing">Timing Record</string>
-    <string name="title_camera_setting_audio">Audiio Setting</string>
+    <string name="title_camera_setting_audio">Audio Setting</string>
 
     <string name="lab_first_add_camera">tap to add camera</string>
     <string name="lab_password_old">Old</string>
@@ -233,7 +233,7 @@
     <string name="tips_add_camera_type_wired_title">Wired</string>
     <string name="tips_add_camera_fail_title">Wi-Fi Configure Failed</string>
     <string name="tips_add_camera_fail_1">Notes for Wi-Fi configuration of IP camera:\n1. Please confirm your Wi-Fi is 2.4GHz.\n2. The Wi-Fi Encryption must be WPA/WPA2.\n3. Make sure no unsupported characters＂ \ ` $（$[ $ included in Wi-Fi password and SSID.\n4. DHCP is enabled in Router.\n5. Please keep camera near to your router &#038; your phone and connect to stable network.\n6. The indoor camera will beep when configuring Wi-Fi, please turn up phone volume for better configuration. If you need configure an outdoor IP camera, please power the camera and press the reset button about 10 seconds to restore factory settings before configuration.</string>
-    <string name="tips_add_camera_fail_2">Notes for Wi-Fi configuration of IP camera:\n1. Please make sure your Wi-Fi password is conrrect.\n2. Please confirm your Wi-Fi is 2.4GHz.\n3. DHCP is enabled in Router.\n4. Please keep camera near to your router &#038; your phone and connect to stable network.\n</string>
+    <string name="tips_add_camera_fail_2">Notes for Wi-Fi configuration of IP camera:\n1. Please make sure your Wi-Fi password is correct.\n2. Please confirm your Wi-Fi is 2.4GHz.\n3. DHCP is enabled in Router.\n4. Please keep camera near to your router &#038; your phone and connect to stable network.\n</string>
 
     <string name="dialog_msg_strict_modify_pwd">Your camera [%s] uses default password, please change the password for security.</string>
     <!-- 分享 -->

@@ -1,17 +1,19 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+    }
     compileSdkVersion 26
     defaultConfig {
         applicationId "com.tws.tenvisty"
         minSdkVersion 14
         targetSdkVersion 26
-        versionCode 25
-        versionName "1.0.3"
+        versionCode 28
+        versionName "1.0.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
         ndk {
-            //根据需要 自行选择添加的对应cpu类型的.so库。
+            //根据需要 自行选择添加的对应cpu类型s的.so库。
             abiFilters 'armeabi'
             // 还可以添加 'x86', 'x86_64', 'mips', 'mips64'
         }
@@ -25,11 +27,10 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support:design:26.+'
     compile 'com.android.support:support-vector-drawable:26.+'

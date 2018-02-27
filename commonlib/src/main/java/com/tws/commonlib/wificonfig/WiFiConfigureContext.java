@@ -38,7 +38,7 @@ public class WiFiConfigureContext {
         this.configList = new ArrayList<BaseConfig>();
         if(type == VOICE_TYPE_FACEBER) {
             this.configList.add(FaceberConfig.singleInstance());
-            this.configList.add(CooConfig.singleInstance());
+            //this.configList.add(CooConfig.singleInstance());
         }
         else if(type == VOICE_TYPE_HICHIP){
             HiVoiceConfig.singleInstance().setContext(context);

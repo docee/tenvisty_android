@@ -62,6 +62,7 @@ import com.tws.commonlib.bean.IDownloadCallback;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
+import com.tws.commonlib.bean.TwsSessionState;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
 import com.tws.commonlib.task.VideoThumbImgTask;
@@ -1168,13 +1169,13 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
                     switch (msg.arg2) {
-                        case NSCamera.CONNECTION_STATE_CONNECTING:
+                        case TwsSessionState.CONNECTION_STATE_CONNECTING:
                             break;
-                        case NSCamera.CONNECTION_STATE_WRONG_PASSWORD:
-                        case NSCamera.CONNECTION_STATE_CONNECT_FAILED:
-                        case NSCamera.CONNECTION_STATE_DISCONNECTED:
-                        case NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE:
-                        case NSCamera.CONNECTION_STATE_TIMEOUT:
+                        case TwsSessionState.CONNECTION_STATE_WRONG_PASSWORD:
+                        case TwsSessionState.CONNECTION_STATE_CONNECT_FAILED:
+                        case TwsSessionState.CONNECTION_STATE_DISCONNECTED:
+                        case TwsSessionState.CONNECTION_STATE_UNKNOWN_DEVICE:
+                        case TwsSessionState.CONNECTION_STATE_TIMEOUT:
 
                             if (eventListView.getAdapter() != null && eventListView.getFooterViewsCount() == 0) {
                                 txt_event_day_top.setVisibility(View.GONE);
@@ -1186,7 +1187,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
                             break;
 
-                        case NSCamera.CONNECTION_STATE_CONNECTED:
+                        case TwsSessionState.CONNECTION_STATE_CONNECTED:
 
                             if (sessionChannel == 0 && eventListView.getAdapter() != null) {
                                 eventListView.removeFooterView(offlineView);

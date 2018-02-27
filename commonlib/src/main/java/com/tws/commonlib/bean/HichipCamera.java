@@ -230,20 +230,32 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         }
     }
 
+    AsyncTask connectTask;
+
     @Override
     public void connect() {
-        if (getUid() != null && getUid().length() > 4) {
-            String temp = getUid().substring(0, 5);
-            String str = getUid().substring(0, 4);
-            if (temp.equalsIgnoreCase("FDTAA") || str.equalsIgnoreCase("DEAA") || str.equalsIgnoreCase("AAES")) {
-                return;
-            } else {
-                super.connect();
-                return;
-            }
-        } else {
-            return;
+        if (connectTask != null) {
+            connectTask.cancel(true);
         }
+        connectTask = new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... voids) {
+                if (getUid() != null && getUid().length() > 4) {
+                    String temp = getUid().substring(0, 5);
+                    String str = getUid().substring(0, 4);
+                    if (temp.equalsIgnoreCase("FDTAA") || str.equalsIgnoreCase("DEAA") || str.equalsIgnoreCase("AAES")) {
+                        return null;
+                    } else {
+                        HichipCamera.super.connect();
+                        return null;
+                    }
+                } else {
+                    return null;
+                }
+            }
+        }.execute();
+
     }
 
     AsyncTask startTask;
@@ -266,9 +278,12 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
         }.execute();
     }
 
+    long stopTime;
+
     @Override
     public void stop() {
         setPlaying(false);
+        stopTime = System.currentTimeMillis();
         super.disconnect();
     }
 
@@ -297,6 +312,13 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
 
     }
 
+    public void startVideo(HiGLMonitor monitor) {
+        HichipCamera.this.startLiveShow(HichipCamera.this.getVideoQuality(), monitor);
+        System.out.println("camera video start" + HichipCamera.this.getUid());
+        setPlaying(true);
+    }
+
+
     @Override
     public void asyncStartVideo(TaskExecute te) {
 
@@ -315,9 +337,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
                 if (isCancelled()) {
                     return null;
                 }
-                HichipCamera.this.startLiveShow(HichipCamera.this.getVideoQuality(), monitor);
-                System.out.println("camera video start" + HichipCamera.this.getUid());
-                setPlaying(true);
+                HichipCamera.this.startVideo(monitor);
                 if (te != null) {
                     te.onPosted(HichipCamera.this, null);
                 }
@@ -933,15 +953,18 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     @Override
     public void receiveSessionState(HiCamera hiCamera, int connect_state) {
         int accState = connect_state;
+        if (accState == HiCamera.CAMERA_CONNECTION_STATE_DISCONNECTED && System.currentTimeMillis() - stopTime < 2000) {
+            return;
+        }
         if (SessionStateHashMap.containsKey(connect_state)) {
             accState = (int) SessionStateHashMap.get(connect_state);
         }
-        if (accState == NSCamera.CONNECTION_STATE_CONNECTED) {
+        if (accState == TwsSessionState.CONNECTION_STATE_CONNECTED) {
             cameraLogin();
         }
-        if ((accState == NSCamera.CONNECTION_STATE_CONNECTED) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
+        if ((accState == TwsSessionState.CONNECTION_STATE_CONNECTED) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
             cameraState = CameraState.None;
-        } else if (accState == NSCamera.CONNECTION_STATE_DISCONNECTED) {
+        } else if (accState == TwsSessionState.CONNECTION_STATE_DISCONNECTED) {
             if (cameraState == CameraState.WillRebooting) {
                 cameraState = CameraState.Rebooting;
                 beginRebootTime = System.currentTimeMillis();

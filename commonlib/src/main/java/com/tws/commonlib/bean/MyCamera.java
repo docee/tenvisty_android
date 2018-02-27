@@ -796,11 +796,24 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         super.connect(uid);
         mUID = uid;
     }
+
+    AsyncTask connectTask2;
+
     @Override
     public void connect() {
-        super.connect(getUid());
-        mUID = getUid();
+        if (connectTask2 != null) {
+            connectTask2.cancel(true);
+        }
+        connectTask2 = new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                MyCamera.super.connect(getUid());
+                mUID = getUid();
+                return null;
+            }
+        }.execute();
     }
+
     AsyncTask connectTask;
 
     public void asyncConnect(final String uid) {
@@ -1149,7 +1162,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                     phoneCal.setTimeInMillis(System.currentTimeMillis());
                     byte[] phoneTime = AVIOCTRLDEFs.STimeDay.parseContent(phoneCal.get(Calendar.YEAR), phoneCal.get(Calendar.MONTH) + 1, phoneCal.get(Calendar.DAY_OF_MONTH),
                             phoneCal.get(Calendar.DAY_OF_WEEK), phoneCal.get(Calendar.HOUR_OF_DAY), phoneCal.get(Calendar.MINUTE), phoneCal.get(Calendar.SECOND));
-                    byte[] data2 = AVIOCTRLDEFs.SMsgAVIoctrlTime.parseContent(phoneTime, 0, TwsDataValue.NTP_SERVER, 1);
+                    byte[] data2 = AVIOCTRLDEFs.SMsgAVIoctrlTime.parseContent(phoneTime, 1, TwsDataValue.NTP_SERVER, 1);
                     this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_REQ, data2);
                 }
             }
@@ -1294,11 +1307,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     public void openPush(final CameraClient.ServerResultListener2 succListner, final CameraClient.ServerResultListener2 errorListner) {
 
-        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty())&&(TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
-            if(TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
+        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) && (TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
+            if (TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
                 MyCamera.initXGPush(App.getContext());
-            }
-            else{
+            } else {
                 MyCamera.initUMPush(App.getContext());
             }
             return;
@@ -1335,11 +1347,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         manager.cancel(this.getUid(), intId);
         this.pushNotificationStatus = 0;
         this.sync2Db(App.getContext());
-        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty())&&(TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
-            if(TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
+        if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) && (TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
+            if (TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
                 MyCamera.initXGPush(App.getContext());
-            }
-            else{
+            } else {
                 MyCamera.initUMPush(App.getContext());
             }
             return;
@@ -1402,7 +1413,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public static void initXGPush(final Context context) {
-        if(MyConfig.getPushSdkIniteState() == 1){
+        if (MyConfig.getPushSdkIniteState() == 1) {
             return;
         }
         MyConfig.setPushSdkIniteState(1);
@@ -1537,7 +1548,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public boolean isSessionConnected() {
-        return this.connect_state == NSCamera.CONNECTION_STATE_FIND_DEVICE ||  isConnected() || isPasswordWrong();
+        return this.connect_state == NSCamera.CONNECTION_STATE_FIND_DEVICE || isConnected() || isPasswordWrong();
     }
 
     public void saveSnapShot(final int channel, final String filePath, final String fileName, final TaskExecute te) {

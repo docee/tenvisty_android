@@ -73,7 +73,7 @@ public class SensitivitySetting_HichipActivity extends BaseActivity implements I
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 adapter.setPos(position);
                 adapter.notifyDataSetChanged();
-                setSensitivity(4 - position);
+                setSensitivity(TwsDataValue.SensValues.length - 1 - position);
             }
         });
         //adapter.notifyDataSetChanged();
@@ -213,18 +213,20 @@ public class SensitivitySetting_HichipActivity extends BaseActivity implements I
                     {
                         md_param = md_param_temp;
                         if(md_param.struArea.u32Enable==0){
-                            sensLevel = 4;
+                            sensLevel = 0;
                         }
                         else{
                             int sensitivity = md_param.struArea.u32Sensi;
                             for(int i=0;i<TwsDataValue.SensValues.length;i++){
                                 if(sensitivity >= TwsDataValue.SensValues[i]){
-                                    sensLevel = i;
+                                    sensLevel = TwsDataValue.SensValues.length - 1 - i;
                                     break;
                                 }
                             }
                         }
 
+                        adapter.setPos(TwsDataValue.SensValues.length - 1 - sensLevel);
+                        adapter.notifyDataSetChanged();
                     }
                     else if(md_param_temp.struArea.u32Area == HiChipDefines.HI_P2P_MOTION_AREA_2) {
                         md_param2 = md_param_temp;
@@ -235,8 +237,6 @@ public class SensitivitySetting_HichipActivity extends BaseActivity implements I
                     else if(md_param_temp.struArea.u32Area == HiChipDefines.HI_P2P_MOTION_AREA_4) {
                         md_param4 = md_param_temp;
                     }
-                    adapter.setPos(sensLevel);
-                    adapter.notifyDataSetChanged();
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETMOTIONDETECT_RESP:
                     if (msg.arg1 == 0) {
