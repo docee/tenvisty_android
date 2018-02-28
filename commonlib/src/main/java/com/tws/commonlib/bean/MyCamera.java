@@ -891,7 +891,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public void setNickName(String nickName) {
-        mName = name;
+        mName = nickName;
         this.name = nickName;
     }
 

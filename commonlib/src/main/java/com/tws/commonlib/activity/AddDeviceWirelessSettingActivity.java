@@ -169,7 +169,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
 
                     if (camera == null) {
                         dev_uid = UID;
-                        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
+                        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.hint_input_camera_name).toString(), dev_uid, "admin", "admin");
                         camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
                     }
 
@@ -245,7 +245,7 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
 
     void connectCamera() {
         /* add value to server data base */
-        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.camera).toString(), dev_uid, "admin", "admin");
+        camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(getText(R.string.hint_input_camera_name).toString(), dev_uid, "admin", "admin");
         camera.setCameraModel(NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
         //看是否能正确启动摄像机
         camera.registerIOTCListener(this);

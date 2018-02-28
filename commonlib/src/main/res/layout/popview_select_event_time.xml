@@ -22,8 +22,8 @@
             android:timePickerMode = "spinner"
         android:id="@+id/time_from_picker"
         android:layout_width="wrap_content"
+            android:layout_height="160dp"
             android:theme="@android:style/Theme.Holo.Light"
-        android:layout_height="wrap_content"
         android:layout_gravity="center">
             
         </TimePicker>
@@ -42,7 +42,7 @@
             android:theme="@android:style/Theme.Holo.Light"
         android:id="@+id/time_to_picker"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="160dp"
         android:layout_gravity="center">
             
         </TimePicker>
