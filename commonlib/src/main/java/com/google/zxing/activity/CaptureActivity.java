@@ -49,6 +49,7 @@ import com.google.zxing.view.ViewfinderView;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.AddCameraActivity;
 import com.tws.commonlib.activity.AddCameraInputUidActivity;
+import com.tws.commonlib.activity.AddCameraNavigationTypeActivity;
 import com.tws.commonlib.activity.SaveCameraActivity;
 import com.tws.commonlib.activity.SearchCameraActivity;
 import com.tws.commonlib.base.TwsTools;
@@ -141,16 +142,20 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
             @Override
             public void onClick(View view) {
                 inactivityTimer.onActivity();
-                setResult(RESULT_CODE_INPUT_UID_MANUALLY);
-                CaptureActivity.this.finish();
+//                setResult(RESULT_CODE_INPUT_UID_MANUALLY);
+//                CaptureActivity.this.finish();
+                Intent intent2 = new Intent();
+                intent2.setClass(CaptureActivity.this, AddCameraInputUidActivity.class);
+                startActivity(intent2);
             }
         });
         findViewById(R.id.image_search).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 inactivityTimer.onActivity();
-                setResult(RESULT_CODE_SEARCH_LAN);
-                CaptureActivity.this.finish();
+                Intent intent2 = new Intent();
+                intent2.setClass(CaptureActivity.this, SearchCameraActivity.class);
+                startActivity(intent2);
             }
         });
         Intent intent = this.getIntent();
@@ -402,17 +407,22 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                     return;
                 }
             }
-            Intent resultIntent = new Intent();
-            Bundle bundle = new Bundle();
-            bundle.putString(INTENT_EXTRA_KEY_QR_SCAN, resultString);
+
+            Intent intent = new Intent();
+            intent.putExtra(TwsDataValue.EXTRA_KEY_UID, resultString);
+            intent.setClass(this, AddCameraNavigationTypeActivity.class);
+            startActivity(intent);
+//            Intent resultIntent = new Intent();
+//            Bundle bundle = new Bundle();
+//            bundle.putString(INTENT_EXTRA_KEY_QR_SCAN, resultString);
             System.out.println("sssssssssssssssss scan 0 = " + resultString);
             // 不能使用Intent传递大于40kb的bitmap，可以使用一个单例对象存储这个bitmap
 //            bundle.putParcelable("bitmap", barcode);
 //            Logger.d("saomiao",resultString);
-            resultIntent.putExtras(bundle);
-            this.setResult(RESULT_CODE_QR_SCAN, resultIntent);
+//            resultIntent.putExtras(bundle);
+//            this.setResult(RESULT_CODE_QR_SCAN, resultIntent);
         }
-        CaptureActivity.this.finish();
+       // CaptureActivity.this.finish();
     }
 
     private void initCamera(final SurfaceHolder surfaceHolder) {

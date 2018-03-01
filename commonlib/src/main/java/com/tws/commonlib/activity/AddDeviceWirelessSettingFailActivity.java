@@ -58,7 +58,7 @@ public class AddDeviceWirelessSettingFailActivity extends BaseActivity {
                             go2Help();
                             break;
                         case NavigationBar.NAVIGATION_BUTTON_LEFT:
-                            back2Activity(AddCameraNavigationTypeActivity.class);
+                            back2Activity(AddDeviceWirelessActivity.class);
                             break;
                     }
                 }

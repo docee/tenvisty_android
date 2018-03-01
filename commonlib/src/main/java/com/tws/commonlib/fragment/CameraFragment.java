@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import com.google.zxing.activity.CaptureActivity;
 import com.hichip.tools.HiSinVoiceData;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Packet;
@@ -356,7 +357,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(CameraFragment.this.getActivity(),
-                        AddCameraNavigationTypeActivity.class);
+                        CaptureActivity.class);
                 startActivityForResult(intent, CAMERA_ADD_REQUEST_CODE);
             }
         });
@@ -884,7 +885,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                         cameraView.findViewById(R.id.img_push_alarm).setVisibility(View.VISIBLE);
                                     }
                                     Bitmap snap = c.getSnapshot();
-                                    if (snap == null || !snap.isRecycled()) {
+                                    if (snap == null || snap.isRecycled()) {
                                         if (TwsTools.isSDCardValid()) {
                                             try {
                                                 BitmapFactory.Options opts = new BitmapFactory.Options();

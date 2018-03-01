@@ -88,10 +88,10 @@ public class AddCameraInputUidActivity extends BaseActivity {
                     return;
                 }
             }
-            Intent intent = this.getIntent();
+            Intent intent = new Intent();
             intent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
-            setResult(RESULT_OK, intent);
-            finish();
+            intent.setClass(this, AddCameraNavigationTypeActivity.class);
+            startActivity(intent);
         }
     }
 
