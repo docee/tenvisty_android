@@ -212,6 +212,7 @@
     <string name="tips_camera_list_reenter_password">tap to enter password</string>
     <string name="tips_camera_list_play">tap to live view</string>
     <string name="tips_camera_list_reconnect">tap to reconnect</string>
+    <string name="tips_camera_list_wakeup">tap to wake up</string>
     <string name="tips_wifi_open">Open</string>
     <string name="tips_wifi_encrypted">Encrypted</string>
     <string name="tips_wifi_connected">Connected</string>
@@ -427,6 +428,7 @@
     <string name="camera_state_connected">Online</string>
     <string name="camera_state_disconnect">Disconnected</string>
     <string name="camera_state_passwordWrong">Wrong Password</string>
+    <string name="camera_state_sleep">Sleeping</string>
 
     <string name="spinner_photos">Photos</string>
     <string name="spinner_videos">Videos</string>

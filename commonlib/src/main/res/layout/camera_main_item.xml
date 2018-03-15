@@ -182,6 +182,30 @@
 
         </RelativeLayout>
         <RelativeLayout
+            android:id="@+id/ll_tip_sleep"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:gravity="center"
+            android:visibility="gone">
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:text="@string/tips_camera_list_wakeup"
+                android:gravity="center"
+                android:paddingTop="70dp"
+                android:textColor="@color/white" />
+            <ImageView
+                android:id="@+id/btn_wakeup"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="center"
+                android:clickable="true"
+                android:focusableInTouchMode="true"
+                app:srcCompat="@drawable/ic_refresh" />
+
+        </RelativeLayout>
+        <RelativeLayout
             android:id="@+id/ll_tip_password_wrong"
             android:layout_width="match_parent"
             android:layout_height="match_parent"

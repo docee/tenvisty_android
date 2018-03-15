@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -32,9 +33,11 @@ import com.encoder.util.EncG726;
 import com.encoder.util.EncSpeex;
 //import com.hichip.coder.H264Decoder;
 //import com.hichip.coder.HiCoderBitmap;
+import com.hichip.base.HiLog;
 import com.hichip.coder.EncMp4;
 import com.misc.RefInteger;
 import com.misc.objc.CFRunLoop;
+import com.recorder.util.mp4Recorder;
 import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlAVStream;
 import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlCurrentFlowInfo;
 import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlGetFlowInfoResp;
@@ -1605,11 +1608,7 @@ public class Camera extends NSCamera {
                                 mAVChannel.VideoFrameQueue.addLast(frame);
                                 if (mAVChannel.mVideoPlayProperty.isRecording) {
                                     //FrameData record_frame = new FrameData(buf, nRet1);
-                                    if (!mAVChannel.RecordFrameQueue.isFirstIFrame() && frame.isIFrame()) {
-                                        mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
-                                    } else if (!mAVChannel.RecordFrameQueue.isFirstIFrame()) {
-                                        mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
-                                    }
+                                    mAVChannel.RecordFrameQueue.addLast(new AVFrame(pFrmNo[0], AVFrame.FRM_STATE_COMPLETE, pFrmInfoBuf.clone(), frameData.clone(), nReadSize));
 
                                 } else {
 //                                    if (frame.isIFrame()) {
@@ -2182,6 +2181,7 @@ public class Camera extends NSCamera {
             long firstTimeStampFromLocal = 0;
             long sleepTime = 0;
 
+            byte[] pcmbuf = new byte[320];
 
             while (isRunning) {
                 if (mAVChannel.AudioFrameQueue.getCount() > 0 && !mAVChannel.isPausePlay()) {
@@ -2261,6 +2261,10 @@ public class Camera extends NSCamera {
                     } else if (nCodecId == AVFrame.MEDIA_CODEC_AUDIO_PCM) {
                         L.i("====Camera=Decode==", "nCodecId == AVFrame.MEDIA_CODEC_AUDIO_PCM");
                         mAudioTrack.write(frame.frmData, 0, frame.getFrmSize());
+
+                        if (mAVChannel.mVideoPlayProperty.isRecording) {
+                            mAVChannel.RecordFrameQueue.addLast(new AVFrame(frame.getFrmNo(), AVFrame.FRM_STATE_COMPLETE, frame.frmHead, frame.frmData, (int) frame.getFrmSize()));
+                        }
                     } else if (nCodecId == AVFrame.MEDIA_CODEC_AUDIO_G726) {
                         Log.i("====Camera=Decode==", "nCodecId == AVFrame.MEDIA_CODEC_AUDIO_G726");
                         DecG726.g726_decode(frame.frmData, frame.getFrmSize(), G726OutBuf, G726OutBufLen);
@@ -2273,8 +2277,33 @@ public class Camera extends NSCamera {
                         nFPS = ((nSamplerate * (nChannel == AVFrame.AUDIO_CHANNEL_MONO ? 1 : 2) * (nDatabits == AVFrame.AUDIO_DATABITS_8 ? 8 : 16)) / 8) / (int) G726OutBufLen[0];
                     } else if (nCodecId == AVFrame.MEDIA_CODEC_AUDIO_G711) {
                         //DecG726.g726_decode(recvBuf, nReadSize, G726OutBuf, G726OutBufLen);
+                        //G711OutBufLen[0] = DecEncG711.Decode(frame.frmData, frame.getFrmSize(), G711OutBuf);
+                        // mAudioTrack.write(G711OutBuf, 0, (int) G711OutBufLen[0]);
+
                         G711OutBufLen[0] = DecEncG711.Decode(frame.frmData, frame.getFrmSize(), G711OutBuf);
                         mAudioTrack.write(G711OutBuf, 0, (int) G711OutBufLen[0]);
+                        if (mAVChannel.mVideoPlayProperty.isRecording) {
+                            mAVChannel.RecordFrameQueue.addLast(new AVFrame(frame.getFrmNo(), AVFrame.FRM_STATE_COMPLETE, frame.frmHead, G711OutBuf, (int) G711OutBufLen[0]));
+                        }
+//                        Log.i("rame.getFr222222", frame.getTimeStamp() + "::::" + frame.getFrmSize() + "::::" + 2);
+//                        int pos = 0;
+//                        int index = 0;
+//                        while (true) {
+//                            System.arraycopy(frame.frmData, pos, audioBuffer, 0, frame.getFrmSize() / 2);
+//                            G711OutBufLen[0] = DecEncG711.Decode(audioBuffer, frame.getFrmSize() / 2, G711OutBuf);
+//                            mAudioTrack.write(G711OutBuf, 0, (int) G711OutBufLen[0]);
+//                            pos += frame.getFrmSize() / 2;
+//                            System.arraycopy(G711OutBuf, 0, pcmbuf, 0, 320);
+//                            if (mAVChannel.mVideoPlayProperty.isRecording && G711OutBuf != null && G711OutBufLen[0] > 0) {
+//                                //this.recordingMp4Audio(pcmbuf, frame.getTimeStamp()   + pos / frame.getFrmSize() * 20, frame);
+//                                this.recordingMp4Audio(pcmbuf, frame.getTimeStamp() + index * 20, frame);
+//                            }
+//                            if (pos >= frame.getFrmSize()) {
+//                                break;
+//                            }
+//                            index++;
+//                            sleep(15);
+//                        }
 //                        while (true) {
 //                            System.arraycopy(frame.frmData, pos1, audioBuffer, 0, 160);
 //                            G711OutBufLen[0] = DecEncG711.Decode(audioBuffer, 160, G711OutBuf);
@@ -3042,6 +3071,14 @@ public class Camera extends NSCamera {
     private class ThreadRecording extends TwsThread {
         private AVChannel mAVChannel;
         private boolean beginRecord;
+        private int audioOffset = 0;
+        private int lastVideoTimeStamp = 0;
+        private int offset = 80000000;
+        private long firstTime = 0;
+        private long firstFrameType = 0;
+        private int preVideoTime = 0;
+        private int preAudioTime = 0;
+        private mp4Recorder recorder;
 
         public ThreadRecording(AVChannel channel) {
             mAVChannel = channel;
@@ -3074,13 +3111,17 @@ public class Camera extends NSCamera {
                 IRegisterIOTCListener listener = mIOTCListeners.get(i);
                 listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_INITT, mAVChannel.mVideoPlayProperty.recordingPath);
             }
-            while (isRunning && (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0)) {
+            while (isRunning && (mAVChannel.threadDecVideo == null || mAVChannel.width == 0 || mAVChannel.RecordFrameQueue.getCount() == 0  )) {
+//                || !mAVChannel.RecordFrameQueue.isFirstIFrame()
+//                if(mAVChannel.RecordFrameQueue.getCount() > 0 && !mAVChannel.RecordFrameQueue.isFirstIFrame() ){
+//                    mAVChannel.RecordFrameQueue.removeHead();
+//                }
                 this.sleep(33);
             }
             if (isRunning) {
-                EncMp4.HIEncMp4init(handle, mAVChannel.width, mAVChannel.heigth, mAVChannel.mVideoPlayProperty.recordingPath, chipVerion);
+                recorder = new mp4Recorder(mAVChannel.width, mAVChannel.heigth, mAVChannel.mVideoPlayProperty.recordingPath);
+                //EncMp4.HIEncMp4init(handle, mAVChannel.width, mAVChannel.heigth, mAVChannel.mVideoPlayProperty.recordingPath, chipVerion);
             }
-            boolean frameType = false;
             // synchronized (mIOTCListeners) {
             // }
             while (this.isRunning) {
@@ -3095,24 +3136,9 @@ public class Camera extends NSCamera {
                         } else {
                             if (frame.isIFrame()) {
                                 frameType1 = 0;
-                                frameType = true;
                             } else {
                                 frameType1 = 1;
                             }
-                        }
-                        if (!frameType) {
-                            if (mAVChannel.RecordFrameTempQueue.getCount() > 0) {
-                                while (mAVChannel.RecordFrameTempQueue.getCount() > 0) {
-                                    AVFrame preframe = mAVChannel.RecordFrameTempQueue.removeHead();
-                                    int preFrameType = preframe.isIFrame() ? 0 : 1;
-                                    EncMp4.HIEncMp4write(handle[0], preframe.frmData, preframe.getFrmSize(), preFrameType, preframe.getTimeStamp());
-                                    // if (frame.getTimeStamp() - preframe.getTimeStamp() > 2000) {
-                                    //break;
-                                    // }
-                                }
-                                frameType = true;
-                            }
-                            //continue;
                         }
 
                         if (!beginRecord) {
@@ -3122,13 +3148,48 @@ public class Camera extends NSCamera {
                                 listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_BEGIN, mAVChannel.mVideoPlayProperty.recordingPath);
                             }
                         }
-                        int result = EncMp4.HIEncMp4write(handle[0], frame.frmData, frame.getFrmSize(), frameType1, frame.getTimeStamp());
-                        Log.i("Recording", result + "");
+                        if(firstTime == 0){
+                            firstTime = frame.getTimeStamp();
+                            firstFrameType = frameType1;
+                        }
+                        if(frameType1 == 2){
+                            preAudioTime = frame.getTimeStamp();
+                        }
+                        else{
+                            preVideoTime = frame.getTimeStamp();
+                        }
+                        if(preVideoTime  != 0&& preAudioTime != 0&& audioOffset==0){
+                            audioOffset = preVideoTime - preAudioTime;
+                        }
+                        int time = frame.getTimeStamp();
+                        //以音频time_base作为基准
+                        if(firstFrameType == 2 && frameType1 != 2){
+                            time = frame.getTimeStamp() - audioOffset;
+                        }
+                        else if(frameType1 == 2 && firstFrameType != 2){
+                            time =  frame.getTimeStamp() + audioOffset;
+                        }
+                        for (int i = 0; i < mIOTCListeners.size(); i++) {
+                            IRegisterIOTCListener listener = mIOTCListeners.get(i);
+                            listener.receiveRecordingData(Camera.this, mAVChannel.mChannel, RECORD_BEGIN, mAVChannel.mVideoPlayProperty.recordingPath,frameType1,frame.getFrmSize(),frame.frmData);
+                        }
+
+                        if (recorder != null) {
+                            recorder.writeData(frame.frmData, frame.getFrmSize(), frameType1,time);
+                        }
+                        //int result = EncMp4.HIEncMp4write(handle[0], frame.frmData, frame.getFrmSize(), frameType1, time);
+                        Log.i("rame.getFrameFlag()", time + "::::" + frame.getFrmSize() + "::::" + frameType1);
+                        // }
+                        Log.i("Recording", String.format("type:%d timestamp:%d size:%d newTime:%d audioOffset:%d", frameType1, frame.getTimeStamp(), frame.getFrmSize(), time, audioOffset));
+                        // Log.i("Recording", result + "");
                     }
                 }
             }
-            if (handle[0] != 0) {
-                EncMp4.HIEncMp4deinit(handle[0]);
+//            if (handle[0] != 0) {
+//                EncMp4.HIEncMp4deinit(handle[0]);
+//            }
+            if (recorder != null) {
+                recorder.realese();
             }
             // synchronized (mIOTCListeners) {
             for (int i = 0; i < mIOTCListeners.size(); i++) {

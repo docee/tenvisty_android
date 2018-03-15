@@ -1,6 +1,15 @@
+#include <jni.h>
+#include <string.h>
 #include <stdio.h>
+
 #define __STDC_CONSTANT_MACROS
+
 #include <libavformat/avformat.h>
+#include <android/log.h>
+
+#define TAG "mp4record"
+#define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
 /*
 
 FIX: H.264 in some container format (FLV, MP4, MKV etc.) need
@@ -31,18 +40,29 @@ FIX:AAC in some container format (FLV, MP4, MKV etc.) need
 #define USE_AACBSF 0
 
 
-static AVFormatContext *m_pOc;
+#define MAX_STREAMS 20
+AVFormatContext *m_pOcArray[MAX_STREAMS];
 #define STREAM_FRAME_RATE 15
 
 #define STREAM_PIX_FMT    AV_PIX_FMT_YUV420P /* default pix_fmt */
 
+AVFrame *mAVFrameArray[MAX_STREAMS];
 
+int ptsIncArray[MAX_STREAMS] = {0};
 
-static int ptsInc = 0;
+int viArray[MAX_STREAMS] = {-1};
+int aiArray[MAX_STREAMS] = {-1};
 
-static int vi = -1;
+int waitkeyArray[MAX_STREAMS] = {1};
+int beginTimeStampArray[MAX_STREAMS] = {0};
+int lastVideoTimeStampArray[MAX_STREAMS] = {0};
+int lastAudioTimeStampArray[MAX_STREAMS] = {0};
+int mBufferSizeArray[MAX_STREAMS] = {0};
+int mBufferIndexArray[MAX_STREAMS] = {0};
+int mAudioIndexArray[MAX_STREAMS] = {0};
+uint8_t *mEncoderDataArray[MAX_STREAMS] = {0};
+uint8_t *mEncoderDataEmpty;
 
-static int waitkey = 1;
 /*-----------------
 < 0 = error
    0 = I-Frame
@@ -50,438 +70,688 @@ static int waitkey = 1;
    2 = B-Frame
    3 = S-Frame
 --------------------*/
-int getVopType( const void *p, int len )
-{
-    if ( !p || 6 >= len )
+int getVopType(const void *p, int len) {
+    if (!p || 6 >= len)
         return -1;
-    unsigned char *b = (unsigned char*)p;
+    unsigned char *b = (unsigned char *) p;
     // Verify NAL marker
-    if ( b[ 0 ] || b[ 1 ] || 0x01 != b[ 2 ] )
-    {   b++;
-        if ( b[ 0 ] || b[ 1 ] || 0x01 != b[ 2 ] )
+    if (b[0] || b[1] || 0x01 != b[2]) {
+        b++;
+        if (b[0] || b[1] || 0x01 != b[2])
             return -1;
     } // end if
     b += 3;
     // Verify VOP id
-    if ( 0xb6 == *b )
-    {
+    if (0xb6 == *b) {
         b++;
-        return ( *b & 0xc0 ) >> 6;
+        return (*b & 0xc0) >> 6;
     } // end if
-    switch( *b )
-    {
-        case 0x65 : return 0;
-        case 0x61 : return 1;
-        case 0x01 : return 2;
+    switch (*b) {
+        case 0x65 :
+            return 0;
+        case 0x61 :
+            return 1;
+        case 0x01 :
+            return 2;
     } // end switch
     return -1;
 }
-void open_video(AVFormatContext *oc, AVCodec *codec, AVStream *st)
-{
+
+void open_video(AVFormatContext *oc, AVCodec *codec, AVStream *st) {
     int ret;
     AVCodecContext *c = st->codec;
     /* open the codec */
     ret = avcodec_open2(c, codec, NULL);
-    if (ret < 0)
-    {
-        printf("could not open video codec");
+    if (ret < 0) {
+        LOGV("could not open video codec");
         //exit(1);
     }
 }
+
 /* Add an output stream */
-AVStream *add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id,int width,int height)
-{
+AVStream *
+add_stream(AVFormatContext *oc, AVCodec **codec, enum AVCodecID codec_id, int width, int height,
+           int videoStreamIndex) {
     AVCodecContext *c;
     AVStream *st;
     /* find the encoder */
     *codec = avcodec_find_encoder(codec_id);
-    if (!*codec)
-    {
-        printf("could not find encoder for '%s' \n", avcodec_get_name(codec_id));
+    if (!*codec) {
+        LOGV("could not find encoder for '%s' \n", avcodec_get_name(codec_id));
         exit(1);
     }
     st = avformat_new_stream(oc, *codec);
-    if (!st)
-    {
-        printf("could not allocate stream \n");
+    if (!st) {
+        LOGV("could not allocate stream \n");
         exit(1);
     }
-    st->id = oc->nb_streams-1;
+    st->id = oc->nb_streams - 1;
     c = st->codec;
-    vi = st->index;
-    switch ((*codec)->type)
-    {
+    LOGV("input buffer %zd streamid:%zd streams:%zd", (*codec)->type, st->id, oc->nb_streams);
+    switch ((*codec)->type) {
         case AVMEDIA_TYPE_AUDIO:
-            printf("AVMEDIA_TYPE_AUDIO\n");
-            c->sample_fmt = (*codec)->sample_fmts ? (*codec)->sample_fmts[0] : AV_SAMPLE_FMT_FLTP;
-            c->bit_rate = 64000;
-            c->sample_rate = 44100;
-            c->channels = 2;
+            aiArray[videoStreamIndex] = st->index;
+
+            LOGV("AVMEDIA_TYPE_AUDIO %zd\n", st->index);
+            c->codec_id = AV_CODEC_ID_AAC;
+            c->codec_type = AVMEDIA_TYPE_AUDIO;
+            c->bit_rate = 0;
+            c->sample_fmt = (*codec)->sample_fmts[0];
+            c->sample_rate = 8000;
+            c->channel_layout = AV_CH_LAYOUT_MONO;
+            c->channels = 1;
+            LOGV("3AVMEDIA_TYPE_AUDIO %zd\n", st->index);
             break;
         case AVMEDIA_TYPE_VIDEO:
-            printf("AVMEDIA_TYPE_VIDEO\n");
+            viArray[videoStreamIndex] = st->index;
+            LOGV("AVMEDIA_TYPE_VIDEO %zd\n", st->index);
             c->codec_id = AV_CODEC_ID_H264;
             c->bit_rate = 0;
             c->width = width;
             c->height = height;
-            c->time_base.den = 50;
+            c->time_base.den = 30;
             c->time_base.num = 1;
             c->gop_size = 1;
             c->pix_fmt = STREAM_PIX_FMT;
-            if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO)
-            {
+            if (c->codec_id == AV_CODEC_ID_MPEG2VIDEO) {
                 c->max_b_frames = 2;
             }
-            if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO)
-            {
+            if (c->codec_id == AV_CODEC_ID_MPEG1VIDEO) {
                 c->mb_decision = 2;
             }
             break;
         default:
             break;
     }
-    if (oc->oformat->flags & AVFMT_GLOBALHEADER)
-    {
+    LOGV("AVMEDIA_TYPE_AUDIO %zd\n", st->index);
+    if (oc->oformat->flags & AVFMT_GLOBALHEADER) {
         c->flags |= CODEC_FLAG_GLOBAL_HEADER;
     }
+    LOGV("5AVMEDIA_TYPE_AUDI22O %zd\n", st->index);
     return st;
 }
 
-void CloseMp4()
-{
-    waitkey = -1;
-    vi = -1;
-    if (m_pOc)
-        av_write_trailer(m_pOc);
-    if (m_pOc && !(m_pOc->oformat->flags & AVFMT_NOFILE))
-        avio_close(m_pOc->pb);
-    if (m_pOc)
-    {
-        avformat_free_context(m_pOc);
-        m_pOc = NULL;
+int CloseMp4(int videoStreamIndex) {
+    int ret = 0;
+    if (mBufferSizeArray[videoStreamIndex] != 0) {
+        fillAudioFrame(videoStreamIndex);
+        LOGV("begin Flushing encoder\n");
+        ret = flush_encoder(m_pOcArray[videoStreamIndex], aiArray[videoStreamIndex]);
+        if (ret < 0) {
+            LOGV("Flushing encoder failed\n");
+        } else {
+            LOGV("Flushing encoder\n");
+        }
     }
+    if (m_pOcArray[videoStreamIndex]) {
+        av_write_trailer(m_pOcArray[videoStreamIndex]);
+        LOGV("write trailer\n");
+        ret += 1;
+    }
+    if (mBufferSizeArray[videoStreamIndex] != 0) {
+        if (m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]) {
+            avcodec_close(m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->codec);
+            LOGV("close codec\n");
+            av_free(mAVFrameArray[videoStreamIndex]);
+            av_free(mEncoderDataArray[videoStreamIndex]);
+            LOGV("free frame\n");
+            ret += 8;
+        }
+    }
+    if (m_pOcArray[videoStreamIndex] &&
+        !(m_pOcArray[videoStreamIndex]->oformat->flags & AVFMT_NOFILE)) {
+        ret += 2;
+        avio_close(m_pOcArray[videoStreamIndex]->pb);
+    }
+    if (m_pOcArray[videoStreamIndex]) {
+        ret += 4;
+        avformat_free_context(m_pOcArray[videoStreamIndex]);
+        m_pOcArray[videoStreamIndex] = NULL;
+    }
+    beginTimeStampArray[videoStreamIndex] = 0;
+
+    ptsIncArray[videoStreamIndex] = 0;
+
+    viArray[videoStreamIndex] = -1;
+    aiArray[videoStreamIndex] = -1;
+    mBufferSizeArray[videoStreamIndex] = 0;
+    mEncoderDataArray[videoStreamIndex] = 0;
+    waitkeyArray[videoStreamIndex] = 1;
+    lastVideoTimeStampArray[videoStreamIndex] = 0;
+    lastAudioTimeStampArray[videoStreamIndex] = 0;
+    mBufferIndexArray[videoStreamIndex] = 0;
+    mAudioIndexArray[videoStreamIndex] = 0;
+    return ret;
 }
 
-int CreateMp4(const char *pszFileName,int width, int height)
-{
+int CreateMp4(const char *pszFileName, int width, int height) {
     //CloseMp4();
+    int videoStreamIndex = 0;
     int ret; // 成功返回0，失败返回1
     AVOutputFormat *fmt;
     AVCodec *video_codec;
+    AVCodec *audio_codec;
     AVStream *m_pVideoSt;
+    AVStream *m_pAudioSt;
     av_register_all();
-    avformat_alloc_output_context2(&m_pOc, NULL, NULL, "/storage/emulated/0/tenvisty/videorecording/7FEEGFU8Z3AEMTDC111A/7FEEGFU8Z3AEMTDC111A_20171022090251.mp4");
-    if (!m_pOc)
-    {
-        printf("Could not deduce output format from file extension: using MPEG. \n");
-        avformat_alloc_output_context2(&m_pOc, NULL, "mpeg", pszFileName);
+    int i;
+    for (i = 0; i < MAX_STREAMS; i++) {
+        if (m_pOcArray[i] == NULL) {
+            videoStreamIndex = i;
+            break;
+        }
     }
-    if (!m_pOc)
-    {
-        return 1;
+    avformat_alloc_output_context2(&m_pOcArray[videoStreamIndex], NULL, NULL, pszFileName);
+    if (!m_pOcArray[videoStreamIndex]) {
+        LOGV("Could not deduce output format from file extension: using MPEG. \n");
+        avformat_alloc_output_context2(&m_pOcArray[videoStreamIndex], NULL, "mpeg", pszFileName);
     }
-    fmt = m_pOc->oformat;
-    if (fmt->video_codec != AV_CODEC_ID_NONE)
-    {
-        printf("1111111111111111add_stream\n");
-        m_pVideoSt = add_stream(m_pOc, &video_codec, fmt->video_codec,width,height);
+    if (!m_pOcArray[videoStreamIndex]) {
+        return -1;
     }
-    if (m_pVideoSt)
-    {
-        printf("1111111111111111open_video\n");
-        open_video(m_pOc, video_codec, m_pVideoSt);
+    fmt = m_pOcArray[videoStreamIndex]->oformat;
+    if (fmt->video_codec != AV_CODEC_ID_NONE) {
+        LOGV("add_stream\n");
+        m_pVideoSt = add_stream(m_pOcArray[videoStreamIndex], &video_codec, fmt->video_codec, width,
+                                height, videoStreamIndex);
+        m_pAudioSt = add_stream(m_pOcArray[videoStreamIndex], &audio_codec, AV_CODEC_ID_AAC, width,
+                                height, videoStreamIndex);
+
     }
-    printf("==========Output Information==========\n");
-    av_dump_format(m_pOc, 0, pszFileName, 1);
-    printf("======================================\n");
+    //in_file = fopen("/storage/emulated/0/tenvisty/Z5EW4S77VEL6FWRL111A/videorecording/Z5EW4S77VEL6FWRL111A_20180315102240264.mp4.pcm", "rb");
+//    if (m_pVideoSt)
+//    {
+//        LOGV("open_video %zd - %zd\n",video_codec->id,AV_CODEC_ID_H264);
+//        open_video(m_pOcArray[videoStreamIndex], video_codec, m_pVideoSt);
+//    }
+    if (m_pAudioSt) {
+        LOGV("open_audio\n");
+        ret = avcodec_open2(m_pAudioSt->codec, avcodec_find_encoder(m_pAudioSt->codec->codec_id),
+                            NULL);
+        if (ret < 0) {
+            LOGV("fail to open encoder for '%s' %zd \n",
+                 avcodec_get_name(m_pAudioSt->codec->codec_id), ret);
+            //return NULL;
+        } else {
+            mAVFrameArray[videoStreamIndex] = av_frame_alloc();
+            mAVFrameArray[videoStreamIndex]->nb_samples = m_pAudioSt->codec->frame_size;
+            mAVFrameArray[videoStreamIndex]->format = m_pAudioSt->codec->sample_fmt;
+            mAVFrameArray[videoStreamIndex]->sample_rate = m_pAudioSt->codec->sample_rate;
+            mAVFrameArray[videoStreamIndex]->channels = m_pAudioSt->codec->channels;
+            mAVFrameArray[videoStreamIndex]->channel_layout = m_pAudioSt->codec->channel_layout;
+            mBufferSizeArray[videoStreamIndex] = av_samples_get_buffer_size(NULL,
+                                                                            m_pAudioSt->codec->channels,
+                                                                            m_pAudioSt->codec->frame_size,
+                                                                            m_pAudioSt->codec->sample_fmt,
+                                                                            1);
+            mEncoderDataArray[videoStreamIndex] = (uint8_t *) av_malloc(
+                    mBufferSizeArray[videoStreamIndex]);
+
+            mEncoderDataEmpty = (uint8_t *) av_malloc(
+                    mBufferSizeArray[videoStreamIndex]);
+            memset(mEncoderDataEmpty, 0, mBufferSizeArray[videoStreamIndex]);
+            //mAVFrameArray[videoStreamIndex]->data[0] = malloc(mEncoderDataArray[videoStreamIndex]);
+            avcodec_fill_audio_frame(mAVFrameArray[videoStreamIndex], m_pAudioSt->codec->channels,
+                                     m_pAudioSt->codec->sample_fmt,
+                                     (const uint8_t *) mEncoderDataArray[videoStreamIndex],
+                                     mBufferSizeArray[videoStreamIndex], 1);
+            mBufferIndexArray[videoStreamIndex] = 0;
+        }
+    }
+    LOGV("==========Output Information==========\n");
+    av_dump_format(m_pOcArray[videoStreamIndex], 0, pszFileName, 1);
+    LOGV("======================================\n");
     /* open the output file, if needed */
-    if (!(fmt->flags & AVFMT_NOFILE))
-    {
-        ret = avio_open(&m_pOc->pb, pszFileName, AVIO_FLAG_WRITE);
-        if (ret < 0)
-        {
-            printf("could not open %s\n", pszFileName);
-            return 1;
+    if (!(fmt->flags & AVFMT_NOFILE)) {
+        ret = avio_open(&m_pOcArray[videoStreamIndex]->pb, pszFileName, AVIO_FLAG_WRITE);
+        if (ret < 0) {
+            LOGV("could not open %s\n", pszFileName);
+            return -1;
         }
     }
     /* Write the stream header, if any */
-    ret = avformat_write_header(m_pOc, NULL);
-    if (ret < 0)
-    {
-        printf("Error occurred when opening output file");
-        return 1;
+    ret = avformat_write_header(m_pOcArray[videoStreamIndex], NULL);
+    if (ret < 0) {
+        LOGV("Error occurred when opening output file");
+        return -1;
     }
-    return 0;
+    return videoStreamIndex;
+}
+
+int fillAudioFrame(int videoStreamIndex){
+    int ret = 0;
+    if(mBufferIndexArray[videoStreamIndex] != 0){
+        AVStream *pst = m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]];
+        //printf("vi=====%d\n",vi);
+        // Init packet
+        int got_frame = 0;
+        // 我的添加，为了计算pts
+        AVCodecContext *c = pst->codec;
+        int pts = lastAudioTimeStampArray[videoStreamIndex] - 20*(double)mBufferIndexArray[videoStreamIndex]/320;
+        int remainAudioData = mBufferSizeArray[videoStreamIndex] - mBufferIndexArray[videoStreamIndex];
+            memset(&mEncoderDataArray[videoStreamIndex][mBufferIndexArray[videoStreamIndex]],
+                   0, remainAudioData);
+        mAVFrameArray[videoStreamIndex]->pkt_size = mBufferSizeArray[videoStreamIndex];
+        // memset(mEncoderDataArray[videoStreamIndex], 0, mBufferSizeArray[videoStreamIndex]);
+        //memcpy(mEncoderDataArray[videoStreamIndex],data,nLen);
+        mAVFrameArray[videoStreamIndex]->data[0] = mEncoderDataArray[videoStreamIndex];
+        //mAVFrameArray[videoStreamIndex]->pkt_size = nLen;
+        mAVFrameArray[videoStreamIndex]->pts =
+                (pts - beginTimeStampArray[videoStreamIndex] -
+                 20 * ((double)mBufferSizeArray[videoStreamIndex] / 320 - 1)) /
+                (double) (av_q2d(pst->time_base) * 1000);
+        AVPacket pkt;
+        av_new_packet(&pkt, mBufferSizeArray[videoStreamIndex]);
+        ret = avcodec_encode_audio2(c, &pkt,
+                                    mAVFrameArray[videoStreamIndex], &got_frame);
+        if (ret < 0) {
+            LOGV("Failed to encode! %zd\n", ret);
+            av_packet_unref(&pkt);
+        }
+        if (got_frame == 1) {
+            pkt.stream_index = m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->index;
+        } else {
+            LOGV("fail to encode 1 frame! \tsize:%zd\tgot_frame:%zd\n", pkt.size,
+                 got_frame);
+        }
+        mAudioIndexArray[videoStreamIndex]++;
+        if (got_frame == 1) {
+            ret = av_interleaved_write_frame(m_pOcArray[videoStreamIndex], &pkt);
+            if (ret < 0) {
+                LOGV("cannot write audio frame");
+            }
+            av_packet_unref(&pkt);
+        }
+
+    }
 }
 
 /* 创建mp4文件返回2；写入数据帧返回0 */
-void WriteVideo(void* data, int nLen,int pts)
-{
+void WriteVideo(int videoStreamIndex, uint8_t *data, int nLen, int pts, int frameType) {
     int ret;
-    if ( 0 > vi )
-    {
-        printf("vi less than 0");
+    if (0 > viArray[videoStreamIndex]) {
+        LOGV("vi less than 0");
         //return -1;
     }
-    AVStream *pst = m_pOc->streams[ vi ];
+    AVStream *pst = m_pOcArray[videoStreamIndex]->streams[frameType != 2 ? viArray[videoStreamIndex]
+                                                                         : aiArray[videoStreamIndex]];
     //printf("vi=====%d\n",vi);
     // Init packet
-    AVPacket pkt;
+    int got_frame = 0;
     // 我的添加，为了计算pts
     AVCodecContext *c = pst->codec;
-    av_init_packet( &pkt );
-    pkt.flags |= ( 0 >= getVopType( data, nLen ) ) ? AV_PKT_FLAG_KEY : 0;
-    pkt.stream_index = pst->index;
-    pkt.data = (uint8_t*)data;
-    pkt.size = nLen;
-    // Wait for key frame
-    if ( waitkey )
-        if ( 0 == ( pkt.flags & AV_PKT_FLAG_KEY ) )
-            return ;
-        else
-            waitkey = 0;
-    pkt.pts = (ptsInc++) * (90000/STREAM_FRAME_RATE);
-    pkt.pts = av_rescale_q((ptsInc++)*2, pst->codec->time_base,pst->time_base);
-    //pkt.dts = (ptsInc++) * (90000/STREAM_FRAME_RATE);
-    //  pkt.pts=av_rescale_q_rnd(pkt.pts, pst->time_base,pst->time_base,(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-    pkt.dts=av_rescale_q_rnd(pkt.dts, pst->time_base,pst->time_base,(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-    pkt.duration = av_rescale_q(pkt.duration,pst->time_base, pst->time_base);
-    pkt.pos = -1;
-    printf("pkt.size=%d\n",pkt.size);
-    ret = av_interleaved_write_frame( m_pOc, &pkt );
-    if (ret < 0)
-    {
-        printf("cannot write frame");
+    if (beginTimeStampArray[videoStreamIndex] == 0) {
+        beginTimeStampArray[videoStreamIndex] = pts;
+    }
+    if (frameType == 2) {
+        int remainLength = 0;
+        if (mBufferSizeArray[videoStreamIndex] != 0) {
+            if (mBufferIndexArray[videoStreamIndex] + nLen <= mBufferSizeArray[videoStreamIndex]) {
+                memcpy(&mEncoderDataArray[videoStreamIndex][mBufferIndexArray[videoStreamIndex]],
+                       data, nLen);
+                mBufferIndexArray[videoStreamIndex] += nLen;
+
+                if (mBufferIndexArray[videoStreamIndex] == mBufferSizeArray[videoStreamIndex]) {
+                    mBufferIndexArray[videoStreamIndex] = 0;
+                }
+            } else {
+                LOGV("remainLength:%zd",remainLength);
+                remainLength = mBufferIndexArray[videoStreamIndex] + nLen -
+                               mBufferSizeArray[videoStreamIndex];
+                //memcpy(&mEncoderDataArray[videoStreamIndex][mBufferIndexArray[videoStreamIndex]],data,nLen-remainLength);
+                memset(&mEncoderDataArray[videoStreamIndex][mBufferIndexArray[videoStreamIndex]], 0,
+                       nLen - remainLength);
+                mBufferIndexArray[videoStreamIndex] = 0;
+                LOGV("end remainLength:%zd",remainLength);
+            }
+            if (mBufferIndexArray[videoStreamIndex] == 0) {
+                mAVFrameArray[videoStreamIndex]->pkt_size = mBufferSizeArray[videoStreamIndex];
+                // memset(mEncoderDataArray[videoStreamIndex], 0, mBufferSizeArray[videoStreamIndex]);
+                //memcpy(mEncoderDataArray[videoStreamIndex],data,nLen);
+                mAVFrameArray[videoStreamIndex]->data[0] = mEncoderDataArray[videoStreamIndex];
+                //mAVFrameArray[videoStreamIndex]->pkt_size = nLen;
+                mAVFrameArray[videoStreamIndex]->pts =
+                        (pts - beginTimeStampArray[videoStreamIndex] -
+                         20 * ((double)mBufferSizeArray[videoStreamIndex] / 320 - 1)) /
+                        (double) (av_q2d(pst->time_base) * 1000);
+                AVPacket pkt;
+                av_new_packet(&pkt, mBufferSizeArray[videoStreamIndex]);
+                ret = avcodec_encode_audio2(c, &pkt,
+                                            mAVFrameArray[videoStreamIndex], &got_frame);
+                if (ret < 0) {
+                    LOGV("Failed to encode! %zd\n", ret);
+                    av_packet_unref(&pkt);
+                    return;
+                }
+                if (got_frame == 1) {
+                    pkt.stream_index = m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->index;
+                } else {
+                    LOGV("fail to encode 1 frame! \tsize:%zd\tgot_frame:%zd\n", pkt.size,
+                         got_frame);
+                }
+                mAudioIndexArray[videoStreamIndex]++;
+                if (got_frame == 1) {
+                    ret = av_interleaved_write_frame(m_pOcArray[videoStreamIndex], &pkt);
+                    if (ret < 0) {
+                        LOGV("cannot write audio frame");
+                    }
+                    av_packet_unref(&pkt);
+                }
+                if (remainLength != 0) {
+                    mBufferIndexArray[videoStreamIndex] = remainLength;
+                    memcpy(mEncoderDataArray[0], &data[nLen - remainLength], remainLength);
+                }
+            }
+        }
+    } else {
+        AVPacket pkt;
+        av_init_packet(&pkt);
+        pkt.flags |= (0 >= getVopType(data, nLen)) ? AV_PKT_FLAG_KEY : 0;
+        LOGV("flags");
+        pkt.stream_index = pst->index;
+        pkt.data = (uint8_t *) data;
+        pkt.size = nLen;
+        // Wait for key frame
+        if (frameType != 2) {
+            if (waitkeyArray[videoStreamIndex])
+                if (0 == (pkt.flags & AV_PKT_FLAG_KEY))
+                    return;
+                else
+                    waitkeyArray[videoStreamIndex] = 0;
+        }
+        int oneAudioFrameDuration = 20*(double)mBufferSizeArray[videoStreamIndex]/ 320;
+        pkt.pts = (pts - beginTimeStampArray[videoStreamIndex]) /
+                  (double) (av_q2d(pst->time_base) * 1000);
+        if(lastAudioTimeStampArray[videoStreamIndex] == 0 && pts - beginTimeStampArray[videoStreamIndex] >  oneAudioFrameDuration){
+            LOGV("pts:%zd\tbeginTimeStampArray[videoStreamIndex]:%zd\toneAudioFrameDuration:%zd",pts,beginTimeStampArray[videoStreamIndex],oneAudioFrameDuration);
+            //writeEmptyAudioData(videoStreamIndex,(int)((pts - beginTimeStampArray[videoStreamIndex]- (20*mBufferSizeArray[videoStreamIndex]/320)) /(double) (av_q2d(pst->time_base) * 1000)) );
+            int ptss = (int)((pts - beginTimeStampArray[videoStreamIndex]- oneAudioFrameDuration) /(double) (av_q2d(pst->time_base) * 1000));
+            writeEmptyAudioData(videoStreamIndex,ptss);
+            lastAudioTimeStampArray[videoStreamIndex] = pts - oneAudioFrameDuration;
+        }
+        if(lastAudioTimeStampArray[videoStreamIndex] != 0 && pts - lastAudioTimeStampArray[videoStreamIndex]>oneAudioFrameDuration){
+            LOGV("lastAudioTimeStampArray:%zd\tpts:%zd\tlastAudioTimeStampArray[videoStreamIndex]:%zd\toneAudioFrameDuration:%zd",lastAudioTimeStampArray[videoStreamIndex],pts,lastAudioTimeStampArray[videoStreamIndex],oneAudioFrameDuration);
+            int ptss = pkt.pts;
+            writeEmptyAudioData(videoStreamIndex,ptss);
+            //writeEmptyAudioData(videoStreamIndex,(int)((pts - lastAudioTimeStampArray[videoStreamIndex]- (20*mBufferSizeArray[videoStreamIndex]/320)) /(double) (av_q2d(pst->time_base) * 1000)));
+            lastAudioTimeStampArray[videoStreamIndex] = pts;
+        }
+//    pkt.pts = (ptsIncArray[videoStreamIndex]++) * (90000/STREAM_FRAME_RATE);
+//    pkt.pts = av_rescale_q((ptsIncArray[videoStreamIndex]++)*2, pst->codec->time_base,pst->time_base);
+//    //pkt.dts = (ptsInc++) * (90000/STREAM_FRAME_RATE);
+//    //  pkt.pts=av_rescale_q_rnd(pkt.pts, pst->time_base,pst->time_base,(AVRounding)(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+//    pkt.dts=av_rescale_q_rnd(pkt.dts, pst->time_base,pst->time_base,(AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
+
+        pkt.duration = 0;//av_rescale_q(pkt.duration,pst->time_base, pst->time_base);
+        pkt.pos = -1;
+        got_frame = 1;
+        LOGV("pkt.size=%d\n", pkt.size);
+        ret = av_interleaved_write_frame(m_pOcArray[videoStreamIndex], &pkt);
+        if (ret < 0) {
+            LOGV("cannot write frame");
+        }
+        av_packet_unref(&pkt);
+    }
+
+    if (frameType != 2) {
+        lastVideoTimeStampArray[videoStreamIndex] = pts;
+    } else {
+        lastAudioTimeStampArray[videoStreamIndex] = pts;
     }
 }
-int main(int argc, char* argv[])
 
-{
-
-    AVOutputFormat *ofmt = NULL;
-    //Input AVFormatContext and Output AVFormatContext
-    AVFormatContext *ifmt_ctx_v = NULL, *ifmt_ctx_a = NULL,*ofmt_ctx = NULL;
+int writeEmptyAudioData(int videoStreamIndex, int pts) {
+    LOGV("add empty audio dataq! %zd\n", pts);
+    int ret = 0;
+    int got_frame = 0;
+    AVCodecContext *c = m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->codec;
+    mAVFrameArray[videoStreamIndex]->pkt_size = mBufferSizeArray[videoStreamIndex];
+    // memset(mEncoderDataArray[videoStreamIndex], 0, mBufferSizeArray[videoStreamIndex]);
+    //memcpy(mEncoderDataArray[videoStreamIndex],data,nLen);
+    mAVFrameArray[videoStreamIndex]->data[0] = mEncoderDataEmpty;
+    mAVFrameArray[videoStreamIndex]->pts =pts* av_q2d(m_pOcArray[videoStreamIndex]->streams[viArray[videoStreamIndex]]->time_base)/av_q2d(m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->time_base);
     AVPacket pkt;
-    int ret, i;
-    int videoindex_v=0,videoindex_out=0;
-    int frame_index=0;
-    int64_t cur_pts_v=0,cur_pts_a=0;
-    //const char *in_filename_v = "cuc_ieschool.ts";//Input file URL
-    const char *in_filename_v = "vpu.h264";
-    //const char *in_filename_a = "cuc_ieschool.mp3";
-    //const char *in_filename_a = "gowest.m4a";
-    //const char *in_filename_a = "gowest.aac";
-    const char *in_filename_a = "huoyuanjia.mp3";
-    const char *out_filename = "vpu.mp4";//Output file URL
-    av_register_all();
-    //Input
-    if ((ret = avformat_open_input(&ifmt_ctx_v, in_filename_v, 0, 0)) < 0) {
-        printf( "Could not open input file.");
-        goto end;
-
-    }
-    if ((ret = avformat_find_stream_info(ifmt_ctx_v, 0)) < 0) {
-        printf( "Failed to retrieve input stream information");
-        goto end;
-    }
-    /*if ((ret = avformat_open_input(&ifmt_ctx_a, in_filename_a, 0, 0)) < 0) {
-        printf( "Could not open input file.");
-        goto end;
-    }
-    if ((ret = avformat_find_stream_info(ifmt_ctx_a, 0)) < 0) {
-        printf( "Failed to retrieve input stream information");
-        goto end;
-    }*/
-    printf("===========Input Information==========\n");
-    av_dump_format(ifmt_ctx_v, 0, in_filename_v, 0);
-    //av_dump_format(ifmt_ctx_a, 0, in_filename_a, 0);
-    printf("======================================\n");
-    //Output
-    avformat_alloc_output_context2(&ofmt_ctx, NULL, NULL, out_filename);
-    if (!ofmt_ctx) {
-        printf( "Could not create output context\n");
-        ret = AVERROR_UNKNOWN;
-        goto end;
-    }
-    ofmt = ofmt_ctx->oformat;
-    printf("ifmt_ctx_v->nb_streams=%d\n",ifmt_ctx_v->nb_streams);
-    for (i = 0; i < ifmt_ctx_v->nb_streams; i++) {
-        //Create output AVStream according to input AVStream
-        //if(ifmt_ctx_v->streams[i]->codec->codec_type==AVMEDIA_TYPE_VIDEO)
-        {
-            AVStream *in_stream = ifmt_ctx_v->streams[i];
-            AVStream *out_stream = avformat_new_stream(ofmt_ctx, in_stream->codec->codec);
-            videoindex_v=i;
-            if (!out_stream) {
-                printf( "Failed allocating output stream\n");
-                ret = AVERROR_UNKNOWN;
-                goto end;
-            }
-            videoindex_out=out_stream->index;
-            //Copy the settings of AVCodecContext
-            if (avcodec_copy_context(out_stream->codec, in_stream->codec) < 0) {
-                printf( "Failed to copy context from input to output stream codec context\n");
-                goto end;
-            }
-            out_stream->codec->codec_tag = 0;
-            if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-                out_stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
-            //break;
-        }
-    }
-/*
-	for (i = 0; i < ifmt_ctx_a->nb_streams; i++) {
-		//Create output AVStream according to input AVStream
-		if(ifmt_ctx_a->streams[i]->codec->codec_type==AVMEDIA_TYPE_AUDIO){
-			AVStream *in_stream = ifmt_ctx_a->streams[i];
-			AVStream *out_stream = avformat_new_stream(ofmt_ctx, in_stream->codec->codec);
-			audioindex_a=i;
-			if (!out_stream) {
-				printf( "Failed allocating output stream\n");
-				ret = AVERROR_UNKNOWN;
-				goto end;
-			}
-			audioindex_out=out_stream->index;
-			//Copy the settings of AVCodecContext
-			if (avcodec_copy_context(out_stream->codec, in_stream->codec) < 0) {
-				printf( "Failed to copy context from input to output stream codec context\n");
-				goto end;
-			}
-			out_stream->codec->codec_tag = 0;
-			if (ofmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
-				out_stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
-			break;
-		}
-	}
-*/
-    printf("==========Output Information==========\n");
-    av_dump_format(ofmt_ctx, 0, out_filename, 1);
-    printf("======================================\n");
-    //Open output file
-    if (!(ofmt->flags & AVFMT_NOFILE)) {
-        if (avio_open(&ofmt_ctx->pb, out_filename, AVIO_FLAG_WRITE) < 0) {
-            printf( "Could not open output file '%s'", out_filename);
-            goto end;
-        }
-    }
-    //Write file header
-    if (avformat_write_header(ofmt_ctx, NULL) < 0) {
-        printf( "Error occurred when opening output file\n");
-        goto end;
-    }
-    //FIX
-#if USE_H264BSF
-    AVBitStreamFilterContext* h264bsfc =  av_bitstream_filter_init("h264_mp4toannexb");
-#endif
-#if USE_AACBSF
-    AVBitStreamFilterContext* aacbsfc =  av_bitstream_filter_init("aac_adtstoasc");
-#endif
-    while (1) {
-        AVFormatContext *ifmt_ctx;
-        int stream_index=0;
-        AVStream *in_stream, *out_stream;
-        //Get an AVPacket
-        //if(av_compare_ts(cur_pts_v,ifmt_ctx_v->streams[videoindex_v]->time_base,cur_pts_a,ifmt_ctx_a->streams[audioindex_a]->time_base) <= 0)
-        {
-            ifmt_ctx=ifmt_ctx_v;
-            stream_index=videoindex_out;
-            if(av_read_frame(ifmt_ctx, &pkt) >= 0){
-                do{
-                    in_stream  = ifmt_ctx->streams[pkt.stream_index];
-                    out_stream = ofmt_ctx->streams[stream_index];
-                    printf("stream_index==%d,pkt.stream_index==%d,videoindex_v=%d\n", stream_index,pkt.stream_index,videoindex_v);
-                    if(pkt.stream_index==videoindex_v){
-                        //FIX：No PTS (Example: Raw H.264)
-                        //Simple Write PTS
-                        if(pkt.pts==AV_NOPTS_VALUE){
-                            printf("frame_index==%d\n",frame_index);
-                            //Write PTS
-                            AVRational time_base1=in_stream->time_base;
-                            //Duration between 2 frames (us)
-                            int64_t calc_duration=(double)AV_TIME_BASE/av_q2d(in_stream->r_frame_rate);
-                            //Parameters
-                            pkt.pts=(double)(frame_index*calc_duration)/(double)(av_q2d(time_base1)*AV_TIME_BASE);
-                            pkt.dts=pkt.pts;
-                            pkt.duration=(double)calc_duration/(double)(av_q2d(time_base1)*AV_TIME_BASE);
-                            frame_index++;
-                        }
-                        cur_pts_v=pkt.pts;
-                        break;
-                    }
-                }while(av_read_frame(ifmt_ctx, &pkt) >= 0);
-            }else{
-                break;
-            }
-        }
-        /*else
-        {
-            ifmt_ctx=ifmt_ctx_a;
-            stream_index=audioindex_out;
-            if(av_read_frame(ifmt_ctx, &pkt) >= 0){
-                do{
-                    in_stream  = ifmt_ctx->streams[pkt.stream_index];
-                    out_stream = ofmt_ctx->streams[stream_index];
-                    if(pkt.stream_index==audioindex_a){
-                        //FIX：No PTS
-                        //Simple Write PTS
-                        if(pkt.pts==AV_NOPTS_VALUE){
-                            //Write PTS
-                            AVRational time_base1=in_stream->time_base;
-                            //Duration between 2 frames (us)
-                            int64_t calc_duration=(double)AV_TIME_BASE/av_q2d(in_stream->r_frame_rate);
-                            //Parameters
-                            pkt.pts=(double)(frame_index*calc_duration)/(double)(av_q2d(time_base1)*AV_TIME_BASE);
-                            pkt.dts=pkt.pts;
-                            pkt.duration=(double)calc_duration/(double)(av_q2d(time_base1)*AV_TIME_BASE);
-                            frame_index++;
-                        }
-                        cur_pts_a=pkt.pts;
-                        break;
-                    }
-                }while(av_read_frame(ifmt_ctx, &pkt) >= 0);
-            }else{
-                break;
-            }
-        }*/
-        //FIX:Bitstream Filter
-#if USE_H264BSF
-        av_bitstream_filter_filter(h264bsfc, in_stream->codec, NULL, &pkt.data, &pkt.size, pkt.data, pkt.size, 0);
-#endif
-#if USE_AACBSF
-        av_bitstream_filter_filter(aacbsfc, out_stream->codec, NULL, &pkt.data, &pkt.size, pkt.data, pkt.size, 0);
-#endif
-        //Convert PTS/DTS
-        pkt.pts = av_rescale_q_rnd(pkt.pts, in_stream->time_base, out_stream->time_base, (AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-        pkt.dts = av_rescale_q_rnd(pkt.dts, in_stream->time_base, out_stream->time_base, (AV_ROUND_NEAR_INF|AV_ROUND_PASS_MINMAX));
-        pkt.duration = av_rescale_q(pkt.duration, in_stream->time_base, out_stream->time_base);
-        pkt.pos = -1;
-        pkt.stream_index=stream_index;
-        printf("Write 1 Packet. size:%5d\tpts:%lld\n",pkt.size,pkt.pts);
-        //Write
-        if (av_interleaved_write_frame(ofmt_ctx, &pkt) < 0) {
-            printf( "Error muxing packet\n");
-            break;
-        }
-        av_free_packet(&pkt);
-    }
-    //Write file trailer
-    av_write_trailer(ofmt_ctx);
-#if USE_H264BSF
-    av_bitstream_filter_close(h264bsfc);
-#endif
-#if USE_AACBSF
-    av_bitstream_filter_close(aacbsfc);
-#endif
-    end:
-    avformat_close_input(&ifmt_ctx_v);
-    //avformat_close_input(&ifmt_ctx_a);
-    /* close output */
-    if (ofmt_ctx && !(ofmt->flags & AVFMT_NOFILE))
-        avio_close(ofmt_ctx->pb);
-    avformat_free_context(ofmt_ctx);
-    if (ret < 0 && ret != AVERROR_EOF) {
-        printf( "Error occurred.\n");
+    av_new_packet(&pkt, mBufferSizeArray[videoStreamIndex]);
+    ret = avcodec_encode_audio2(c, &pkt,
+                                mAVFrameArray[videoStreamIndex], &got_frame);
+    if (ret < 0) {
+        LOGV("Failed to encode! %zd\n", ret);
+        av_packet_unref(&pkt);
         return -1;
     }
+    if (got_frame == 1) {
+        pkt.stream_index = m_pOcArray[videoStreamIndex]->streams[aiArray[videoStreamIndex]]->index;
+    } else {
+        LOGV("fail to encode 1 frame! \tsize:%zd\tgot_frame:%zd\n", pkt.size,
+             got_frame);
+    }
+    mAudioIndexArray[videoStreamIndex]++;
+    if (got_frame == 1) {
+        ret = av_interleaved_write_frame(m_pOcArray[videoStreamIndex], &pkt);
+        if (ret < 0) {
+            LOGV("cannot write frame");
+        }
+        av_packet_unref(&pkt);
+    }
+    return ret;
+}
+
+int flush_encoder(AVFormatContext *fmt_ctx, unsigned int stream_index) {
+    int ret;
+    int got_frame;
+    AVPacket enc_pkt;
+    if (!(fmt_ctx->streams[stream_index]->codec->codec->capabilities &
+          CODEC_CAP_DELAY))
+        return 0;
+    while (1) {
+        enc_pkt.data = NULL;
+        enc_pkt.size = 0;
+        av_init_packet(&enc_pkt);
+        LOGV("avcodec_encode_audio2");
+        ret = avcodec_encode_audio2(fmt_ctx->streams[stream_index]->codec, &enc_pkt,
+                                    NULL, &got_frame);
+        av_frame_free(NULL);
+        if (ret < 0)
+            break;
+        if (!got_frame) {
+            ret = 0;
+            break;
+        }
+        LOGV("Flush Encoder: Succeed to encode 1 frame!\tsize:%5d\n", enc_pkt.size);
+        /* mux encoded frame */
+        ret = av_write_frame(fmt_ctx, &enc_pkt);
+        if (ret < 0)
+            break;
+    }
+    return ret;
+}
+
+void short2float(short *in, void *out, int len) {
+    register int i;
+    for (i = 0; i < len; i++)
+        ((float *) out)[i] = ((float) (in[i])) / 32767.0;
+}
+
+
+JNIEXPORT jint JNICALL
+Java_com_recorder_util_mp4Recorder_initMp4(JNIEnv *env, jclass type, jint width,
+                                           jint height, jstring videoPath_) {
+    const char *videoPath = (*env)->GetStringUTFChars(env, videoPath_, 0);
+    int videoStreamIndex = CreateMp4(videoPath, width, height);
+    // TODO
+
+    (*env)->ReleaseStringUTFChars(env, videoPath_, videoPath);
+    return videoStreamIndex;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_recorder_util_mp4Recorder_uninitMp4(JNIEnv *env, jclass type,
+                                             jint videoStreamIndex) {
+    int ret = CloseMp4(videoStreamIndex);
+    // TODO
+    return ret;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_recorder_util_mp4Recorder_writeData(JNIEnv *env, jclass type,
+                                             jbyteArray data_, jint size,
+                                             jint frameType, jint pts,
+                                             jint videoStreamIndex) {
+    jbyte *data = (*env)->GetByteArrayElements(env, data_, NULL);
+
+    // TODO
+    WriteVideo(videoStreamIndex, data, size, pts, frameType);
+    (*env)->ReleaseByteArrayElements(env, data_, data, 0);
     return 0;
+}
+
+
+int sssss(int argc, char *argv[]) {
+    AVFormatContext *pFormatCtx;
+    AVOutputFormat *fmt;
+    AVStream *audio_st;
+    AVCodecContext *pCodecCtx;
+    AVCodec *pCodec;
+
+    uint8_t *frame_buf;
+    AVFrame *pFrame;
+    AVPacket pkt;
+
+    int got_frame = 0;
+    int ret = 0;
+    int size = 0;
+
+    FILE *in_file = NULL;                            //Raw PCM data
+    int framenum = 1000;                          //Audio frame number
+    const char *out_file = "/storage/emulated/0/20180315102240264.mp4.pcm.aac";          //Output URL
+    int i;
+
+    in_file = fopen("/storage/emulated/0/20180314060115264.mp4.pcm", "rb");
+    av_register_all();
+
+    //Method 1.
+    pFormatCtx = avformat_alloc_context();
+    fmt = av_guess_format(NULL, out_file, NULL);
+    pFormatCtx->oformat = fmt;
+
+
+    //Method 2.
+    //avformat_alloc_output_context2(&pFormatCtx, NULL, NULL, out_file);
+    //fmt = pFormatCtx->oformat;
+
+    //Open output URL
+    ret = avio_open(&pFormatCtx->pb, out_file, AVIO_FLAG_READ_WRITE);
+    if (ret < 0) {
+        LOGV("Failed to open output file!%zd %s\n", ret, strerror(errno));
+        return -1;
+    }
+
+    AVCodec *audio_codec;
+    audio_st = add_stream(pFormatCtx, &audio_codec, AV_CODEC_ID_AAC, 0, 0, 0);
+    LOGV("add stream\n");
+    if (audio_st) {
+        //avcodec_find_encoder(audio_st->codec->codec_id)
+        int ret = avcodec_open2(audio_st->codec, avcodec_find_encoder(AV_CODEC_ID_AAC), NULL);
+        if (ret < 0) {
+            LOGV("Failed to open encoder!%zd\n", ret);
+            return NULL;
+        } else {
+            LOGV("succeed to open encoder!%zd\n", ret);
+        }
+        mAVFrameArray[0] = av_frame_alloc();
+        mAVFrameArray[0]->nb_samples = audio_st->codec->frame_size;
+        mAVFrameArray[0]->format = audio_st->codec->sample_fmt;
+        mAVFrameArray[0]->sample_rate = audio_st->codec->sample_rate;
+        mAVFrameArray[0]->channels = audio_st->codec->channels;
+        mAVFrameArray[0]->channel_layout = audio_st->codec->channel_layout;
+        mBufferSizeArray[0] = av_samples_get_buffer_size(NULL, audio_st->codec->channels,
+                                                         audio_st->codec->frame_size,
+                                                         audio_st->codec->sample_fmt, 1);
+        LOGV("mBufferSizeArray!%zd\n", mBufferSizeArray[0]);
+        mEncoderDataArray[0] = (uint8_t *) av_malloc(mBufferSizeArray[0]);
+        avcodec_fill_audio_frame(mAVFrameArray[0], audio_st->codec->channels,
+                                 audio_st->codec->sample_fmt,
+                                 (const uint8_t *) mEncoderDataArray[0], mBufferSizeArray[0], 1);
+        LOGV("avcodec_fill_audio_frame!%zd\n", mBufferSizeArray[0]);
+
+    }
+    pCodecCtx = audio_st->codec;
+    //Write Header
+    LOGV("avformat_write_header!%zd\n", pFormatCtx->nb_streams);
+//    ret = avformat_write_header(pFormatCtx,NULL);
+//    if(ret>=0){
+//
+//        LOGV("succeed to avformat_write_header!%zd\n",ret);
+//    }
+//    else{
+//
+//        LOGV("fail to avformat_write_header!%zd\n",ret);
+//    }
+    av_new_packet(&pkt, mBufferSizeArray[0]);
+
+    for (i = 0; i < framenum; i++) {
+        LOGV("encode!\n");
+
+        //Read PCM
+        ret = fread(mEncoderDataArray[0], 1, mBufferSizeArray[0], in_file);
+        if (ret <= 0) {
+            LOGV("Failed to read raw data! \n");
+            return -1;
+        } else if (feof(in_file)) {
+            LOGV("end file  to read raw data! \n");
+            break;
+        }
+        LOGV("success to read raw data! \n");
+        //memset(&mEncoderDataArray[0][0], 0, mBufferSizeArray[0]);
+        mAVFrameArray[0]->data[0] = mEncoderDataArray[0];  //PCM Data
+
+        mAVFrameArray[0]->pts = i * 1024;
+        got_frame = 0;
+        mAVFrameArray[0]->pkt_size = mBufferSizeArray[0];
+        //Encode
+        LOGV("begin encode! %s\n", strerror(errno));
+        ret = avcodec_encode_audio2(pCodecCtx, &pkt, mAVFrameArray[0], &got_frame);
+        if (ret < 0) {
+            LOGV("Failed to encode!%s\n", strerror(errno));
+            return -1;
+        }
+        if (got_frame == 1) {
+            LOGV("Succeed to encode 1 frame! \tsize:%5d\n", pkt.size);
+            pkt.stream_index = audio_st->index;
+            // ret = av_write_frame(pFormatCtx, &pkt);
+            av_free_packet(&pkt);
+        } else {
+            LOGV("Failed to encode 1 frame! %s\n", strerror(errno));
+        }
+    }
+
+    //Flush Encoder
+    ret = flush_encoder(pFormatCtx, 0);
+    if (ret < 0) {
+        LOGV("Flushing encoder failed\n");
+        return -1;
+    }
+
+    //Write Trailer
+    av_write_trailer(pFormatCtx);
+
+    //Clean
+    if (audio_st) {
+        avcodec_close(audio_st->codec);
+        av_free(mAVFrameArray[0]);
+        av_free(mEncoderDataArray[0]);
+    }
+    avio_close(pFormatCtx->pb);
+    avformat_free_context(pFormatCtx);
+
+    fclose(in_file);
+
+    return 0;
+}
+
+JNIEXPORT jint JNICALL
+Java_com_recorder_util_mp4Recorder_writeDataTest(JNIEnv *env, jclass type) {
+    sssss(0, 0);
+    // TODO
+
 }

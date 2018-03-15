@@ -27,6 +27,7 @@ import com.tws.commonlib.App;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.MyConfig;
+import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.db.DatabaseManager;
 import com.umeng.commonsdk.UMConfigure;
@@ -39,6 +40,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,6 +80,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     private boolean bIsMotionDetected;
     private boolean bIsIOAlarm;
     private long rebootTimeout = 120000;
+    private boolean isWakingUp = false;
 
     public float getVideoRatio(Context context) {
         if (videoRatio == 0) {
@@ -153,7 +160,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public String getCameraStateDesc() {
         if (this.getState() == CameraState.None || this.getState() == null) {
-            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.connect_state == CONNECTION_STATE_WAKINGUP) {
+            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp()) {
                 return App.getContext().getString(R.string.camera_state_connecting);
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
                 return App.getContext().getString(R.string.camera_state_connected);
@@ -161,6 +168,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 return App.getContext().getString(R.string.camera_state_disconnect);
             } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD) {
                 return App.getContext().getString(R.string.camera_state_passwordWrong);
+            } else if (this.connect_state == CONNECTION_STATE_SLEEPING) {
+                return App.getContext().getString(R.string.camera_state_sleep);
+            } else {
+                return App.getContext().getString(R.string.camera_state_disconnect);
             }
         } else {
             if (this.getState() == CameraState.Rebooting || this.getState() == CameraState.WillRebooting) {
@@ -178,19 +189,21 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public int getCameraStateBackgroundColor() {
         if (this.getState() == CameraState.None || this.getState() == null) {
-            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.connect_state == CONNECTION_STATE_WAKINGUP) {
+            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp()) {
                 return R.drawable.shape_state_connecting;
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
                 return R.drawable.shape_state_online;
             } else if (this.connect_state == CONNECTION_STATE_DISCONNECTED || this.connect_state == CONNECTION_STATE_UNKNOWN_DEVICE || this.connect_state == CONNECTION_STATE_TIMEOUT || this.connect_state == CONNECTION_STATE_UNSUPPORTED || this.connect_state == CONNECTION_STATE_CONNECT_FAILED) {
                 return R.drawable.shape_state_offline;
-            } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD) {
+            } else if (this.connect_state == CONNECTION_STATE_WRONG_PASSWORD || this.connect_state == CONNECTION_STATE_SLEEPING || this.connect_state == CONNECTION_STATE_WAKINGUP) {
                 return R.drawable.shape_state_pwderror;
+            } else {
+                return R.drawable.shape_state_offline;
             }
         } else {
             return R.drawable.shape_state_connecting;
         }
-        return 0;
+        //return 0;
     }
 
     private int videoQuality;
@@ -456,6 +469,35 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                     return null;
                 }
                 disconnect();
+                if (ex != null) {
+                    ex.onPosted(MyCamera.this, null);
+                }
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(Void result) {
+                super.onPostExecute(result);
+            }
+        }.execute();
+    }
+
+    AsyncTask wakeupTask;
+
+    @Override
+    public void asyncWakeUp(final TaskExecute ex) {
+        isWakingUp = true;
+        if (wakeupTask != null) {
+            wakeupTask.cancel(true);
+        }
+        wakeupTask = new AsyncTask<Void, Void, Void>() {
+
+            @Override
+            protected Void doInBackground(Void... arg0) {
+                if (isCancelled()) {
+                    return null;
+                }
+                MyCamera.this.wakeUp();
                 if (ex != null) {
                     ex.onPosted(MyCamera.this, null);
                 }
@@ -1178,6 +1220,10 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     public void receiveSessionInfo(NSCamera arg0, int sessionState) {
         L.i("IOTCamera1", "uid:" + uid + " prestate:" + cameraState.toString());
         this.connect_state = sessionState;
+        if (sessionState != NSCamera.CONNECTION_STATE_SLEEPING && sessionState != NSCamera.CONNECTION_STATE_WAKINGUP && sessionState != NSCamera.CONNECTION_STATE_CONNECTING && sessionState != NSCamera.CONNECTION_STATE_NONE) {
+            isWakingUp = false;
+            L.i("IOTCamera1isWakingUp", "uid:" + uid + " sessionState:" + sessionState);
+        }
         if (sessionState == NSCamera.CONNECTION_STATE_CONNECTED) {
             loginState++;
             if (MyConfig.isStrictPwd() && this.getPassword().equals(TwsDataValue.DEFAULT_PASSWORD)) {//检测该摄像机密码格式是否符合要求
@@ -1282,14 +1328,23 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path) {
+
         for (int i = 0; i < mIOTCListeners.size(); i++) {
             IIOTCListener listener = mIOTCListeners.get(i);
             listener.receiveRecordingData(MyCamera.this, avChannel, paramInt1, path);
         }
     }
 
+
+    @Override
+    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path, int dataType, int dataLength, byte[] data) {
+
+
+    }
+
     @Override
     public int wakeUp() {
+        isWakingUp = true;
         return super.wakeUp();
     }
 
@@ -1608,6 +1663,16 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public boolean isPasswordWrong() {
         return this.connect_state == NSCamera.CONNECTION_STATE_WRONG_PASSWORD;
+    }
+
+    @Override
+    public boolean isSleeping() {
+        return this.connect_state == NSCamera.CONNECTION_STATE_SLEEPING;
+    }
+
+    @Override
+    public boolean isWakingUp() {
+        return this.connect_state == NSCamera.CONNECTION_STATE_WAKINGUP || isWakingUp;
     }
 
     @Override

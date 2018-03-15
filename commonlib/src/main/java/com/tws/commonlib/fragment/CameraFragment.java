@@ -161,7 +161,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     }
                     //收到密码错误，则弹出输入密码的dialog
                     else if (resultCode == TwsSessionState.CONNECTION_STATE_WAKINGUP) {
-                        camera.start();
+                       // camera.start();
                     } else if (resultCode == TwsSessionState.CONNECTION_STATE_TIMEOUT) {
                         camera.asyncStop(new IMyCamera.TaskExecute() {
                             @Override
@@ -180,6 +180,16 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             });
                         } else {
 
+                        }
+                    }
+                    else if(camera.isSleeping()){
+                        if(camera.isWakingUp()){
+                            camera.asyncWakeUp(new IMyCamera.TaskExecute() {
+                                @Override
+                                public void onPosted(final IMyCamera camera, Object data) {
+                                    camera.start();
+                                }
+                            });
                         }
                     }
                     break;
@@ -521,7 +531,30 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             c.start();
                         }
                     });
-                } else if (btnId == R.id.img_snapshot) {
+                }
+                else if(btnId == R.id.btn_wakeup){
+                    if(!camera.isWakingUp()){
+                        camera.asyncWakeUp(new IMyCamera.TaskExecute() {
+                            @Override
+                            public void onPosted(final IMyCamera camera, Object data) {
+                                handler.postDelayed(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        camera.start();
+                                    }
+                                }, 3000);
+                                CameraFragment.this.getActivity().runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        refreshItems();
+                                    }
+                                });
+                            }
+                        });
+                    }
+                }
+
+                else if (btnId == R.id.img_snapshot) {
                     if (camera.isPasswordWrong()) {
                         camera.stop();
                         showPasswordWrongHint(camera);

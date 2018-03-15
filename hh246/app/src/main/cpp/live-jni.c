@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <android/log.h>
 #include <android/bitmap.h>
-#include <record.c>
 
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
@@ -346,34 +345,4 @@ void Java_com_decoder_util_VideoPlayer_dealloc(JNIEnv * env, jobject this,jint v
         avcodec_close(pCodecCtxArray[video_stream_index]);
         pCodecCtxArray[video_stream_index] = NULL;
     }
-}
-
-JNIEXPORT jint JNICALL
-Java_com_decoder_util_VideoPlayer_RecordMp4init(JNIEnv *env, jclass type,
-                                                                jint width, jint height,
-                                                                jstring videoPath_) {
-    const char *videoPath = (*env)->GetStringUTFChars(env, videoPath_, 0);
-    int ret = CreateMp4(videoPath,width,height);
-    // TODO
-
-    (*env)->ReleaseStringUTFChars(env, videoPath_, videoPath);
-    return ret;
-}
-
-JNIEXPORT jint JNICALL
-Java_com_decoder_util_VideoPlayer_RecordMp4write(JNIEnv *env, jclass type,
-                                                                 jbyteArray data_, jint length, jint pts) {
-    jbyte *data = (*env)->GetByteArrayElements(env, data_, NULL);
-    WriteVideo(data,length,pts);
-    // TODO
-
-    (*env)->ReleaseByteArrayElements(env, data_, data, 0);
-    return 0;
-}
-
-JNIEXPORT jint JNICALL
-Java_com_decoder_util_VideoPlayer_RecordMp4deinit(JNIEnv *env, jclass type) {
-    CloseMp4();
-    // TODO
-
 }

@@ -48,12 +48,12 @@ public class VideoPlayer {
     public static native int RecordMp4deinit();
     static {
         try {
-            System.loadLibrary("avutil-55");
-            System.loadLibrary("avcodec-57");
-            System.loadLibrary("swresample-2");
-            System.loadLibrary("swscale-4");
-            System.loadLibrary("avformat-57");
-            System.loadLibrary("avfilter-6");
+            System.loadLibrary("avutil");
+            System.loadLibrary("avcodec");
+            System.loadLibrary("swresample");
+            System.loadLibrary("swscale");
+            System.loadLibrary("avformat");
+            System.loadLibrary("avfilter");
             System.loadLibrary("live-jni");
         }
         catch (Exception ex){

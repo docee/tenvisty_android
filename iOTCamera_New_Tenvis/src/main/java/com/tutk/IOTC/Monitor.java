@@ -637,4 +637,9 @@ public class Monitor extends SurfaceView implements SurfaceHolder.Callback, IReg
 
     }
 
+    @Override
+    public void receiveRecordingData(Camera paramCamera, int avChannel, int paramInt1, String path, int dataType, int dataLength, byte[] data) {
+
+    }
+
 }

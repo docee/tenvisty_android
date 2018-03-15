@@ -2,7 +2,7 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 26
-    buildToolsVersion "26.0.0"
+    buildToolsVersion '26.0.2'
     defaultConfig {
         applicationId "com.example.administrator.hh246"
         minSdkVersion 14
@@ -14,7 +14,7 @@ android {
             ndkBuild {
                 arguments "NDK_APPLICATION_MK=src/main/cpp/Application.mk"
                 cppFlags "-frtti", "-fexceptions"
-                abiFilters "armeabi"
+                abiFilters "armeabi-v7a"
             }
         }
     }
@@ -22,6 +22,12 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            debuggable true
+            jniDebuggable true
+        }
+        debug {
+            jniDebuggable false
+            debuggable true
         }
     }
     externalNativeBuild {
@@ -29,10 +35,15 @@ android {
             path 'src/main/cpp/Android.mk'
         }
     }
+    sourceSets{
+        main{
+            jniLibs.srcDirs=['src/main/cpp']
+        }
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })

@@ -49,6 +49,7 @@ public interface IMyCamera {
     public void asyncStart(final TaskExecute ex);
     public void stop();
     public void asyncStop(final TaskExecute ex);
+    public void asyncWakeUp(final TaskExecute ex);
     public void startVideo();
     public void asyncStartVideo(final TaskExecute te);
     public void stopRecording(final int avChannel);
@@ -83,6 +84,8 @@ public interface IMyCamera {
     public boolean isPasswordWrong();
     public boolean isConnecting();
     public  boolean isNotConnect();
+    public boolean isSleeping();
+    public boolean isWakingUp();
     public void saveSnapShot(final int channel, final String subFolder, final String fileName, final TaskExecute te);
     public int getVideoQuality();
     public void setVideoQuality(int videoQuality);

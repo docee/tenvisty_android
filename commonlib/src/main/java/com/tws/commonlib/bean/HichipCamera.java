@@ -725,7 +725,18 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     public boolean isNotConnect() {
         return super.getConnectState() == CAMERA_CONNECTION_STATE_DISCONNECTED;
     }
+    @Override
+    public boolean isSleeping(){
+        return false;
+    }
+    @Override
+    public boolean isWakingUp(){
+        return false;
+    }
+    @Override
+    public void asyncWakeUp(final TaskExecute ex){
 
+    }
     @Override
     public void saveSnapShot(int channel, final String filePath, final String fileName, final TaskExecute te) {
         this.asyncSnapshot(new TaskExecute() {

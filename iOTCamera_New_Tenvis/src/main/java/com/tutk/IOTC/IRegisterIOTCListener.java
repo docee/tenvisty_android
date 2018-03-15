@@ -21,4 +21,5 @@ public interface IRegisterIOTCListener {
 	
 	void receiveRGBData(Camera paramCamera, int paramInt1, byte[] paramArrayOfByte, int paramInt2, int paramInt3);
 	void receiveRecordingData(Camera paramCamera, final int avChannel, int paramInt1, String path);
+	void receiveRecordingData(Camera paramCamera, final int avChannel, int paramInt1, String path,int dataType,int dataLength,byte[] data);
 }

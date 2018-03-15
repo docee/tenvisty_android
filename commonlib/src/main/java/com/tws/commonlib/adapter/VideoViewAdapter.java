@@ -86,6 +86,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_play = convertView.findViewById(R.id.ll_tip_play);
             holder.ll_tip_disconnected = convertView.findViewById(R.id.ll_tip_disconnected);
             holder.ll_tip_connecting = convertView.findViewById(R.id.ll_tip_connecting);
+            holder.ll_tip_sleep = convertView.findViewById(R.id.ll_tip_sleep);
             holder.img_push_alarm = convertView.findViewById(R.id.img_push_alarm);
             holder.ll_mask_image.getLayoutParams().height = height - holder.ll_bottom_button.getLayoutParams().height;
 
@@ -96,6 +97,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_play.findViewById(R.id.btn_play).setOnClickListener(clickListener);
             holder.ll_tip_disconnected.findViewById(R.id.btn_reconnect).setOnClickListener(clickListener);
             holder.ll_tip_password_wrong.findViewById(R.id.btn_modifyPassword).setOnClickListener(clickListener);
+            holder.ll_tip_sleep.findViewById(R.id.btn_wakeup).setOnClickListener(clickListener);
             convertView.setTag(holder);
 
         } else {
@@ -112,6 +114,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_play.findViewById(R.id.btn_play).setTag(camera);
             holder.ll_tip_disconnected.findViewById(R.id.btn_reconnect).setTag(camera);
             holder.ll_tip_password_wrong.findViewById(R.id.btn_modifyPassword).setTag(camera);
+            holder.ll_tip_sleep.findViewById(R.id.btn_wakeup).setTag(camera);
             Bitmap snap = camera.getSnapshot();
             if (snap == null || snap.isRecycled()) {
                 if (TwsTools.isSDCardValid()) {
@@ -153,6 +156,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_disconnected.setVisibility(View.GONE);
             holder.ll_tip_connecting.setVisibility(View.GONE);
             holder.ll_tip_play.setVisibility(View.GONE);
+            holder.ll_tip_sleep.setVisibility(View.GONE);
 
             if (camera.isConnected() && camera.getState() == CameraState.None) {
                 holder.ll_tip_play.setVisibility(View.VISIBLE);
@@ -163,9 +167,18 @@ public class VideoViewAdapter extends SimpleAdapter {
                 if (camera.getState() == CameraState.None) {
                     if (camera.isPasswordWrong()) {
                         holder.ll_tip_password_wrong.setVisibility(View.VISIBLE);
-                    } else if (camera.isConnecting()) {
+                    } else if (camera.isConnecting() || camera.isWakingUp()) {
                         holder.ll_tip_connecting.setVisibility(View.VISIBLE);
-                    } else {
+                    }
+                    else if(camera.isSleeping()){
+                        if(camera.isWakingUp()){
+                            holder.ll_tip_connecting.setVisibility(View.VISIBLE);
+                        }
+                        else {
+                            holder.ll_tip_sleep.setVisibility(View.VISIBLE);
+                        }
+                    }
+                    else {
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);
                     }
                 }
@@ -195,6 +208,8 @@ public class VideoViewAdapter extends SimpleAdapter {
         public RelativeLayout ll_tip_password_wrong;
         public RelativeLayout ll_tip_disconnected;
         public RelativeLayout ll_tip_connecting;
+        public RelativeLayout ll_tip_sleep;
+
 
 
     }
