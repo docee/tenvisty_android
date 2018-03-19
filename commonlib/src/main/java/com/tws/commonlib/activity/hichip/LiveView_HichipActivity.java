@@ -1099,10 +1099,16 @@ public class LiveView_HichipActivity extends BaseActivity implements
     }
 
     void initBtn() {
-        if (playState.isListening()) {
-            startListen();
-        } else {
+        if(!playState.isListening()){
             stopListen();
+        }
+        else if(playState.isSpeaking()){
+           stopSpeak();
+            startListen();
+            this.camera.startAudio();
+        }
+        else{
+            startListen();
         }
         if (playState.isRecording()) {
             startRecording();

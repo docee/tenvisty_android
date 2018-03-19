@@ -149,13 +149,27 @@ public class SearchLanAsync {
                 _listener.onReceiveSearchResult(null, 0);
                 _listener = null;
             }
+            // searchSDK.stop();
+        }
+        if (state == SearchState.Searching) {
+            state = SearchState.Stopping;
+        }
+    }
+    public synchronized void stopSearch2() {
+        if (searchThread != null && searchThread.isRunning) {
+            searchThread.stopThread();
+            searchThread = null;
+            if(_listener != null){
+                _listener.onReceiveSearchResult(null, 0);
+                _listener = null;
+            }
+
         }
         if (state == SearchState.Searching) {
             state = SearchState.Stopping;
         }
         searchSDK.stop();
     }
-
     public SearchState getState() {
         return state;
     }

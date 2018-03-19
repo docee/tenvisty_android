@@ -39,11 +39,22 @@ public class CooConfig extends BaseConfig {
             if (mThread == null) {
                 mThread = new Thread() {
                     public void run() {
+                        long times = 1;
                         while (mDone) {
                             //Cooee.send(ssid, password, mLocalIp, "0123456789abcdef");
                             Cooee.send(ssid, password, mIP);
 //                            Cooee.send(ssid, password);
                             Log.e("正在发送广播", "");
+                            try {
+                                times++;
+                                if (times % 1000 == 0) {
+                                    Thread.sleep(500);
+                                } else {
+                                    //Thread.sleep(10);
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 };

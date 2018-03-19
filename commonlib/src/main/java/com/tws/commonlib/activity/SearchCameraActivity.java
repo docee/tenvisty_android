@@ -168,6 +168,7 @@ public class SearchCameraActivity extends BaseActivity {
                     if (list.size() == 0) {
                         lay_fail_lan_search.setVisibility(View.VISIBLE);
                     }
+                    searchLan = null;
                     isSearching = false;
                     SearchCameraActivity.this.progressBar_whole.setVisibility(View.INVISIBLE);//进度条显示
                     SearchCameraActivity.this.progressBar.setVisibility(View.INVISIBLE);//进度条显示
@@ -233,7 +234,7 @@ public class SearchCameraActivity extends BaseActivity {
     protected void onPause() {
         super.onPause();
         if (searchLan != null) {
-            searchLan.stopSearch();
+            searchLan.stopSearch2();
         }
         isSearching = false;
     }
