@@ -177,12 +177,42 @@ public class SdCardSettingActivity extends BaseActivity implements IIOTCListener
                     edt_total_size.setText(String.valueOf(mTotalSize) + " MB");
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_FORMATEXTSTORAGE_RESP:
-                    getRemoteData();
+                    if(camera.getSupplier()== IMyCamera.Supllier.AN){
+                        getFormatStatus();
+                    }
+                    else {
+                        getRemoteData();
+                    }
+                    break;
+                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FORAMT_RESULT_RESP:
+                    //0:格式化完毕；1:格式化中；-1:格式化失败；
+                    int result = Packet.byteArrayToInt_Little(data,0);
+                    if(result == 0){
+                        dismissLoadingProgress();
+                    }
+                    else if(result == 1){
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                getFormatStatus();
+                            }
+                        }, 5000);
+                    }
+                    else{
+                        dismissLoadingProgress();
+                    }
                     break;
             }
             super.handleMessage(msg);
         }
     };
+
+    public void getFormatStatus(){
+        showLoadingProgress();
+        if (camera != null) {
+            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FORAMT_RESULT_REQ , AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+        }
+    }
 
     public void  clickLine(View view){
 

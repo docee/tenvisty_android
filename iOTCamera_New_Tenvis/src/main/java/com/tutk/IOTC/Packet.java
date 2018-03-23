@@ -50,7 +50,9 @@ public class Packet {
 		else
 			return 0;
 	}
-
+	public static final int byteArrayToInt_Big(byte byt[],int nBeginPos) {
+		return (0xff & byt[nBeginPos])<< 24 | (0xff & byt[nBeginPos + 1]) << 16 | (0xff & byt[nBeginPos + 2]) << 8 | (0xff & byt[nBeginPos + 3]) ;
+	}
 	public static final byte[] longToByteArray_Little(long value) {
 		return new byte[] { (byte) value, (byte) (value >>> 8), (byte) (value >>> 16), (byte) (value >>> 24), (byte) (value >>> 32), (byte) (value >>> 40),
 				(byte) (value >>> 48), (byte) (value >>> 56) };

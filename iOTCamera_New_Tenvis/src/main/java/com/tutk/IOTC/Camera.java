@@ -1163,7 +1163,6 @@ public class Camera extends NSCamera {
 
                     //synchronized (mIOTCListeners) {
                     for (int i = 0; i < mIOTCListeners.size(); i++) {
-
                         IRegisterIOTCListener listener = mIOTCListeners.get(i);
                         listener.receiveSessionInfo(Camera.this, CONNECTION_STATE_SLEEPING);
                     }
@@ -1421,7 +1420,6 @@ public class Camera extends NSCamera {
 
                             //  synchronized (mIOTCListeners) {
                             for (int i = 0; i < mIOTCListeners.size(); i++) {
-
                                 IRegisterIOTCListener listener = mIOTCListeners.get(i);
                                 listener.receiveSessionInfo(Camera.this, CONNECTION_STATE_SLEEPING);
                             }
@@ -3205,7 +3203,6 @@ public class Camera extends NSCamera {
     }
 
     public int wakeUp() {
-        this.stop();
         this.connect_state = NSCamera.CONNECTION_STATE_WAKINGUP;
         return IOTCAPIs.IOTC_WakeUp_WakeDevice(uid);
     }

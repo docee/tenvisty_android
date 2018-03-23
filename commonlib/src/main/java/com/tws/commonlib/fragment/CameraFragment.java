@@ -42,6 +42,8 @@ import com.tws.commonlib.activity.AddCameraActivity;
 import com.tws.commonlib.activity.AddCameraNavigationTypeActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
+import com.tws.commonlib.activity.aoni.DeviceSetting_AoniActivity;
+import com.tws.commonlib.activity.aoni.EventList_AoniActivity;
 import com.tws.commonlib.activity.hichip.DeviceSetting_HichipActivity;
 import com.tws.commonlib.activity.hichip.EventList_HichipActivity;
 import com.tws.commonlib.activity.hichip.LiveView_HichipActivity;
@@ -219,21 +221,6 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
 
                         //showNotification(camera, camChannel, evtType, evtTime.getTimeInMillis());
 
-                    } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_RESP)
-
-                    {
-                        //请求获取设备信息的回复
-                        byte[] bytModel = new byte[16];
-                        byte[] bytVender = new byte[16];
-                        System.arraycopy(data, 0, bytModel, 0, 16);
-                        System.arraycopy(data, 16, bytVender, 0, 16);
-
-                        String model = TwsTools.getString(bytModel);
-                        String vender = TwsTools.getString(bytVender);
-                        int version = Packet.byteArrayToInt_Little(data, 32);
-                        int free = Packet.byteArrayToInt_Little(data, 44);
-                        int mTotalSize = Packet.byteArrayToInt_Little(data, 40);
-                        camera.setTotalSDSize(mTotalSize);
                     } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FIRMWARE_INFO_RESP) {
                         if (data != null && data.length > 0) {
                             String firmver = TwsTools.getString(data);
@@ -273,6 +260,14 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                 });
                             }
                         }
+                    }
+                    else if(avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_RESP){
+                        if(camera.getSupplier()!= IMyCamera.Supllier.UnKnown){
+                            refreshItems();
+                        }
+                    }
+                    else if(avIOCtrlMsgType ==  AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_BAT_PRAM_RESP){
+                        refreshItems();
                     }
 //                    //注意！！！由于在NTP同步的时候，设置完同步会去获取时间。这里获取完时间会去设置时间，注意不要死循环了
 //                    else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
@@ -497,14 +492,24 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
                         intent.setClass(CameraFragment.this.getActivity(), DeviceSetting_HichipActivity.class);
                     } else {
-                        intent.setClass(CameraFragment.this.getActivity(), DeviceSettingActivity.class);
+                        if(camera.getSupplier()== IMyCamera.Supllier.AN){
+                            intent.setClass(CameraFragment.this.getActivity(), DeviceSetting_AoniActivity.class);
+                        }
+                        else {
+                            intent.setClass(CameraFragment.this.getActivity(), DeviceSettingActivity.class);
+                        }
                     }
                     startActivity(intent);
                 } else if (btnId == R.id.btn_item_event) {
                     if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
                         intent.setClass(CameraFragment.this.getActivity(), EventList_HichipActivity.class);
                     } else {
-                        intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);
+                        if(camera.getSupplier()== IMyCamera.Supllier.AN){
+                            intent.setClass(CameraFragment.this.getActivity(), EventList_AoniActivity.class);
+                        }
+                        else{
+                            intent.setClass(CameraFragment.this.getActivity(), EventListActivity.class);
+                        }
                     }
                     startActivity(intent);
                 } else if (btnId == R.id.btn_play) {

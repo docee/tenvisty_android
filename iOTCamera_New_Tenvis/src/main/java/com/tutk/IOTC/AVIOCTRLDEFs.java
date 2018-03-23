@@ -1,5 +1,7 @@
 package com.tutk.IOTC;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -222,6 +224,56 @@ public class AVIOCTRLDEFs {
     public static final int IOTYPE_USER_IPCAM_GET_ALARM_TIME_RESP = 0x50032;
     public static final int IOTYPE_USER_IPCAM_SET_ALARM_TIME_REQ = 0x50033;
     public static final int IOTYPE_USER_IPCAM_SET_ALARM_TIME_RESP = 0x50034;
+    public static final int IOTYPE_USER_IPCAM_GET_FORAMT_RESULT_REQ = 0x0382; // Format external storage
+    public static final int IOTYPE_USER_IPCAM_GET_FORAMT_RESULT_RESP = 0x0383;
+    public static final int IOTYPE_USER_IPCAM_SET_TIMEMODE_TO_SHARE_REQ = 0X40074;    // set time mode 0 Chinese 1 America 2 Europe
+    public static final int IOTYPE_USER_IPCAM_SET_TIMEMODE_TO_SHARE_RESP = 0X40075;
+    public static final int IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_REQ = 0X40076;    // get time mode 0 Chinese 1 America 2 Europe
+    public static final int IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_RESP = 0X40077;
+    public static final int IOTYPE_USER_IPCAM_REBOOT_SYSTEM_REQ = 0x40019;
+    public static final int IOTYPE_USER_IPCAM_REBOOT_SYSTEM_RESP = 0x40020;
+    public static final int IOTYPE_USER_IPCAM_GET_DEVICEMODEL_CONFIG_REQ = 0X40056;    //读取装备信息
+    public static final int IOTYPE_USER_IPCAM_GET_DEVICEMODEL_CONFIG_RESP = 0X40057;
+    public static final int IOTYPE_USER_IPCAM_SET_DEVICEMODEL_CONFIG_REQ = 0X40058;    //写入装备信息
+    public static final int IOTYPE_USER_IPCAM_SET_DEVICEMODEL_CONFIG_RESP = 0X40059;
+
+    public static final int IOTYPE_USER_IPCAM_AUSDOM_LISTDIR_REQ = 0x50035;
+    public static final int IOTYPE_USER_IPCAM_AUSDOM_LISTDIR_RESP = 0x50036;
+    // 20、获取电池当前状态
+    public static final int IOTYPE_USER_IPCAM_GET_BAT_PRAM_REQ = 0x50058;
+    public static final int IOTYPE_USER_IPCAM_GET_BAT_PRAM_RESP = 0x50059;
+    //电池电量推送提醒
+    public static final int IOTYPE_USER_IPCAM_SET_BAT_PUSH_EN_REQ = 0X400A3;
+    public static final int IOTYPE_USER_IPCAM_SET_BAT_PUSH_EN_RESP = 0X400A4;
+    public static final int IOTYPE_USER_IPCAM_GET_BAT_PUSH_EN_REQ = 0X400A5;
+    public static final int IOTYPE_USER_IPCAM_GET_BAT_PUSH_EN_RESP = 0X400A6;
+    //门铃推送
+    public static final int IOTYPE_USER_IPCAM_SET_DB_PUSH_EN_REQ = 0X400A7;
+    public static final int IOTYPE_USER_IPCAM_SET_DB_PUSH_EN_RESP = 0X400A8;
+    public static final int IOTYPE_USER_IPCAM_GET_DB_PUSH_EN_REQ = 0X400A9;
+    public static final int IOTYPE_USER_IPCAM_GET_DB_PUSH_EN_RESP = 0X400AA;
+    //24、OTA升级固件相关
+// AUSDOM REMOTE UPGRADE  升级请求
+    public static final int IOTYPE_USER_IPCAM_REMOTE_UPGRADE_REQ = 0X6008E;
+    public static final int IOTYPE_USER_IPCAM_REMOTE_UPGRADE_RESP = 0X6008F;
+    public static final int IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_REQ = 0X60090;
+    public static final int IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_RESP = 0X60091;
+
+    //PIR灵敏度设置
+    public static final int IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_REQ = 0X6000c; //PIR SENSITIVITY
+    public static final int IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_RESP = 0X6000d;
+    public static final int IOTYPE_USER_IPCAM_GET_PIR_SENSITIVITY_REQ = 0X6000e;
+    public static final int IOTYPE_USER_IPCAM_GET_PIR_SENSITIVITY_RESP = 0X6000f;
+    //PIR开关：
+    public static final int IOTYPE_USER_IPCAM_SET_ARM_STATUS_REQ = 0X60008; // ARM/DISARM
+    public static final int IOTYPE_USER_IPCAM_SET_ARM_STATUS_RESP = 0X60009;
+    public static final int IOTYPE_USER_IPCAM_GET_ARM_STATUS_REQ = 0X6000a;
+    public static final int IOTYPE_USER_IPCAM_GET_ARM_STATUS_RESP = 0X6000b;
+
+    public static final int IOTYPE_USER_IPCAM_SET_NTP_CONFIG_REQ = 0X40050;    //写入ntp的配置信息
+    public static final int IOTYPE_USER_IPCAM_SET_NTP_CONFIG_RESP = 0X40051;
+    public static final int IOTYPE_USER_IPCAM_GET_NTP_CONFIG_REQ = 0X40052;    //读取ntp的配置信息
+    public static final int IOTYPE_USER_IPCAM_GET_NTP_CONFIG_RESP = 0X40053;
 
 
     //user-defined cmd type
@@ -456,13 +508,24 @@ public class AVIOCTRLDEFs {
     /**
      * 设备信息
      */
-    public class SMsgAVIoctrlDeviceInfoResp {
-        byte[] model = new byte[16];    //產品型號
-        byte[] vendor = new byte[16];    //產品製造商
-        int version;    //產品版本資訊
-        int channel;    //暫不用，預留
-        int total;	 /* MByte  MBytes, total space size for sdcard*/
-        int free; 	/* MByte   MBytes , free space size for sdcard */
+    public static class SMsgAVIoctrlDeviceInfoResp {
+
+        public SMsgAVIoctrlDeviceInfoResp(byte[] data) {
+            if (data != null && data.length >= 48) {
+                System.arraycopy(data, 0, this.model, 0, 16);
+                System.arraycopy(data, 16, this.vendor, 0, 16);
+                this.version = Packet.byteArrayToInt_Little(data, 32);
+                this.total = Packet.byteArrayToInt_Little(data, 36);
+                this.free = Packet.byteArrayToInt_Little(data, 40);
+            }
+        }
+
+        public byte[] model = new byte[16];    //產品型號
+        public byte[] vendor = new byte[16];    //產品製造商
+        public int version;    //產品版本資訊
+        public int channel;    //暫不用，預留
+        public int total;	 /* MByte  MBytes, total space size for sdcard*/
+        public int free; 	/* MByte   MBytes , free space size for sdcard */
         byte[] reserved = new byte[8];
     }
 
@@ -1761,7 +1824,7 @@ IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP = 0x2004,
 
         public SMsgAVIoctrlUpgradeStatus(byte[] data) {
             if (data.length >= 8) {
-                ret = Packet.byteArrayToInt_Little(data);
+                ret = Packet.byteArrayToInt_Little(data, 0);
                 p = Packet.byteArrayToInt_Little(data, 4);
             }
         }
@@ -1806,7 +1869,7 @@ IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP = 0x2004,
 
         public SMsgAVIoctrlTime(byte[] data) {
             int pos = 0;
-            timeType = Packet.byteArrayToInt_Little(data);
+            timeType = Packet.byteArrayToInt_Little(data, 0);
             pos += 4;
             timeInfo = new STimeDay(data, pos);
             pos += 8;
@@ -1902,6 +1965,389 @@ IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP = 0x2004,
             ssid = new byte[32];
             System.arraycopy(data, 0, ssid, 0, 32);
             status = Packet.byteArrayToInt_Little(data, 32);
+        }
+    }
+
+
+    //aoni
+
+    /**
+     * 设备信息
+     */
+    public static class SMsgAVIoctrlDevModelConfig {
+
+        public SMsgAVIoctrlDevModelConfig(byte[] data) {
+            if (data != null && data.length >= 132) {
+                System.arraycopy(data, 0, this.deviceModel, 0, 64);
+                System.arraycopy(data, 64, this.manufacturer, 0, 64);
+                this.serverMask = Packet.byteArrayToInt_Little(data, 128);
+            }
+        }
+
+        public boolean hasMic() {
+            return (this.serverMask & 0x01) > 0;
+        }
+
+        public boolean hasSpeak() {
+            return (this.serverMask & 0x02) > 0;
+        }
+
+        public boolean hasIOAlarm() {
+            return (this.serverMask & 0x04) > 0;
+        }
+
+        public boolean hasSDCard() {
+            return (this.serverMask & 0x08) > 0;
+        }
+
+        public boolean hasPtz() {
+            return (this.serverMask & 0x10) > 0;
+        }
+
+        public byte[] deviceModel = new byte[64];    //设备型号
+        public byte[] manufacturer = new byte[64];    //制造商
+        int serverMask;            //位数说明(0:mic 1:speak 2:wifi 3:I/O输入输出报警 4:SD卡录像 5:云台) 该位1有效，0无效。
+        public byte[] reserved = new byte[4];            //保留
+        public byte[] serverMaskBytes = new byte[4];            //保留
+
+    }
+    //录像时长设置，单位second
+//    IOTYPE_USER_IPCAM_SETRCD_DURATION_REQ	= 0x0314,
+//    IOTYPE_USER_IPCAM_GETRCD_DURATION_RESP  = 0x0317,
+
+    public static class SMsgAVIoctrlRcdDuration {
+
+        public SMsgAVIoctrlRcdDuration(byte[] data) {
+            if (data != null && data.length >= 12) {
+                this.channel = Packet.byteArrayToInt_Little(data, 0);
+                this.presecond = Packet.byteArrayToInt_Little(data, 4);
+                this.durasecond = Packet.byteArrayToInt_Little(data, 8);
+            }
+        }
+
+        public static byte[] parseContent(int durasecond) {
+            byte[] data = new byte[12];
+            byte[] dbyte = Packet.intToByteArray_Little(durasecond);
+            System.arraycopy(dbyte, 0, data, 8, 4);
+            return data;
+        }
+
+        public int channel;        // Camera Index
+        public int presecond;    // pre-recording (sec)   936不支持
+        public int durasecond;    // recording (sec)		最大请勿超过300秒
+
+
+    }
+
+
+    public static class SMsgAVIoctrlListEventReq_Ausdom {
+        public int year;
+        public int month;
+        public int day;
+        public byte type;        //ENUM_RECORD_TYPE
+        byte[] res = new byte[3];
+
+        public SMsgAVIoctrlListEventReq_Ausdom(int year, int month, int day, byte type) {
+            this.year = year;
+            this.month = month;
+            this.day = day;
+            this.type = type;
+        }
+
+
+        public static byte[] parseConent(int year, int month, int day, byte type) {
+            byte[] data = new byte[16];
+            System.arraycopy(Packet.intToByteArray_Little(year), 0, data, 0, 4);
+            System.arraycopy(Packet.intToByteArray_Little(month), 0, data, 4, 4);
+            System.arraycopy(Packet.intToByteArray_Little(day), 0, data, 8, 4);
+            data[12] = type;
+            return data;
+        }
+    }
+
+    public static class SAvEvent_Ausdom {
+        STimeDay stTime;
+        byte event;
+        byte[] reserved = new byte[3];
+
+        public static int getTotalSize() {
+            return 12;
+        }
+
+    }
+
+    public class SMsgAVIoctrlListEventResp_Ausdom {
+        int channel; // Camera Index
+        int total;
+        byte index;
+        byte endflag;
+        byte count;
+        byte type;
+        SAvEvent_Ausdom stEvent;        // The first memory address of the events in this package
+//	int videotime[MAX_VIDEO_NUM];  //max is 100
+
+    }
+
+    //IOTYPE_USER_IPCAM_GET_BAT_PRAM_REQ
+    public static class SMsgGetBatPramResp {
+        public int work_mode;
+        // 0:bat; 1:usb无电池；2:usb有电池，充电中；3:usb有电池，充电满
+        public int bat_percent;    //当前电池电量百分比
+        byte[] reserved = new byte[4];
+
+        public SMsgGetBatPramResp(byte[] data) {
+            if (data.length >= 8) {
+                this.work_mode = Packet.byteArrayToInt_Little(data, 0);
+                this.bat_percent = Packet.byteArrayToInt_Little(data, 4);
+            }
+        }
+
+    }
+
+    //IOTYPE_USER_IPCAM_SET_BAT_PUSH_EN_REQ			= 0X400A3,
+//IOTYPE_USER_IPCAM_SET_BAT_PUSH_EN_RESP			= 0X400A4,
+//IOTYPE_USER_IPCAM_GET_BAT_PUSH_EN_REQ			= 0X400A5,
+//IOTYPE_USER_IPCAM_GET_BAT_PUSH_EN_RESP			= 0X400A6,
+
+    public static class SMsgAVIoctrlBatPush {
+        public int push_en;
+        byte[] reserved = new byte[4];
+
+        public SMsgAVIoctrlBatPush(byte[] data) {
+            if (data.length >= 8) {
+                this.push_en = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+
+        public static byte[] parseContent(int enable) {
+            byte[] data = new byte[8];
+            System.arraycopy(Packet.intToByteArray_Little(enable), 0, data, 0, 4);
+            return data;
+        }
+
+    }
+
+//IOTYPE_USER_IPCAM_SET_DB_PUSH_EN_REQ				= 0X400A7,
+//IOTYPE_USER_IPCAM_SET_DB_PUSH_EN_RESP			= 0X400A8,
+//IOTYPE_USER_IPCAM_GET_DB_PUSH_EN_REQ				= 0X400A9,
+//IOTYPE_USER_IPCAM_GET_DB_PUSH_EN_RESP			= 0X400AA,
+
+
+    public static class SMsgAVIoctrlDbPush {
+        public int push_en;
+        byte[] reserved = new byte[4];
+
+        public SMsgAVIoctrlDbPush(byte[] data) {
+            if (data.length >= 8) {
+                this.push_en = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+
+        public static byte[] parseContent(int enable) {
+            byte[] data = new byte[8];
+            System.arraycopy(Packet.intToByteArray_Little(enable), 0, data, 0, 4);
+            return data;
+        }
+    }
+
+    // AUSDOM REMOTE UPGRADE  升级请求
+//IOTYPE_USER_IPCAM_REMOTE_UPGRADE_REQ   = 0X6008E,
+//IOTYPE_USER_IPCAM_REMOTE_UPGRADE_RESP   = 0X6008F,
+    public static class SMsgAVIoctrlRemoteUpgradeReq {
+        byte[] new_version = new byte[64];  //即将升级的产品版本号
+        byte[] url_parth = new byte[128];    //升级文件存放的服务器地址
+
+        public static byte[] parseContent(String newVersion, String path) {
+            byte[] data = new byte[192];
+            try {
+                byte[] newVerBytes = newVersion.getBytes("utf-8");
+                byte[] pathBytes = path.getBytes("utf-8");
+                if (newVerBytes.length < 64) {
+                    System.arraycopy(newVerBytes, 0, data, 0, newVerBytes.length);
+                }
+                if (pathBytes.length < 128) {
+                    System.arraycopy(pathBytes, 0, data, 64, pathBytes.length);
+                }
+                return data;
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
+            }
+            return data;
+        }
+    }
+
+    public static class SMsgAVIoctrlRemoteUpgradeResp {
+        public int result;   //0 : 可以升级 1:当前已经是最新版本，无需升级   -1:正在升级中
+        byte[] reserved = new byte[4];
+
+        public SMsgAVIoctrlRemoteUpgradeResp(byte[] data) {
+            if (data.length >= 4) {
+                this.result = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+    }
+
+    //IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_REQ  = 0X60090,
+//IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_RESP  = 0X60091,
+
+    public static class SMsgAVIoctrlProgressResp {
+        public int progress_value;   //升级进度 :0~100  表示升级进度   -1:正在升级中
+        byte[] reserved = new byte[4];
+
+        public SMsgAVIoctrlProgressResp(byte[] data) {
+            if (data.length >= 4) {
+                this.progress_value = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+    }
+
+    //    IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_REQ   = 0X6000c, //PIR SENSITIVITY
+//    IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_RESP = 0X6000d,
+//    IOTYPE_USER_IPCAM_GET_PIR_SENSITIVITY_REQ = 0X6000e,
+//    IOTYPE_USER_IPCAM_GET_PIR_SENSITIVITY_RESP  = 0X6000f,
+    //[0~19]
+//[20~39]
+//        [40~59]
+//        [60~79]
+//        [80~99]
+//        100
+    public static class SMsgPirSensitivity {
+        public int sensitivity;   //0-100
+        byte[] reserved = new byte[4];
+
+        public SMsgPirSensitivity(byte[] data) {
+            if (data.length >= 4) {
+                this.sensitivity = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+
+        public static byte[] parseContent(int sens) {
+            byte[] result = new byte[8];
+            System.arraycopy(Packet.intToByteArray_Little(sens), 0, result, 0, 4);
+            return result;
+        }
+    }
+
+    //    PIR开关：
+//    IOTYPE_USER_IPCAM_SET_ARM_STATUS_REQ        = 0X60008, // ARM/DISARM
+//    IOTYPE_USER_IPCAM_SET_ARM_STATUS_RESP       = 0X60009,
+//    IOTYPE_USER_IPCAM_GET_ARM_STATUS_REQ        = 0X6000a,
+//    IOTYPE_USER_IPCAM_GET_ARM_STATUS_RESP       = 0X6000b,
+    public static class SMsgArmEnable {
+        public int arm_enable;   //1:enable 0:disable
+        byte[] reserved = new byte[4];
+
+        public SMsgArmEnable(byte[] data) {
+            if (data.length >= 4) {
+                this.arm_enable = Packet.byteArrayToInt_Little(data, 0);
+            }
+        }
+
+        public static byte[] parseContent(boolean enable) {
+            byte[] result = new byte[8];
+            System.arraycopy(Packet.intToByteArray_Little(enable ? 1 : 0), 0, result, 0, 4);
+            return result;
+        }
+    }
+
+    /*
+    IOTYPE_USER_IPCAM_SET_NTP_CONFIG_REQ		= 0X40050,	//写入ntp的配置信息
+    IOTYPE_USER_IPCAM_SET_NTP_CONFIG_RESP		= 0X40051,
+    IOTYPE_USER_IPCAM_GET_NTP_CONFIG_REQ		= 0X40052,	//读取ntp的配置信息
+    IOTYPE_USER_IPCAM_GET_NTP_CONFIG_RESP		= 0X40053,
+
+    */
+    public static class Ntp_set_time {
+        public int year;
+        public int month;
+        public int date;
+
+        public int hour;
+        public int minute;
+        public int second;
+
+        public Ntp_set_time(byte[] data) {
+            if (data.length >= 24) {
+                this.year = Packet.byteArrayToInt_Little(data, 0);
+                this.month = Packet.byteArrayToInt_Little(data, 4);
+                this.date = Packet.byteArrayToInt_Little(data, 8);
+                this.hour = Packet.byteArrayToInt_Little(data, 12);
+                this.minute = Packet.byteArrayToInt_Little(data, 16);
+                this.second = Packet.byteArrayToInt_Little(data, 20);
+            }
+        }
+
+        public Ntp_set_time() {
+        }
+
+        public Ntp_set_time(byte[] data, int beginPos) {
+            if (data.length >= 24 + beginPos) {
+                this.year = Packet.byteArrayToInt_Little(data, 0 + beginPos);
+                this.month = Packet.byteArrayToInt_Little(data, 4 + beginPos);
+                this.date = Packet.byteArrayToInt_Little(data, 8 + beginPos);
+                this.hour = Packet.byteArrayToInt_Little(data, 12 + beginPos);
+                this.minute = Packet.byteArrayToInt_Little(data, 16 + beginPos);
+                this.second = Packet.byteArrayToInt_Little(data, 20 + beginPos);
+            }
+        }
+
+        public static byte[] parseContent(int year, int month, int date, int hour, int minute, int second) {
+            byte[] result = new byte[24];
+            System.arraycopy(Packet.intToByteArray_Little(year), 0, result, 0, 4);
+            System.arraycopy(Packet.intToByteArray_Little(month), 0, result, 4, 4);
+            System.arraycopy(Packet.intToByteArray_Little(date), 0, result, 8, 4);
+            System.arraycopy(Packet.intToByteArray_Little(hour), 0, result, 12, 4);
+            System.arraycopy(Packet.intToByteArray_Little(minute), 0, result, 16, 4);
+            System.arraycopy(Packet.intToByteArray_Little(second), 0, result, 20, 4);
+            return result;
+        }
+
+        public byte[] parseContent() {
+            byte[] result = new byte[24];
+            System.arraycopy(Packet.intToByteArray_Little(year), 0, result, 0, 4);
+            System.arraycopy(Packet.intToByteArray_Little(month), 0, result, 4, 4);
+            System.arraycopy(Packet.intToByteArray_Little(date), 0, result, 8, 4);
+            System.arraycopy(Packet.intToByteArray_Little(hour), 0, result, 12, 4);
+            System.arraycopy(Packet.intToByteArray_Little(minute), 0, result, 16, 4);
+            System.arraycopy(Packet.intToByteArray_Little(second), 0, result, 20, 4);
+            return result;
+        }
+    }
+
+    public static class SMsgAVIoctrlNtpConfig {
+        public int mod;     ///1,ntp 2 manul
+        public byte[] Server = new byte[32];//NTP Server:
+        public Ntp_set_time time;//manul time
+        public byte TimeZone;//TimeZone:  0~25:(GMT-12)~GMT~(GMT+12)
+
+        public SMsgAVIoctrlNtpConfig(byte[] data) {
+            if (data.length >= 24) {
+                this.mod = Packet.byteArrayToInt_Little(data, 0);
+                System.arraycopy(data, 4, this.Server, 0, 32);
+                this.time = new Ntp_set_time(data, 36);
+                this.TimeZone = data[60];
+            }
+        }
+
+        public static byte[] parseContent(int mod, String server, Ntp_set_time time, byte timeZone) {
+            byte[] result = new byte[61];
+            System.arraycopy(Packet.intToByteArray_Little(mod), 0, result, 0, 4);
+            byte[] serverByts = server.getBytes();
+            System.arraycopy(serverByts, 0, result, 4, serverByts.length);
+            byte[] timeByts = time.parseContent();
+            System.arraycopy(timeByts, 0, result, 36, timeByts.length);
+            result[60] = timeZone;
+            return result;
+        }
+
+        public byte[] parseContent() {
+            byte[] result = new byte[61];
+            System.arraycopy(Packet.intToByteArray_Little(mod), 0, result, 0, 4);
+            System.arraycopy(Server, 0, result, 4, Server.length);
+            byte[] timeByts = time.parseContent();
+            System.arraycopy(timeByts, 0, result, 36, timeByts.length);
+            result[60] = TimeZone;
+            return result;
         }
     }
 

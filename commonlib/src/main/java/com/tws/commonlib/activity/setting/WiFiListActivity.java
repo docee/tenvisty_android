@@ -67,7 +67,7 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
         dev_uid = this.getIntent().getExtras().getString(TwsDataValue.EXTRA_KEY_UID);
         for (IMyCamera _camera : TwsDataValue.cameraList()) {
             if (_camera.getUid().equalsIgnoreCase(dev_uid)) {
-                camera =  _camera;
+                camera = _camera;
                 break;
             }
         }
@@ -103,12 +103,7 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
                 AVIOCTRLDEFs.SWifiAp selectedWifi = m_wifiList.get(position);
                 if (selectedWifi.status != 1) {
                     Intent intent = new Intent();
-                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
-                        intent.setClass(WiFiListActivity.this, WiFiSetActivity.class);
-                    }
-                    else{
-                        intent.setClass(WiFiListActivity.this, WiFiSet_HichipActivity.class);
-                    }
+                    intent.setClass(WiFiListActivity.this, WiFiSetActivity.class);
                     Bundle extras = new Bundle();
                     extras.putByte("enctype", selectedWifi.enctype);
                     extras.putByte("mode", selectedWifi.mode);
@@ -139,13 +134,7 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
         progress_loading.setVisibility(View.VISIBLE);
         listview_wifilist.setVisibility(View.GONE);
         ll_fail_wifi_search.setVisibility(View.GONE);
-        if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
-        }
-        else{
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, HiChipDefines.HI_P2P_GET_WIFI_LIST, new byte[0]);
-        }
-       // camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetWifiReq.parseContent());
+        camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetWifiReq.parseContent());
     }
 
     @Override
@@ -221,51 +210,31 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
 
                     m_wifiList.clear();
                     AVIOCTRLDEFs.SWifiAp connecttedAp = null;
-                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
-                        int cnt = Packet.byteArrayToInt_Little(data, 0);
-                        int size = AVIOCTRLDEFs.SWifiAp.getTotalSize();
+                    int cnt = Packet.byteArrayToInt_Little(data, 0);
+                    int size = AVIOCTRLDEFs.SWifiAp.getTotalSize();
 
-                        //txtWiFiSSID.setText(getText(R.string.none));
-                        //txtWiFiSSID.setTypeface(null, Typeface.BOLD);
-                        //txtWiFiStatus.setText(getText(R.string.tips_wifi_disconnect));
-                        if (cnt > 0 && data.length >= 40) {
+                    //txtWiFiSSID.setText(getText(R.string.none));
+                    //txtWiFiSSID.setTypeface(null, Typeface.BOLD);
+                    //txtWiFiStatus.setText(getText(R.string.tips_wifi_disconnect));
+                    if (cnt > 0 && data.length >= 40) {
 
-                            int pos = 4;
+                        int pos = 4;
 
-                            for (int i = 0; i < cnt; i++) {
+                        for (int i = 0; i < cnt; i++) {
 
-                                byte[] ssid = new byte[32];
-                                System.arraycopy(data, i * size + pos, ssid, 0, 32);
+                            byte[] ssid = new byte[32];
+                            System.arraycopy(data, i * size + pos, ssid, 0, 32);
 
-                                byte mode = data[i * size + pos + 32];
-                                byte enctype = data[i * size + pos + 33];
-                                byte signal = data[i * size + pos + 34];
-                                byte status = data[i * size + pos + 35];
-                                if (connecttedAp == null && status != 0) {
-                                    connecttedAp = new AVIOCTRLDEFs.SWifiAp(ssid, mode, enctype, signal, status);
-                                } else {
-                                    m_wifiList.add(new AVIOCTRLDEFs.SWifiAp(ssid, mode, enctype, signal, status));
-                                }
-                            }
-                        }
-                    }else if(msg.arg1 == 0){
-                        int cnt = com.hichip.tools.Packet.byteArrayToInt_Little(data, 0);
-                        int size = HiChipDefines.SWifiAp.getTotalSize();
-
-                        if (cnt > 0 && data.length >= 40) {
-                            int pos = 4;
-                            for (int i = 0; i < cnt; i++) {
-                                byte[] bty_ssid = new byte[32];
-                                System.arraycopy(data, i * size + pos, bty_ssid, 0, 32);
-                                byte mode = data[i * size + pos + 32];
-                                byte enctype = data[i * size + pos + 33];
-                                byte signal = data[i * size + pos + 34];
-                                byte status = data[i * size + pos + 35];
-                                if (connecttedAp == null && status != 0) {
-                                    connecttedAp = new AVIOCTRLDEFs.SWifiAp(bty_ssid, mode, enctype, signal, status);
-                                } else {
-                                    m_wifiList.add(new AVIOCTRLDEFs.SWifiAp(bty_ssid, mode, enctype, signal, status));
-                                }
+                            byte mode = data[i * size + pos + 32];
+                            byte enctype = data[i * size + pos + 33];
+                            byte signal = data[i * size + pos + 34];
+                            byte status = data[i * size + pos + 35];
+                            AVIOCTRLDEFs.SWifiAp ap =  new AVIOCTRLDEFs.SWifiAp(ssid, mode, enctype, signal, status);
+                            if (connecttedAp == null && (status != 0||TwsTools.getString(ssid).equals(connctedSsid))) {
+                                connecttedAp = ap;
+                                ap.status = 1;
+                            } else {
+                                m_wifiList.add(ap);
                             }
                         }
                     }
@@ -299,6 +268,7 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
                     connctedSsid = TwsTools.getString(ssid);
                     //camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
                     L.i(WiFiListActivity.class, "IOTYPE_USER_IPCAM_LISTWIFIAP_REQ");
+                    camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
                     break;
                 }
             }
@@ -391,16 +361,16 @@ public class WiFiListActivity extends BaseActivity implements IIOTCListener {
                 }
                 holder.imageview_signal.setImageResource(wifi_signal_id);
                 //if (strSsid.equals(connctedSsid)) {
-                    if (wifi.status == 1 || wifi.status == 3) {
-                        holder.txt_encrypt.setText(getString(R.string.tips_wifi_connected));
-                        holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.colorPrimaryDarkest));
-                    } else if (wifi.status == 2) {
-                        holder.txt_encrypt.setText(getString(R.string.tips_wifi_wrong_password));
-                        holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.darkred));
-                    } else if (wifi.status == 4) {
-                        holder.txt_encrypt.setText(getString(R.string.tips_wifi_saved));
-                        holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.colorPrimaryDarkest));
-                    }
+                if (wifi.status == 1 || wifi.status == 3) {
+                    holder.txt_encrypt.setText(getString(R.string.tips_wifi_connected));
+                    holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.colorPrimaryDarkest));
+                } else if (wifi.status == 2) {
+                    holder.txt_encrypt.setText(getString(R.string.tips_wifi_wrong_password));
+                    holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.darkred));
+                } else if (wifi.status == 4) {
+                    holder.txt_encrypt.setText(getString(R.string.tips_wifi_saved));
+                    holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.colorPrimaryDarkest));
+                }
                 //}
                 else {
                     holder.txt_ssid.setTextColor(ContextCompat.getColor(WiFiListActivity.this, R.color.black));

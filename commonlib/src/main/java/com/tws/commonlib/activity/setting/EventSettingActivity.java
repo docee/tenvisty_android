@@ -47,10 +47,6 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
             byte[] data = bundle.getByteArray("data");
 
             switch (msg.what) {
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_AUSDOM_PIR_SENSITIVITY_RESP: {
-                    int pirSensitivity = Packet.byteArrayToInt_Little(data, 4);
-                    hasPIR = true;
-                }
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETMOTIONDETECT_RESP:
                     dismissLoadingProgress();
                     int sensitivity = Packet.byteArrayToInt_Little(data, 4);
@@ -203,12 +199,7 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
     void searchSensitivity() {
         showLoadingProgress();
         if (camera != null) {
-            // if(camera.wakeUp()<0) {
             camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETMOTIONDETECT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetMotionDetectReq.parseContent(0));
-            // }
-            // else{
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_AUSDOM_PIR_SENSITIVITY_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetMotionDetectReq.parseContent(0));
-            // }
         }
     }
 

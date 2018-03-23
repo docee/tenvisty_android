@@ -278,9 +278,9 @@ public class AddDeviceWirelessSettingActivity extends BaseActivity implements II
                 mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
             }
         } else if (resultCode == NSCamera.CONNECTION_STATE_SLEEPING) {//连接摄像机的时候发现密码错误，弹出相应提示框
-            if (percent < 100) {
-                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
-            }
+//            if (percent < 100) {
+//                mHandler.obtainMessage(CONFIG_WIFI_SUCCESS).sendToTarget();
+//            }
         } else if (resultCode == NSCamera.CONNECTION_STATE_CONNECTING) {
 
         } else {

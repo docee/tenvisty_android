@@ -49,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -70,6 +71,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     private String mPwd;
     private String mServerDatabseId;
     private String mCameraStatus;
+    private String modelName;
 
     private static final Object stopLocker = new Object();
     private int mEventCount = 0;
@@ -81,6 +83,12 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     private boolean bIsIOAlarm;
     private long rebootTimeout = 120000;
     private boolean isWakingUp = false;
+    private boolean isStopManually = false;
+    AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoResp deviceInfo = null;
+    AVIOCTRLDEFs.SMsgAVIoctrlDevModelConfig deviceConfig = null;
+    private BatteryStatus batteryStatus = new BatteryStatus();
+    //bengin index,0:云台，1：:双向语音,2:预置位,3:光学变焦,4:SD卡槽 20170316-yilu
+    private byte[] functionFlag;
 
     public float getVideoRatio(Context context) {
         if (videoRatio == 0) {
@@ -160,7 +168,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public String getCameraStateDesc() {
         if (this.getState() == CameraState.None || this.getState() == null) {
-            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp()) {
+            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp() || this.connect_state == CONNECTION_STATE_FIND_DEVICE) {
                 return App.getContext().getString(R.string.camera_state_connecting);
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
                 return App.getContext().getString(R.string.camera_state_connected);
@@ -189,7 +197,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public int getCameraStateBackgroundColor() {
         if (this.getState() == CameraState.None || this.getState() == null) {
-            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp()) {
+            if (this.connect_state == NSCamera.CONNECTION_STATE_NONE || this.connect_state == CONNECTION_STATE_CONNECTING || this.isWakingUp() || this.connect_state == CONNECTION_STATE_FIND_DEVICE) {
                 return R.drawable.shape_state_connecting;
             } else if (this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) {
                 return R.drawable.shape_state_online;
@@ -429,6 +437,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 if (isCancelled()) {
                     return null;
                 }
+                L.i("IOTCamera", "start connect");
                 MyCamera.super.start();
 
                 MyCamera.this.connect(MyCamera.this.uid);
@@ -835,6 +844,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public void connect(String uid) {
+        isStopManually = false;
         super.connect(uid);
         mUID = uid;
     }
@@ -901,6 +911,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public void disconnect() {
+        isStopManually = true;
         super.disconnect();
         loginState = -1;
         mStreamDefs.clear();
@@ -1132,7 +1143,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             byte[] bGMTDiff = new byte[4];
 
             System.arraycopy(data, 0, bcbSize, 0, 4);
-            cbSize = Packet.byteArrayToInt_Little(bcbSize);
+            cbSize = Packet.byteArrayToInt_Little(bcbSize, 0);
 
             System.arraycopy(data, 4, bIsSupportTimeZone, 0, 4);
             nIsSupportTimeZone = Packet.byteArrayToInt_Little(bIsSupportTimeZone);
@@ -1174,7 +1185,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 //			{
 //				Log.i("IOTYPE_USER_IPCAM_SET_TIMEZONE_RESP ", "cbSize = " + cbSize);
 //			}
-        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_REBOOT_RESP) {
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_REBOOT_RESP || avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_REBOOT_SYSTEM_RESP) {
             if (data[0] == 0) {
                 cameraState = CameraState.WillRebooting;
             }
@@ -1208,6 +1219,39 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                     this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_REQ, data2);
                 }
             }
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_RESP) {
+            deviceInfo = new AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoResp(data);
+            if (this.modelName == null || !this.modelName.equals(TwsTools.getString(deviceInfo.model))) {
+                this.modelName = TwsTools.getString(deviceInfo.model);
+                this.updateModelName(App.getTopActivity());
+                getInitConfig();
+            }
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_RESP) {
+            int timeMode = Packet.byteArrayToInt_Little(data, 0);
+            //0:China   1:America  2:Europe
+            Log.i("TimeMode", timeMode + "");
+            if (timeMode == 2) {
+                byte[] reqData = new byte[8];
+                System.arraycopy(Packet.intToByteArray_Little(0), 0, reqData, 0, 4);
+                this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIMEMODE_TO_SHARE_REQ, reqData);
+            }
+
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIMEMODE_TO_SHARE_RESP) {
+            if (Packet.byteArrayToInt_Little(data, 0) == 0) {
+                this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+            }
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_DEVICEMODEL_CONFIG_RESP) {
+            deviceConfig = new AVIOCTRLDEFs.SMsgAVIoctrlDevModelConfig(data);
+
+        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_BAT_PRAM_RESP) {
+            if (batteryStatus == null) {
+                batteryStatus = new BatteryStatus();
+            }
+            AVIOCTRLDEFs.SMsgGetBatPramResp batParams = new AVIOCTRLDEFs.SMsgGetBatPramResp(data);
+            batteryStatus.setBatPercent(batParams.bat_percent);
+            batteryStatus.setWorkMode(batParams.work_mode);
+            batteryStatus.setTime(new Date().getTime());
+            updateBatteryStatus(App.getTopActivity());
         }
 
         for (int i = 0; i < mIOTCListeners.size(); i++) {
@@ -1216,21 +1260,39 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         }
     }
 
+    public  void getInitConfig(){
+        this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+        if (this.getSupplier() == Supllier.AN) {
+            //this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+            // this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_DEVICEMODEL_CONFIG_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+            this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_BAT_PRAM_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+
+        } else if(this.getSupplier() == Supllier.FB){
+            this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetTimeReq.parseContent(true));
+        }
+    }
+
     @Override
     public void receiveSessionInfo(NSCamera arg0, int sessionState) {
-        L.i("IOTCamera1", "uid:" + uid + " prestate:" + cameraState.toString());
-        this.connect_state = sessionState;
-        if (sessionState != NSCamera.CONNECTION_STATE_SLEEPING && sessionState != NSCamera.CONNECTION_STATE_WAKINGUP && sessionState != NSCamera.CONNECTION_STATE_CONNECTING && sessionState != NSCamera.CONNECTION_STATE_NONE) {
-            isWakingUp = false;
-            L.i("IOTCamera1isWakingUp", "uid:" + uid + " sessionState:" + sessionState);
+        if (isStopManually) {
+            return;
         }
+        L.i("IOTCamera1", "uid:" + uid + " prestate:" + cameraState.toString() + " sessionState:" + sessionState);
+        this.connect_state = sessionState;
+//        if (sessionState != NSCamera.CONNECTION_STATE_SLEEPING && sessionState != NSCamera.CONNECTION_STATE_WAKINGUP && sessionState != NSCamera.CONNECTION_STATE_CONNECTING && sessionState != NSCamera.CONNECTION_STATE_NONE) {
+//
+//            L.i("IOTCamera1isWakingUp", "uid:" + uid + " sessionState:" + sessionState);
+//        }
         if (sessionState == NSCamera.CONNECTION_STATE_CONNECTED) {
             loginState++;
+            isWakingUp = false;
             if (MyConfig.isStrictPwd() && this.getPassword().equals(TwsDataValue.DEFAULT_PASSWORD)) {//检测该摄像机密码格式是否符合要求
 
             } else if (this.isFirstLogin()) {
-                this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetTimeReq.parseContent(true));
+                getInitConfig();
             }
+        } else if (sessionState == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) {
+            isWakingUp = false;
         }
         // && state != CameraState.WillUpgrading
         if ((this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
@@ -1345,6 +1407,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public int wakeUp() {
         isWakingUp = true;
+        stop();
         return super.wakeUp();
     }
 
@@ -1435,6 +1498,30 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             //manager.updateDeviceInfoByDBID(mDevice.DBID, mCamera.uid, mCamera.name, "", "", "admin", mCamera.pwd, evtNotify, 0);
             db.updateDeviceInfoByDBUID(this.getUid(), this.getNickName(), "", "", "admin", this.getPassword(), this.pushNotificationStatus, 0, 0, this.getVideoQuality());
             return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean updateModelName(Context context) {
+        try {
+            DatabaseManager db = new DatabaseManager(context);
+            db.updateDeviceModel(this.getUid(), this.getModelName());
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean updateBatteryStatus(Context context) {
+        try {
+            if (batteryStatus != null) {
+                DatabaseManager db = new DatabaseManager(context);
+                db.updateDeviceBatteryStatus(this.getUid(), batteryStatus.getWorkMode(), batteryStatus.getBatPercent(), batteryStatus.getTime());
+                return true;
+            } else {
+                return false;
+            }
         } catch (Exception e) {
             return false;
         }
@@ -1677,7 +1764,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     @Override
     public boolean isConnecting() {
-        return this.connect_state == NSCamera.CONNECTION_STATE_CONNECTING;
+        return this.connect_state == NSCamera.CONNECTION_STATE_CONNECTING || this.connect_state == NSCamera.CONNECTION_STATE_FIND_DEVICE;
     }
 
     @Override
@@ -1697,6 +1784,24 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
         return CameraP2PType.TutkP2P;
     }
 
+    public Supllier getSupplier() {
+        if (this.modelName == null) {
+            return Supllier.UnKnown;
+        } else {
+            return modelName.equals("E936") ? Supllier.AN : Supllier.FB;
+        }
+    }
+
+    @Override
+    public String getModelName() {
+        return modelName;
+    }
+
+    @Override
+    public void setModelName(String modelName) {
+        this.modelName = modelName;
+    }
+
     @Override
     public void registerDownloadListener(IDownloadCallback listener) {
 
@@ -1705,6 +1810,79 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     @Override
     public void unregisterDownloadListener(IDownloadCallback listener) {
 
+    }
+
+    public boolean supportCable() {
+        if (this.modelName != null && modelName.equals("E936")) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private byte[] defaultFunctionFlag() {
+        if (MyConfig.getDefaultCameraFunction() == null) {
+            return new byte[]{49, 49, 48, 48, 49};
+        } else {
+            return MyConfig.getDefaultCameraFunction();
+        }
+    }
+
+    public byte[] getFunctionFlag(Context context) {
+        if (this.functionFlag == null) {
+            DatabaseManager db = new DatabaseManager(context);
+            this.functionFlag = db.getDeviceFunction(this.getUid());
+            if (this.functionFlag == null) {
+                return this.defaultFunctionFlag();
+            } else {
+                return this.functionFlag;
+            }
+        } else {
+            return this.functionFlag;
+        }
+    }
+
+    public boolean isDefaultFunc() {
+        return this.functionFlag == null;
+    }
+
+    public void setFunctionFlag(Context context, byte[] functionFlag) {
+        this.functionFlag = functionFlag;
+        DatabaseManager db = new DatabaseManager(context);
+        db.updateDeviceFunction(this.getUid(), functionFlag);
+    }
+
+    public boolean hasSetFunctionFlag() {
+        return this.functionFlag != null;
+    }
+
+    public boolean hasPTZ(Context context) {
+        return getFunctionFlag(context)[0] == 49;
+    }
+
+    public boolean hasListen(Context context) {
+        return true;// getFunctionFlag(context)[1] == 49;
+    }
+
+    public boolean hasPreset(Context context) {
+        return this.getSupplier()!=Supllier.AN;// getFunctionFlag(context)[2] == 49;
+    }
+
+    public boolean hasZoom(Context context) {
+        return false;// getFunctionFlag(context)[3] == 49;
+    }
+
+    public boolean hasSDSlot(Context context) {
+        return true;// getFunctionFlag(context)[4] == 49;
+    }
+
+    @Override
+    public boolean supportBattery() {
+        return this.batteryStatus.getTime() > 0;
+    }
+
+    public BatteryStatus getBatteryStatus() {
+        return this.batteryStatus;
     }
 
     public static HashMap IOTCHashMap;

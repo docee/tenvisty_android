@@ -28,6 +28,7 @@ import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
+import com.tws.commonlib.bean.BatteryStatus;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
@@ -128,7 +129,7 @@ public class AppUpdateView {
     public void checkNewVersion() {
         if (!MyConfig.isHasCheckForUpdate()) {//鍚﹀垯3s鍚庤繘鍏ョ櫥褰曠晫闈�
             preHandler.sendMessageDelayed(msgtologin, 1000);
-            initCameraList(context);
+            //initCameraList(context);
             return;
         } else {//濡傛灉鏈夋娴嬫洿鏂扮殑鍔熻兘鍒欐娴嬫洿鏂�
             if (AppUpdate.isNetworkAvailable(context)) {
@@ -387,7 +388,7 @@ public class AppUpdateView {
                 "_id", "dev_nickname", "dev_uid", "dev_name", "dev_pwd",
                 "view_acc", "view_pwd", "event_notification", "camera_channel",
                 "snapshot", "ask_format_sdcard", "cameraStatus",
-                "dev_videoQuality", "ownerCameraId", "cameraModel"}, null, null, null, null, "_id LIMIT "
+                "dev_videoQuality", "ownerCameraId", "cameraModel", "dev_model_name","dev_battery_mode","dev_battery_percent","dev_battery_time"}, null, null, null, null, "_id LIMIT "
                 + TwsDataValue.CAMERA_MAX_LIMITS);
         List<IMyCamera> cameraList = TwsDataValue.cameraList();
         cameraList.clear();
@@ -401,6 +402,8 @@ public class AppUpdateView {
                     .getColumnIndex("view_acc"));
             String view_pwd = cursor.getString(cursor
                     .getColumnIndex("view_pwd"));
+            String modelName = cursor.getString(cursor
+                    .getColumnIndex("dev_model_name"));
             int event_notification = cursor.getInt(cursor
                     .getColumnIndex("event_notification"));
             int channel = cursor
@@ -409,6 +412,12 @@ public class AppUpdateView {
             int cameraModel = cursor
                     .getInt(cursor.getColumnIndex("cameraModel"));
             int videoQuality = cursor.getInt(cursor.getColumnIndex("dev_videoQuality"));
+            int batteryMode = cursor
+                    .getInt(cursor.getColumnIndex("dev_battery_mode"));
+            int batteryPercent = cursor
+                    .getInt(cursor.getColumnIndex("dev_battery_percent"));
+            long batteryTime = cursor
+                    .getLong(cursor.getColumnIndex("dev_battery_time"));
 
             IMyCamera camera = IMyCamera.MyCameraFactory.shareInstance().createCamera(dev_nickname, dev_uid, view_acc,
                     view_pwd);
@@ -417,9 +426,13 @@ public class AppUpdateView {
                 camera.setCameraModel(com.tutk.IOTC.NSCamera.CAMERA_MODEL.CAMERA_MODEL_H264.ordinal());
             }
             camera.setVideoQuality(videoQuality);
-            camera.setPushOpen(event_notification>0);
+            camera.setPushOpen(event_notification > 0);
             //camera.setEventNum(event_notification);
             camera.setDatabaseId(db_id);
+            camera.setModelName(modelName);
+            camera.getBatteryStatus().setWorkMode(batteryMode);
+            camera.getBatteryStatus().setBatPercent(batteryPercent);
+            camera.getBatteryStatus().setTime(batteryTime);
             //DeviceInfo dev = new DeviceInfo(db_id, camera.getUUID(), dev_nickname, dev_uid, view_acc, view_pwd, "", event_notification, channel, null);
             //VideoList.DeviceList.add(dev);
             //VideoList.cameraList.add(dev);
@@ -458,7 +471,7 @@ public class AppUpdateView {
                 try {
                     Bitmap b = BitmapFactory.decodeStream(fis);
                     return b;
-                }catch (OutOfMemoryError error){
+                } catch (OutOfMemoryError error) {
                     return null;
                 }
             }

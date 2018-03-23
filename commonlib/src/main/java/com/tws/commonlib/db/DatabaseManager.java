@@ -34,6 +34,10 @@ public class DatabaseManager {
     public static int n_mainActivity_Status = 0;
 
     public static final String TABLE_Mapping_LIST = "mapping_list";
+    private static final String SQLCMD_ALTER_TABLE_DEVICE_MODEL_NAME = "ALTER TABLE "+TABLE_DEVICE+" ADD dev_model_name VARCHAR(30) NULL";
+    private static final String SQLCMD_ALTER_TABLE_DEVICE_BATTERY_MODE = "ALTER TABLE "+TABLE_DEVICE+" ADD dev_battery_mode INTEGER";
+    private static final String SQLCMD_ALTER_TABLE_DEVICE_BATTERY_PERCENT = "ALTER TABLE "+TABLE_DEVICE+" ADD dev_battery_percent INTEGER";
+    private static final String SQLCMD_ALTER_TABLE_DEVICE_BATTERY_TIME = "ALTER TABLE "+TABLE_DEVICE+" ADD dev_battery_time INTEGER";
 
 
     private DatabaseHelper mDbHelper;
@@ -388,6 +392,28 @@ public class DatabaseManager {
         return ratio;
     }
 
+    public long updateDeviceModel(String dev_uid, String data) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("dev_model_name", data);
+        long ret = -1;
+        ret = db.update(TABLE_DEVICE, values, "dev_uid = '" + dev_uid + "'", null);
+        db.close();
+        return ret;
+    }
+
+    public long updateDeviceBatteryStatus(String dev_uid, int mode,int percent,long time) {
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("dev_battery_mode", mode);
+        values.put("dev_battery_percent", percent);
+        values.put("dev_battery_time", time);
+        long ret = -1;
+        ret = db.update(TABLE_DEVICE, values, "dev_uid = '" + dev_uid + "'", null);
+        db.close();
+        return ret;
+    }
+
     public long updateDeviceServerData(String dev_uid, String data) {
         SQLiteDatabase db = mDbHelper.getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -465,15 +491,15 @@ public class DatabaseManager {
     class DatabaseHelper extends SQLiteOpenHelper {
 
         private static final String DB_FILE = "IOTCamViewer.db";
-        private static final int DB_VERSION = 9;
+        private static final int DB_VERSION = 15;
 
-        static final String SQLCMD_CREATE_TABLE_USER = "CREATE TABLE "
+        static final String SQLCMD_CREATE_TABLE_USER = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_USER + "("
                 + "_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 + "user_name			NVARCHAR(50) NULL, "
                 + "user_password			NVARCHAR(50) NULL" + ");";
 
-        static final String SQLCMD_CREATE_TABLE_DEVICE = "CREATE TABLE "
+        static final String SQLCMD_CREATE_TABLE_DEVICE = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_DEVICE + "("
                 + "_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 + "dev_nickname			NVARCHAR(30) NULL, "
@@ -489,10 +515,14 @@ public class DatabaseManager {
                 + "cameraStatus			NVARCHAR(10) NULL, "
                 + "ownerCameraId			NVARCHAR(10) NULL, "
                 + "dev_videoQuality			INTEGER, "
-                + "cameraModel              INTEGER"
+                + "cameraModel              INTEGER,"
+                +  "dev_model_name      VARCHAR(30) NULL, "
+                +  "dev_battery_mode      INTEGER, "
+                +  "dev_battery_percent      INTEGER, "
+                +  "dev_battery_time      INTEGER "
                 + ");";
 
-        static final String SQLCMD_CREATE_TABLE_SEARCH_HISTORY = "CREATE TABLE "
+        static final String SQLCMD_CREATE_TABLE_SEARCH_HISTORY = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_SEARCH_HISTORY
                 + "("
                 + "_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -500,7 +530,7 @@ public class DatabaseManager {
                 + "search_event_type	INTEGER, "
                 + "search_start_time	INTEGER, "
                 + "search_stop_time	INTEGER" + ");";
-        static final String SQLCMD_CREATE_TABLE_DICTION = "CREATE TABLE "
+        static final String SQLCMD_CREATE_TABLE_DICTION = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_DICTION
                 + "("
                 + "_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -508,7 +538,7 @@ public class DatabaseManager {
                 + "dev_key	VARCHAR(20) NOT NULL, "
                 + "dev_value	VARCHAR(20) NULL" + ");";
 
-        static final String SQLCMD_CREATE_TABLE_SNAPSHOT = "CREATE TABLE "
+        static final String SQLCMD_CREATE_TABLE_SNAPSHOT = "CREATE TABLE IF NOT EXISTS "
                 + TABLE_SNAPSHOT + "("
                 + "_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
                 + "dev_uid			VARCHAR(20) NULL, " + "file_path			VARCHAR(80), "
@@ -557,8 +587,47 @@ public class DatabaseManager {
             //	db.execSQL(SQLCMD_DROP_TABLE_SEARCH_HISTORY);
             //	db.execSQL(SQLCMD_DROP_TABLE_SNAPSHOT);
             //	db.execSQL(SQLCMD_DROP_TABLE_DICTION);
-            onCreate(db);
+            //onCreate(db);
+            if(!checkColumnExists2(db,TABLE_DEVICE,"dev_model_name")){
+                db.execSQL(SQLCMD_ALTER_TABLE_DEVICE_MODEL_NAME);
+            }
+            if(!checkColumnExists2(db,TABLE_DEVICE,"dev_battery_mode")){
+                db.execSQL(SQLCMD_ALTER_TABLE_DEVICE_BATTERY_MODE);
+            }
+            if(!checkColumnExists2(db,TABLE_DEVICE,"dev_battery_percent")){
+                db.execSQL(SQLCMD_ALTER_TABLE_DEVICE_BATTERY_PERCENT);
+            }
+            if(!checkColumnExists2(db,TABLE_DEVICE,"dev_battery_time")){
+                db.execSQL(SQLCMD_ALTER_TABLE_DEVICE_BATTERY_TIME);
+            }
+        }
 
+        /**
+         * 检查表中某列是否存在
+         * @param db
+         * @param tableName 表名
+         * @param columnName 列名
+         * @return
+         */
+        private boolean checkColumnExists2(SQLiteDatabase db, String tableName
+                , String columnName) {
+            boolean result = false ;
+            Cursor cursor = null ;
+
+            try{
+                String sql = "select * from sqlite_master where name = ? and sql like ?";
+                cursor = db.rawQuery( sql
+                        , new String[]{tableName , "%" + columnName + "%"} );
+                result = null != cursor && cursor.moveToFirst() ;
+            }catch (Exception e){
+                Log.e("DATABASE","checkColumnExists2..." + e.getMessage()) ;
+            }finally{
+                if(null != cursor && !cursor.isClosed()){
+                    cursor.close() ;
+                }
+            }
+
+            return result ;
         }
 
     }

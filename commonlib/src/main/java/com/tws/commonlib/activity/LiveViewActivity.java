@@ -42,6 +42,7 @@ import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.St_SInfo;
 import com.tws.commonlib.R;
+import com.tws.commonlib.activity.aoni.EventList_AoniActivity;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
@@ -193,6 +194,45 @@ public class LiveViewActivity extends BaseActivity implements
         instance.start(this);
     }
 
+    private void setFunctions() {
+        if (camera.hasListen(LiveViewActivity.this)) {
+            getBtn_listen().setVisibility(View.VISIBLE);
+        } else {
+            getBtn_listen().setVisibility(View.INVISIBLE);
+        }
+        if (findViewById(R.id.ll_talk) != null) {
+            if (camera.hasListen(LiveViewActivity.this)) {
+                findViewById(R.id.ll_talk).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_talk).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_preset) != null) {
+            if (camera.hasPreset(LiveViewActivity.this)) {
+                findViewById(R.id.ll_preset).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_preset).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_listen) != null) {
+            if (camera.hasListen(LiveViewActivity.this)) {
+                findViewById(R.id.ll_listen).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_listen).setVisibility(View.GONE);
+            }
+        }
+
+        if (findViewById(R.id.ll_zoom) != null) {
+            if (camera.hasZoom(LiveViewActivity.this)) {
+                findViewById(R.id.ll_zoom).setVisibility(View.VISIBLE);
+            } else {
+                findViewById(R.id.ll_zoom).setVisibility(View.GONE);
+            }
+        }
+    }
+
     @Override
     protected void onStop() {
         super.onStop();
@@ -333,6 +373,7 @@ public class LiveViewActivity extends BaseActivity implements
             monitor.attachCamera(mCamera, mSelectedChannel);
         } catch (Exception e) {
         }
+        setFunctions();
         videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
         lay_live_tools_top = (LinearLayout) findViewById(R.id.lay_live_tools_top);
         lay_live_tools_bottom = (LinearLayout) findViewById(R.id.lay_live_tools_bottom);
@@ -397,6 +438,7 @@ public class LiveViewActivity extends BaseActivity implements
             monitor.attachCamera(mCamera, mSelectedChannel);
         } catch (Exception e) {
         }
+        setFunctions();
         videoLoadProgressBar = (ProgressBar) findViewById(R.id.videoProgressBar);
 
         getBtn_stream().setText(souceList[playState.getVideoQuality()]);
@@ -412,7 +454,7 @@ public class LiveViewActivity extends BaseActivity implements
             txt_state.setText(mCamera.getCameraStateDesc());
         }
         initBtn();
-        if(videoWidth != 0 && videoHeight != 0) {
+        if (videoWidth != 0 && videoHeight != 0) {
             TextView txt_videoQuality = (TextView) findViewById(R.id.txt_videoQuality);
             if (txt_videoQuality != null) {
                 txt_videoQuality.setText(String.format("%d x %d", videoWidth, videoHeight));
@@ -878,7 +920,11 @@ public class LiveViewActivity extends BaseActivity implements
 //                showAlert(getString(R.string.alert_camera_connected_failed));
 //                return;
 //            }
-            goActivity(EventListActivity.class);
+            if (camera.getSupplier() == IMyCamera.Supllier.AN) {
+                goActivity(EventList_AoniActivity.class);
+            } else {
+                goActivity(EventListActivity.class);
+            }
         } else if (view.getId() == R.id.btn_folder) {
             if (monitor != null) {
                 monitor.deattachCamera();
@@ -1098,15 +1144,13 @@ public class LiveViewActivity extends BaseActivity implements
     }
 
     void initBtn() {
-        if(!playState.isListening()){
+        if (!playState.isListening()) {
             stopListen();
-        }
-        else if(playState.isSpeaking()){
+        } else if (playState.isSpeaking()) {
             stopSpeak();
             startListen();
             this.camera.startAudio();
-        }
-        else{
+        } else {
             startListen();
         }
         if (playState.isRecording()) {
@@ -1203,9 +1247,9 @@ public class LiveViewActivity extends BaseActivity implements
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
-                        TextView txt_videoQuality = (TextView)findViewById(R.id.txt_videoQuality);
-                        if(txt_videoQuality != null){
-                            txt_videoQuality.setText(String.format("%d x %d",videoWidth,videoHeight));
+                        TextView txt_videoQuality = (TextView) findViewById(R.id.txt_videoQuality);
+                        if (txt_videoQuality != null) {
+                            txt_videoQuality.setText(String.format("%d x %d", videoWidth, videoHeight));
                         }
                         mCamera.saveSnapShot(mSelectedChannel, TwsTools.getFilePath(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), TwsTools.getFileNameWithTime(mCamera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB), new IMyCamera.TaskExecute() {
                             @Override
@@ -1357,7 +1401,7 @@ public class LiveViewActivity extends BaseActivity implements
                     if (filePath != null) {
                         File recordFile = new File(filePath);
                         boolean exist = recordFile.exists();
-                        if (exist&& recordFile.length() < videoHeight*videoWidth*2/8/20) {
+                        if (exist && recordFile.length() < videoHeight * videoWidth * 2 / 8 / 20) {
                             recordFile.delete();
                         } else if (exist && recordFile.isFile()) {
                             sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(new File(filePath))));

@@ -17,6 +17,12 @@ public interface IMyCamera {
         TutkP2P ,
         HichipP2P
     }
+    public enum Supllier{
+        UnKnown ,
+        AN ,
+        FB,
+        HX
+    }
     public interface TaskExecute {
         void onPosted(IMyCamera camera,Object data);
     }
@@ -117,6 +123,11 @@ public interface IMyCamera {
     public  CameraP2PType getP2PType();
     public void registerDownloadListener(IDownloadCallback listener) ;
     public void unregisterDownloadListener(IDownloadCallback listener);
+    public  boolean supportCable();
+    public  boolean supportBattery();
+    public  Supllier getSupplier();
+    public String getModelName();
+    public void setModelName(String modelName);
     public class MyCameraFactory{
         public  static MyCameraFactory instance;
         public static synchronized MyCameraFactory shareInstance(){
@@ -136,5 +147,23 @@ public interface IMyCamera {
             return camera;
         }
     }
+
+    public BatteryStatus getBatteryStatus();
+
+    public boolean isDefaultFunc();
+
+    public void setFunctionFlag(Context context, byte[] functionFlag) ;
+
+    public boolean hasSetFunctionFlag();
+
+    public boolean hasPTZ(Context context);
+
+    public boolean hasListen(Context context);
+
+    public boolean hasPreset(Context context);
+
+    public boolean hasZoom(Context context);
+
+    public boolean hasSDSlot(Context context);
 
 }

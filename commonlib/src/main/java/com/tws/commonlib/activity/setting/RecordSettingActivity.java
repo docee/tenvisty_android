@@ -155,8 +155,11 @@ public class RecordSettingActivity extends BaseActivity implements IIOTCListener
                     int recordType = Packet.byteArrayToInt_Little(data, 4);
                     if (adapter.getCount() > recordType) {
                         adapter.setPos(recordType);
-                        adapter.notifyDataSetChanged();
                     }
+                    else{
+                        adapter.setPos(adapter.getCount() - 1);
+                    }
+                        adapter.notifyDataSetChanged();
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETRECORD_RESP:
                     if (data[0] == 0x00) {

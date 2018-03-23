@@ -92,7 +92,7 @@ public class DeviceSetting_HichipActivity extends BaseActivity implements IIOTCL
         } else if (view.getId() == R.id.ll_setCameraPwd) {
             intent.setClass(this, ModifyCameraPasswordActivity.class);
         } else if (view.getId() == R.id.ll_setCameraNetwork) {
-            intent.setClass(this, WiFiListActivity.class);
+            intent.setClass(this, WiFiList_HichipActivity.class);
         } else if (view.getId() == R.id.ll_setCameraEvent) {
             if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
                 intent.setClass(this, EventSetting_HichipActivity.class);

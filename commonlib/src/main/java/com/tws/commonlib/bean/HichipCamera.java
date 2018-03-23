@@ -70,6 +70,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     private float videoRatio = 0;
     private boolean isInitTime = false;
     private boolean hasSummerTimer;
+    private BatteryStatus batteryStatus = new BatteryStatus();
 
     public HichipCamera(Context context, String nikename, String uid, String username, String password) {
         super(context, uid, username, password);
@@ -1507,6 +1508,34 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     public void setTimezone(com.hichip.content.HiChipDefines.HI_P2P_S_TIME_ZONE timezone) {
         this.timezone = timezone;
     }
+    public  boolean supportCable(){
+        return true;
+    }
+
+    @Override
+    public boolean supportBattery() {
+        return false;
+    }
+
+    public Supllier getSupplier() {
+        return Supllier.HX;
+    }
+
+    @Override
+    public String getModelName() {
+        return "";
+    }
+
+    @Override
+    public void setModelName(String modelName) {
+
+    }
+
+    @Override
+    public BatteryStatus getBatteryStatus() {
+        return batteryStatus;
+    }
+
 
     public static HashMap IOTCHashMap;
     public static HashMap SessionStateHashMap;

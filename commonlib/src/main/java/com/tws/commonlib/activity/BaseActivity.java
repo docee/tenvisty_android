@@ -2,6 +2,7 @@ package com.tws.commonlib.activity;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.BitmapDrawable;
@@ -219,7 +220,6 @@ public class BaseActivity extends AppCompatActivity {
     }
 
     public void showAlert(CharSequence message,String title, boolean cancelable, DialogInterface.OnClickListener listener) {
-
         AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(this);
         dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
         dlgBuilder.setTitle(title);
@@ -227,7 +227,14 @@ public class BaseActivity extends AppCompatActivity {
         dlgBuilder.setMessage(message);
         dlgBuilder.setPositiveButton(getText(R.string.ok), listener).show();
     }
-
+    public void showAlert(Context context, CharSequence message, String title, boolean cancelable, DialogInterface.OnClickListener listener) {
+        AlertDialog.Builder dlgBuilder = new AlertDialog.Builder(context);
+        dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
+        dlgBuilder.setTitle(title);
+        dlgBuilder.setCancelable(cancelable);
+        dlgBuilder.setMessage(message);
+        dlgBuilder.setPositiveButton(getText(R.string.ok), listener).show();
+    }
     public void showAlertnew(int iconId, CharSequence title, CharSequence message, CharSequence cancel,
                              CharSequence okch, DialogInterface.OnClickListener listener) {
         AlertDialog.Builder mDlgBuilder = new AlertDialog.Builder(this);

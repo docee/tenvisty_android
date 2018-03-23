@@ -74,6 +74,7 @@
 					android:src="@drawable/ic_btn_liveview_snap" />
 			</LinearLayout>
 			<LinearLayout
+				android:id="@+id/ll_preset"
 				android:layout_width="0dip"
 				android:layout_height="match_parent"
 				android:layout_margin="10dp"

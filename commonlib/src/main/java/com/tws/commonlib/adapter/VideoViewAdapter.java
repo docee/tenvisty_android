@@ -3,7 +3,11 @@ package com.tws.commonlib.adapter;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.os.Build;
+import android.support.v7.content.res.AppCompatResources;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -76,7 +80,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.img_snapshot = (ImageView) convertView.findViewById(R.id.img_snapshot);
             holder.txt_nikename = (TextView) convertView.findViewById(R.id.txt_nikename);
             holder.txt_state = (TextView) convertView.findViewById(R.id.txt_state);
-
+            holder.img_battery = (ImageView) convertView.findViewById(R.id.img_battery);
             holder.btn_item_setting = (ImageView) convertView.findViewById(R.id.btn_item_setting);
             holder.btn_item_delete = (ImageView) convertView.findViewById(R.id.btn_item_delete);
             holder.btn_item_event = (ImageView) convertView.findViewById(R.id.btn_item_event);
@@ -122,16 +126,15 @@ public class VideoViewAdapter extends SimpleAdapter {
                         BitmapFactory.Options opts = new BitmapFactory.Options();
                         opts.inJustDecodeBounds = true;
                         String snapshotPath = TwsTools.getFilePath(camera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB) + "/" + TwsTools.getFileNameWithTime(camera.getUid(), TwsTools.PATH_SNAPSHOT_LIVEVIEW_AUTOTHUMB);
-                        snap = BitmapFactory.decodeFile(snapshotPath,opts);
-                        opts.inSampleSize = opts.outWidth/640;
-                        if(opts.inSampleSize < 1){
+                        snap = BitmapFactory.decodeFile(snapshotPath, opts);
+                        opts.inSampleSize = opts.outWidth / 640;
+                        if (opts.inSampleSize < 1) {
                             opts.inSampleSize = 1;
-                        }
-                        else if(opts.inSampleSize%2 == 1){
+                        } else if (opts.inSampleSize % 2 == 1) {
                             opts.inSampleSize--;
                         }
                         opts.inJustDecodeBounds = false;
-                        snap = BitmapFactory.decodeFile(snapshotPath,opts);
+                        snap = BitmapFactory.decodeFile(snapshotPath, opts);
                         camera.setSnapshot(snap);
                     } catch (OutOfMemoryError error) {
 
@@ -144,6 +147,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             } else {
                 holder.img_snapshot.setImageResource(R.drawable.videoclip);
             }
+            // holder.img_snapshot.setBackgroundResource(R.drawable.btn_scan_flash_off);
             holder.txt_nikename.setText(camera.getNickName());
             holder.txt_state.setBackgroundResource(camera.getCameraStateBackgroundColor());
             holder.txt_state.setText(camera.getCameraStateDesc());
@@ -157,8 +161,14 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.ll_tip_connecting.setVisibility(View.GONE);
             holder.ll_tip_play.setVisibility(View.GONE);
             holder.ll_tip_sleep.setVisibility(View.GONE);
-
-            if (camera.isConnected() && camera.getState() == CameraState.None) {
+            if (camera.getSupplier() != IMyCamera.Supllier.AN) {
+                holder.img_battery.setVisibility(View.GONE);
+            } else {
+                int batteryDrawable = camera.getBatteryStatus().getBatteryDrawable();
+                holder.img_battery.setVisibility(View.VISIBLE);
+                holder.img_battery.setImageResource(batteryDrawable);
+            }
+            if (camera.isConnected() && camera.getState() == CameraState.None && camera.getSupplier() != IMyCamera.Supllier.UnKnown) {
                 holder.ll_tip_play.setVisibility(View.VISIBLE);
                 holder.btn_item_event.setEnabled(true);
                 holder.btn_item_setting.setEnabled(true);
@@ -167,18 +177,16 @@ public class VideoViewAdapter extends SimpleAdapter {
                 if (camera.getState() == CameraState.None) {
                     if (camera.isPasswordWrong()) {
                         holder.ll_tip_password_wrong.setVisibility(View.VISIBLE);
-                    } else if (camera.isConnecting() || camera.isWakingUp()) {
+                    } else if (camera.isConnecting() || camera.isWakingUp() || (camera.isConnected() && camera.getSupplier() == IMyCamera.Supllier.UnKnown)) {
                         holder.ll_tip_connecting.setVisibility(View.VISIBLE);
-                    }
-                    else if(camera.isSleeping()){
-                        if(camera.isWakingUp()){
+                    } else if (camera.isSleeping()) {
+                        if (camera.isWakingUp()) {
                             holder.ll_tip_connecting.setVisibility(View.VISIBLE);
-                        }
-                        else {
+                        } else {
                             holder.ll_tip_sleep.setVisibility(View.VISIBLE);
                         }
-                    }
-                    else {
+                    } else {
+                        Log.i("VideoViewAdapter", "state:" + (camera.isConnected() ? 1 : 0) + " supplier:" + camera.getSupplier() + " connectstate:" + ((MyCamera) camera).connect_state);
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);
                     }
                 }
@@ -194,7 +202,7 @@ public class VideoViewAdapter extends SimpleAdapter {
         public ImageView img_snapshot;
         public TextView txt_nikename;
         public TextView txt_state;
-
+        public ImageView img_battery;
         public ImageView btn_item_event;
         public ImageView btn_item_setting;
         public ImageView btn_item_delete;
@@ -209,7 +217,6 @@ public class VideoViewAdapter extends SimpleAdapter {
         public RelativeLayout ll_tip_disconnected;
         public RelativeLayout ll_tip_connecting;
         public RelativeLayout ll_tip_sleep;
-
 
 
     }

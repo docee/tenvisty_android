@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:clipToPadding="true"
+    android:fitsSystemWindows="true"
+    android:background="@color/lightestgray">
+
+    <com.tws.commonlib.controller.NavigationBar
+        android:id="@+id/title_top"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            style="@style/editbox_container_ll"
+            android:background="@color/transparent"
+            android:layout_below="@+id/title_top"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_marginTop="23dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_vertical">
+
+                <!--<LinearLayout-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--android:gravity="center_vertical"-->
+                    <!--android:clickable="true"-->
+                    <!--android:id="@+id/ll_setEviromentmode"-->
+                    <!--android:background="@drawable/list_item_bg"-->
+                    <!--android:onClick="goSetting"-->
+                    <!--android:padding="10dp"-->
+                    <!--android:layout_height="wrap_content">-->
+
+                    <!--<TextView-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:layout_weight="1"-->
+                        <!--android:maxLines="1"-->
+                        <!--android:padding="10dp"-->
+                        <!--android:text="@string/title_camera_setting_enviromentmode"-->
+                        <!--android:textColor="#434343"-->
+                        <!--android:textSize="16dp" />-->
+                    <!--<TextView-->
+                        <!--android:id="@+id/txt_enviromentmode"-->
+                        <!--android:layout_width="wrap_content"-->
+                        <!--android:layout_height="wrap_content"-->
+                        <!--android:maxLines="1"-->
+                        <!--android:padding="10dp"-->
+                        <!--android:textSize="14dp"-->
+                        <!--android:textColor="#434343"-->
+                        <!--android:text="50Hz"/>-->
+                    <!--<ImageView-->
+                        <!--android:layout_width="30dp"-->
+                        <!--android:src="@drawable/arrow"-->
+                        <!--android:layout_height="30dp" />-->
+                <!--</LinearLayout>-->
+                <!--<View-->
+                    <!--android:layout_width="match_parent"-->
+                    <!--style="@style/split_long_thin_style"/>-->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:id="@+id/ll_system_reboot"
+                    android:background="@drawable/ll_item_bg"
+                    android:onClick="goSetting"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:layout_weight="1"
+                        android:maxLines="1"
+                        android:padding="10dp"
+                        android:textColor="@color/darkred"
+                        android:text="@string/reboot"
+                        android:textSize="16dp" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    style="@style/split_long_thin_style"/>
+
+                <View
+                    android:layout_marginTop="20dp"
+                android:layout_width="match_parent"
+                style="@style/split_long_thin_style"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:gravity="center_vertical"
+                    android:clickable="true"
+                    android:id="@+id/ll_system_update"
+                    android:onClick="goSetting"
+                    android:background="@drawable/ll_item_bg"
+                    android:layout_height="wrap_content">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:maxLines="1"
+                        android:padding="10dp"
+                        android:text="@string/check_firmware"
+                        android:textColor="@color/darkgreen"
+                        android:textSize="16dp" />
+                </LinearLayout>
+                <View
+                android:layout_width="match_parent"
+                style="@style/split_long_thin_style"/>
+
+            </LinearLayout>
+        </LinearLayout>
+</RelativeLayout>

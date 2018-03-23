@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:orientation="vertical"
+	android:layout_width="fill_parent"
+	android:clipToPadding="true"
+	android:fitsSystemWindows="true"
+	android:background="@color/white"
+	android:layout_height="fill_parent">
+	<com.tws.commonlib.controller.NavigationBar
+		android:id="@+id/title_top"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content" />
+
+   	<LinearLayout 
+    	android:layout_width="fill_parent"
+    	android:layout_height="0dp"
+		android:layout_weight="1"
+    	android:orientation="vertical"
+		android:layout_marginTop="10dp"
+    	android:background="#FFFFFF">
+		<LinearLayout
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="10dp"
+			android:background="@color/white"
+			android:gravity="center|top"
+			android:orientation="vertical">
+
+			<LinearLayout
+				android:id="@+id/ll_search_event_time"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:gravity="left|center"
+				android:clickable="true"
+				android:background="@drawable/list_item_bg"
+				android:orientation="horizontal">
+
+				<ImageView
+					android:layout_width="20dp"
+					android:src="@drawable/ic_menu_search_inverse"
+					android:layout_marginLeft="10dp"
+					android:layout_height="20dp" />
+
+				<TextView
+					android:id="@+id/txt_search_event_time"
+					android:layout_width="0dp"
+					android:layout_height="30dp"
+					android:gravity="center"
+					android:textColor="@color/black"
+					android:layout_weight="1"
+					android:textSize="14dp"
+					android:layout_marginRight="8dp"
+					android:text="within  a day" />
+
+				<ImageView
+					android:layout_width="14dp"
+					android:layout_height="10dp"
+					android:layout_marginRight="10dp"
+					android:background="@drawable/ic_popuwindow_down"/>
+			</LinearLayout>
+			<View
+				android:layout_width="match_parent"
+				android:layout_marginBottom="5dp"
+				style="@style/split_long_thin_style"></View>
+
+			<com.tws.commonlib.controller.SpinnerButton
+				android:id="@+id/spinner_type"
+				android:layout_marginTop="15dp"
+				android:layout_marginBottom="20dp"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content">
+
+			</com.tws.commonlib.controller.SpinnerButton>
+		</LinearLayout>
+		<TextView
+			android:id="@+id/txt_event_day_top"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:background="@drawable/shape_event_list_item_day"
+			android:paddingBottom="3dp"
+			android:paddingLeft="10dp"
+			android:paddingRight="10dp"
+			android:paddingTop="3dp"
+			android:text="2015-07-13"
+			android:layout_marginLeft="5dp"
+			android:textColor="@color/white"
+			android:textSize="12dp" />
+	    <ListView
+	        android:id="@+id/lstEventList"
+	        android:layout_width="fill_parent"
+	        android:layout_height="wrap_content"
+	        android:cacheColorHint="#00000000" 
+    		android:divider="#DDDDDD"
+	        android:dividerHeight="0dp" />
+    
+    </LinearLayout>
+	<LinearLayout
+		android:id="@+id/ll_toolbar_bottom"
+		android:layout_width="match_parent"
+		android:orientation="horizontal"
+		android:visibility="gone"
+		android:layout_height="50dp" android:background="@color/lightgray">
+
+		<LinearLayout
+			android:id="@+id/ll_share"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"
+			android:textAlignment="center"
+			android:gravity="center|top"
+			android:orientation="vertical"
+			android:layout_weight="1">
+			<ImageView
+				android:id="@+id/img_share"
+				android:layout_width="match_parent"
+				android:layout_height="45dp"
+				android:clickable="true"
+				android:tint="@color/select_tint_color"
+				android:scaleType="centerInside"
+				android:onClick="toolbar_click"
+				app:srcCompat="@drawable/ic_share_black_24dp"/>
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textSize="12dp"
+				android:layout_marginTop="-15dp"
+				android:textColor="@color/darkgray"
+				android:text="@string/share"/>
+		</LinearLayout>
+		<LinearLayout
+			android:id="@+id/ll_delete"
+			android:layout_width="0dp"
+			android:layout_height="match_parent"
+			android:textAlignment="center"
+			android:gravity="center|top"
+			android:orientation="vertical"
+			android:layout_weight="1">
+			<ImageView
+				android:id="@+id/img_delete"
+				android:layout_width="match_parent"
+				android:layout_height="45dp"
+				android:tint="@color/select_tint_color"
+				android:clickable="true"
+				android:onClick="toolbar_click"
+				android:scaleType="centerInside"
+				app:srcCompat="@drawable/ic_delete_forever_black_24dp"/>
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:textSize="12dp"
+				android:layout_marginTop="-15dp"
+				android:textColor="@color/darkgray"
+				android:text="@string/delete"/>
+		</LinearLayout>
+	</LinearLayout>
+</LinearLayout>

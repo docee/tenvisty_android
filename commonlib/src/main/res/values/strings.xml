@@ -99,6 +99,8 @@
     <string name="lab_searchevent_from_date">From Date</string>
     <string name="lab_searchevent_to_date">To Date</string>
     <string name="lab_camera_setting_push">Alarm Push</string>
+    <string name="lab_camera_setting_push_battery">Battery Alarm Push </string>
+    <string name="lab_camera_setting_eventrecord">Alarm Record</string>
     <string name="lab_camera_setting_event_sdrecord">SD-Card Recording</string>
     <string name="lab_camera_setting_event_email">Email Alert</string>
     <string name="lab_camera_setting_event_email_setting">Email Setting</string>
@@ -106,6 +108,7 @@
     <string name="lab_camera_setting_event_ftp_video">Save Video to FTP Server</string>
     <string name="lab_camera_setting_event_ftp_setting">FTP Setting</string>
     <string name="lab_camera_setting_sens">Sensitivity Setting</string>
+    <string name="lab_camera_setting_duration_record">Record Duration</string>
     <string name="lab_camera_setting_mail">Mail Setting</string>
     <string name="lab_camera_setting_record">Record</string>
     <string name="lab_camera_setting_record_timing">Timing Record</string>
@@ -127,6 +130,8 @@
     <string name="lab_other_setting_time">Time Setting</string>
     <string name="lab_other_setting_reverse">Mirror</string>
     <string name="lab_other_setting_inverse">Flip</string>
+    <string name="lab_other_setting_osdtime">OSD Time</string>
+    <string name="lab_other_setting_ledlight">Led Light</string>
     <string name="lab_other_setting_alarm_led">Led</string>
     <string name="lab_other_setting_sdcard">SD Card</string>
     <string name="lab_other_setting_devinfo">Device Information</string>
@@ -242,6 +247,7 @@
     <string name="dialog_msg_delete">Select operation.</string>
     <string name="dialog_btn_share">Share</string>
     <string name="dialog_title_camera_password_wrong">Wrong password</string>
+    <string name="dialog_title_camera_modify_recordduration">Modify Record Duration</string>
     <string name="dialog_msg_remove_camera_confirm">Are you sure to remove this camera?</string>
     <string name="dialog_btn_setting">Setting</string>
     <string name="dialog_msg_no_permission">Please enable the relevant application permissions in phone settings.</string>
@@ -335,8 +341,10 @@
     <string name="alert_wifi_connect_fail">Fail to connect Wi-Fi, please try again later.</string>
     <string name="alert_wifi_config_fail">Wi-Fi config failed, please check your password and try again</string>
     <string name="alert_device_time_setting_reboot_camera">Change timezone daylight setting will reboot device</string>
+    <string name="alert_camera_wakeup">the camera is sleeping, you need to wake it up first;</string>
 
     <string name="alert_recording_time_range">15&#8211;%d seconds time range </string>
+    <string name="alert_alarm_recording_time_range">%d&#8211;%d seconds time range </string>
 
     <string name="hint_camera_oldpassword">Old Password</string>
     <string name="hint_camera_newpassword">New Password</string>
@@ -417,6 +425,8 @@
     <string name="evttype_sd_fault">SD Card Fault</string>
     <string name="evttype_fulltime_recording">Full-time recording</string>
 
+    <string name="option_search_within_2_day">Within 2 days</string>
+    <string name="option_search_within_3_day">Within 3 days</string>
     <string name="option_search_within_an_hour">Within an hour</string>
     <string name="option_search_within_half_a_day">Within half a day</string>
     <string name="option_search_within_a_day">Within a day</string>

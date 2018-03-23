@@ -47,7 +47,7 @@ public class CooConfig extends BaseConfig {
                             Log.e("正在发送广播", "");
                             try {
                                 times++;
-                                if (times % 1000 == 0) {
+                                if (times % 100 == 0) {
                                     Thread.sleep(500);
                                 } else {
                                     //Thread.sleep(10);

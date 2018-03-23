@@ -53,6 +53,7 @@ public class TwsDataValue {
     public static String XGToken = "";
     public static String UMToken = "";
     public static int[] SensValues = new int[]{80, 60, 40, 20, 0};
+    //public static int[] SensValues_Aoni = new int[]{80, 60, 40, 20, 0};
     private static IMyCamera tryConnectcamera = null;
 
     public synchronized static List<IMyCamera> cameraList() {

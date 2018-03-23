@@ -201,7 +201,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                         case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETWIFI_RESP:
                             int result = Packet.byteArrayToInt_Little(data, 0);
                             if (result == 0) {//toast设置成功
-                                handler.sendEmptyMessageDelayed(REQUEST_GET_WIFI, 45000);
+                                handler.sendEmptyMessageDelayed(REQUEST_GET_WIFI,45000);
                             } else {//toast 设置失败，ssidtextview设置为空，stadus显示正在连接
                                 //showAlert(getString(R.string.alert_setting_fail));
                                 camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
@@ -296,8 +296,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                     }
                     break;
                 case TwsDataValue.HANDLE_MESSAGE_SESSION_STATE:
-                    int resultCode = msg.arg1;
-                    if (resultCode == NSCamera.CONNECTION_STATE_CONNECTED) {
+                    if (camera.isConnected()) {
                         handler.removeMessages(REQUEST_GET_WIFI);
                         handler.sendEmptyMessageDelayed(REQUEST_GET_WIFI, 3000);
                     }
@@ -306,7 +305,12 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                 case REQUEST_GET_WIFI:
                     if (camera.isConnected()) {
                         isRequestWiFiListForResult = true;
-                        camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
+                        if(camera.supportCable()) {
+                            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_LISTWIFIAP_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
+                        }
+                        else{
+                            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETWIFI_REQ, AVIOCTRLDEFs.SMsgAVIoctrlListWifiApReq.parseContent());
+                        }
                     }
                     break;
 
