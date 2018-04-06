@@ -138,7 +138,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_setting_modify_password"
+                        android:text="@string/lab_setting_change_password"
                         android:textColor="#434343"
                         android:textSize="16dp" />
 
@@ -251,7 +251,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_setting_event"
+                        android:text="@string/title_camera_setting_event"
                         android:textColor="#434343"
                         android:textSize="16dp" />
 
@@ -291,7 +291,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_camera_setting_record_timing"
+                        android:text="@string/title_camera_setting_record_timing"
                         android:textColor="#434343"
                         android:textSize="16dp" />
                     <TextView
@@ -364,7 +364,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_setting_other"
+                        android:text="@string/title_camera_setting_other"
                         android:textColor="#434343"
                         android:textSize="16dp" />
 
@@ -448,7 +448,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_setting_system"
+                        android:text="@string/title_camera_setting_system"
                         android:textColor="#434343"
                         android:textSize="16dp" />
 

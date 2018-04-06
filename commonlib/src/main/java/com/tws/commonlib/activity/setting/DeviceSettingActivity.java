@@ -5,12 +5,10 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
@@ -19,7 +17,6 @@ import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.aoni.EventSetting_AoniActivity;
 import com.tws.commonlib.activity.aoni.OtherSetting_AoniActivity;
 import com.tws.commonlib.activity.aoni.SystemSetting_AoniActivity;
-import com.tws.commonlib.activity.hichip.EventSetting_HichipActivity;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -51,7 +48,7 @@ public class DeviceSettingActivity extends BaseActivity implements IIOTCListener
                 break;
             }
         }
-        setTitle(R.string.title_deviceSetting);
+        setTitle(R.string.title_camera_setting);
         initView();
         getSetting();
         camera.registerIOTCListener(this);

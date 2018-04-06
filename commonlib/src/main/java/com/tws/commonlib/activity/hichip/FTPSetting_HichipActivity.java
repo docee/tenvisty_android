@@ -1,37 +1,23 @@
 package com.tws.commonlib.activity.hichip;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.Spinner;
 import android.widget.ToggleButton;
 
 import com.hichip.content.HiChipDefines;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.base.ExpandAnimation;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.List;
 
 
 /**
@@ -62,7 +48,7 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
             }
         }
 
-        this.setTitle(getString(R.string.title_ftp_setting));
+        this.setTitle(getString(R.string.title_camera_setting_ftp));
         camera.registerIOTCListener(this);
         initView();
     }
@@ -279,7 +265,7 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
                             camera.unregisterIOTCListener(FTPSetting_HichipActivity.this);
                             FTPSetting_HichipActivity.this.finish();
                             TwsToast.showToast(FTPSetting_HichipActivity.this,
-                                    getResources().getString(R.string.tips_setting_succ));
+                                    getResources().getString(R.string.toast_setting_succ));
                         }
 
                         break;
@@ -290,8 +276,7 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
                 switch (msg.what) {
                     case HiChipDefines.HI_P2P_SET_FTP_PARAM_EXT:
                         if (!isCheck) {
-                            TwsToast.showToast(FTPSetting_HichipActivity.this,
-                                    getResources().getString(R.string.tips_setting_failed));
+                            showAlert(getString(R.string.alert_setting_fail));
                         } else {
                             showAlert(getString(R.string.dialog_msg_ftptest_falied));
                         }

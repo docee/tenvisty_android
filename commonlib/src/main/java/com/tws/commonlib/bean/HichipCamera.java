@@ -1,16 +1,10 @@
 package com.tws.commonlib.bean;
 
-import android.Manifest;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Environment;
-import android.os.Message;
-import android.support.v4.app.ActivityCompat;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.hichip.base.HiLog;
 import com.hichip.base.SharePreUtils;
@@ -21,13 +15,8 @@ import com.hichip.content.HiChipDefines;
 import com.hichip.control.HiCamera;
 import com.hichip.control.HiGLMonitor;
 import com.hichip.push.HiPushSDK;
-import com.hichip.sdk.HiChipP2P;
 import com.hichip.sdk.HiChipSDK;
 import com.hichip.tools.Packet;
-import com.tencent.android.tpush.XGIOperateCallback;
-import com.tencent.android.tpush.XGPushConfig;
-import com.tencent.android.tpush.XGPushManager;
-import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.App;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.CameraClient;
@@ -35,7 +24,6 @@ import com.tws.commonlib.base.CameraFunction;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.db.DatabaseManager;
-import com.tws.commonlib.fragment.CameraFragment;
 
 import java.io.File;
 import java.util.Calendar;
@@ -151,23 +139,23 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public int getEventNum() {
+    public int getEventNum(int eventType) {
         return eventNum;
     }
 
     @Override
-    public void setEventNum(int eventNum) {
+    public void setEventNum(int eventNum,int eventType) {
         this.eventNum = eventNum;
     }
 
     @Override
-    public int refreshEventNum(Context context) {
+    public int refreshEventNum(Context context,int eventType) {
         this.eventNum++;
         return this.eventNum;
     }
 
     @Override
-    public int clearEventNum(Context context) {
+    public int clearEventNum(Context context,int eventType) {
         this.eventNum = 0;
         return this.eventNum;
     }
@@ -563,7 +551,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
     }
 
     @Override
-    public boolean shouldPush() {
+    public boolean shouldPush(int evtType,long evtTime) {
         boolean result = !(Math.abs(System.currentTimeMillis() - lastPushTime) < 60000);
         if (result && this.isPushOpen()) {
             lastPushTime = System.currentTimeMillis();
@@ -809,11 +797,11 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             }
         } else {
             if (this.getState() == CameraState.Rebooting || this.getState() == CameraState.WillRebooting) {
-                return App.getContext().getString(R.string.tips_rebooting);
+                return App.getContext().getString(R.string.process_rebooting);
             } else if (this.getState() == CameraState.Reseting || this.getState() == CameraState.WillReseting) {
-                return App.getContext().getString(R.string.tips_reseting);
+                return App.getContext().getString(R.string.process_reseting);
             } else if (this.getState() == CameraState.Upgrading || this.getState() == CameraState.WillUpgrading) {
-                return App.getContext().getString(R.string.tips_upgrading);
+                return App.getContext().getString(R.string.process_upgrading);
             }
         }
         return "";
@@ -1117,7 +1105,7 @@ public class HichipCamera extends HiCamera implements IMyCamera, ICameraIOSessio
             this.setInitTime(false);
         }
         if (type == HiChipDefines.HI_P2P_ALARM_EVENT) {
-            TwsTools.showAlarmNotification(App.getContext(), getUid(), 1, System.currentTimeMillis());
+            TwsTools.showAlarmNotification(App.getContext(), getUid(), 0, System.currentTimeMillis());
         }
     }
 

@@ -18,10 +18,6 @@ import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.setting.EventSettingActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraNameActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraPasswordActivity;
-import com.tws.commonlib.activity.setting.OtherSettingActivity;
-import com.tws.commonlib.activity.setting.RecordSettingActivity;
-import com.tws.commonlib.activity.setting.SystemSettingActivity;
-import com.tws.commonlib.activity.setting.WiFiListActivity;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -53,7 +49,7 @@ public class DeviceSetting_HichipActivity extends BaseActivity implements IIOTCL
                 break;
             }
         }
-        setTitle(R.string.title_deviceSetting);
+        setTitle(R.string.title_camera_setting);
         initView();
         getSetting();
         camera.registerIOTCListener(this);

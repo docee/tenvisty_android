@@ -70,7 +70,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-40sp"
-                android:text="@string/lab_first_add_camera"
+                android:text="@string/btn_first_add_camera"
                 android:textColor="#a39fa0"
                 android:textSize="13dp" />
         </LinearLayout>

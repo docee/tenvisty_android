@@ -248,7 +248,7 @@ public class TimeSettingActivity extends BaseActivity implements IIOTCListener {
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_ZONE_INFO_RESP:
                     dismissLoadingProgress();
                     if(data[3] == 0){
-                        TwsToast.showToast(TimeSettingActivity.this,getString(R.string.tips_setting_succ));
+                        TwsToast.showToast(TimeSettingActivity.this,getString(R.string.toast_setting_succ));
                     }
                     else{
                         showAlert(getString(R.string.alert_setting_fail));

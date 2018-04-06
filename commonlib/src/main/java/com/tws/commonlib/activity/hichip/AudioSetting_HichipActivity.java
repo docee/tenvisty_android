@@ -4,37 +4,21 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
-import android.view.KeyEvent;
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hichip.content.HiChipDefines;
 import com.hichip.data.HiDeviceInfo;
 import com.hichip.sdk.HiChipP2P;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.NSCamera;
-import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.base.MyConfig;
-import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-import com.tws.commonlib.bean.TwsIOCTRLDEFs;
-import com.tws.commonlib.controller.NavigationBar;
 
 
 /**
@@ -223,7 +207,7 @@ public class AudioSetting_HichipActivity extends BaseActivity implements IIOTCLi
                     seekbar_audio_output.setProgress(audio_attr.u32OutVol - 1);
                     break;
                 case HiChipDefines.HI_P2P_SET_AUDIO_ATTR:
-                    TwsToast.showToast(AudioSetting_HichipActivity.this,getString(R.string.tips_setting_succ));
+                    TwsToast.showToast(AudioSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
 
                     break;
 

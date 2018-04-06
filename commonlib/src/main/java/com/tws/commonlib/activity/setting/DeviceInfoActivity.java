@@ -43,7 +43,7 @@ public class DeviceInfoActivity extends BaseActivity implements IIOTCListener {
             }
         }
 
-        this.setTitle(getString(R.string.title_setting_devinfo));
+        this.setTitle(getString(R.string.title_camera_setting_info));
         initView();
         camera.registerIOTCListener(this);
     }

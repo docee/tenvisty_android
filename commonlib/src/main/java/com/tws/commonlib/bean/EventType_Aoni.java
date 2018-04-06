@@ -1,0 +1,24 @@
+package com.tws.commonlib.bean;
+
+/**
+ * Created by Administrator on 2018/4/4.
+ */
+
+public enum EventType_Aoni {
+    TENVIS_PUSH_TYPE_ALARM_PIR, 			//PIR事件
+    TENVIS_PUSH_TYPE_ALARM_PIR_SDREC_ERROR,//PIR事件，录像异常
+    TENVIS_PUSH_TYPE_BUTTON_DOORBELL,	//门铃事件 E936不支持
+    TENVIS_PUSH_TYPE_SD_PLUG,				//SD插入事件 E936不支持
+    TENVIS_PUSH_TYPE_SD_UNPLUG,			//SD拔出事件 E936不支持
+    TENVIS_PUSH_TYPE_SD_CAPACITY_FULL,	//容量已满 E936不支持
+    TENVIS_PUSH_TYPE_SD_UNKNOWN,			//未识别SD卡 E936不支持
+    TENVIS_PUSH_TYPE_LOW_POWER, 			//低电量事件
+    TENVIS_PUSH_TYPE_USB_NO_BAT,			//USB插入供电
+    TENVIS_PUSH_TYPE_USB_BAT_CHARGING,	//充电中
+    TENVIS_PUSH_TYPE_USB_BAT_FULL,		//充电满
+    TENVIS_PUSH_TYPE_OTA_UPGRADE_SUCCESS,//OTA升级成功
+    TENVIS_PUSH_TYPE_OTA_DOWNLOAD_FAILED,//升级失败，下载失败
+    TENVIS_PUSH_TYPE_OTA_DOWNLOAD_FILE_VERIFY_FAIL,//升级失败，文件校验失败 E936不支持
+    TENVIS_PUSH_TYPE_OTA_FILE_ERROR,		//升级失败，文件格式错误
+
+}

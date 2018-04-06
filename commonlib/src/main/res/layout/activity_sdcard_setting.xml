@@ -37,7 +37,7 @@
                 android:layout_weight="1"
                 android:layout_height="wrap_content"
                 android:textSize="16dp"
-                android:text="@string/lab_sd_card_setting_storage_size"
+                android:text="@string/lab_camera_setting_sdcard_storage_size"
                 android:textColor="#333333" />
 
 
@@ -83,7 +83,7 @@
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
-                    android:text="@string/lab_sd_card_setting_available_size"
+                    android:text="@string/lab_camera_setting_sdcard_available_size"
                     android:textSize="16dp"
                     android:textColor="#333333" />
 

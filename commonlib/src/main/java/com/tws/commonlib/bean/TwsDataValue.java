@@ -28,17 +28,20 @@ public class TwsDataValue {
     public static final int CAMERA_MAX_LIMITS = 64;
 
     public final static String EXTRA_KEY_UID = "camera_uid";
+    public final static String EXTRA_ALARM_EVENT_ID = "camera_alarm_event_id";
     public final static String EXTRAS_KEY_DATA = "data";
     public final static String EXTRAS_KEY_FROM = "from";
     public final static String ACTION_CAMERA_INIT_END = "camera_init_end";
     public final static String ACTION_CAMERA_REFRESH = "camera_refresh";
     public final static String ACTION_CAMERA_REFRESH_ONE_ITEM = "camera_refresh_one_item";
+    public final static String ACTION_CAMERA_ALARM_EVENT= "camera_alarm_event_one_item";
     public final static int HANDLE_MESSAGE_SESSION_STATE = 0x90000001;
     public final static int HANDLE_MESSAGE_CHANNEL_STATE = 0x90000002;
     public final static int HANDLE_MESSAGE_STS_CHANGE_STREAMINFO = 0x90000003;
     public final static int HANDLE_MESSAGE_IO_RESP = 0x90000004;
     public final static int HANDLE_MESSAGE_DOWNLOAD_STATE = 0x90000007;
     public final static int HANDLE_MESSAGE_RECONNECT = 0x90000008;
+    public final static int HANDLE_MESSAGE_PLAY_STATE = 0x90000009;
     public final static String DEFAULT_PASSWORD = "admin";
     public final static String SNAP_DIR = "snapshot";
     public final static String RECORDING_DIR = "videorecording";

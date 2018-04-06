@@ -15,22 +15,14 @@ import android.widget.ToggleButton;
 import com.hichip.content.HiChipDefines;
 import com.hichip.sdk.HiChipP2P;
 import com.hichip.system.HiDefaultData;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.setting.TimezoneSettingActivity;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
-
-import java.sql.Time;
-import java.util.Date;
-import java.util.TimeZone;
 
 
 /**
@@ -294,7 +286,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     //if(!mCamera.getCommandFunction(HiChipDefines.HI_P2P_PB_QUERY_START_NODST)){
                     camera.sendIOCtrl(HiChipDefines.HI_P2P_SET_REBOOT, new byte[0]);
 
-                    TwsToast.showToast(TimeSetting_HichipActivity.this, getString(R.string.tips_setting_succ));
+                    TwsToast.showToast(TimeSetting_HichipActivity.this, getString(R.string.toast_setting_succ));
                     //}else{
                     //HiToast.showToast(EquipmentTimeSettingActivity.this, getString(R.string.tips_device_time_setting_timezone_new));
                     //}

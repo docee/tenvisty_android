@@ -744,10 +744,18 @@ public class TwsTools {
                 return -2;
             }
 
-            if (!camera.shouldPush()) {
+            if (!camera.shouldPush(evtType,evtTime)) {
                 return -1;
             }
-            String[] alarmList = context.getResources().getStringArray(R.array.tips_alarm_list_array);
+
+            String[] alarmList = null;
+            if(camera.getSupplier() == IMyCamera.Supllier.AN){
+                alarmList = context.getResources().getStringArray(R.array.tips_alarm_aoni_list_array);
+            }
+            else{
+                evtType = 0;
+                alarmList = context.getResources().getStringArray(R.array.tips_alarm_list_array);
+            }
             NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             NotificationCompat.Builder builder = null;
             if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -756,7 +764,7 @@ public class TwsTools {
                 builder = new NotificationCompat.Builder(context,channelID);
                 @SuppressLint("WrongConstant") NotificationChannel channel = null;
                 channel = new NotificationChannel(channelID, channelName, NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription(alarmList[0]);
+                channel.setDescription(alarmList[evtType]);
                 channel.enableLights(true);
                 channel.setLightColor(Color.RED);
                 channel.enableVibration(true);
@@ -770,7 +778,7 @@ public class TwsTools {
 //            if(alarmList[evtType] == null){
 //
 //            }
-            builder.setContentText(alarmList[0]);
+            builder.setContentText(alarmList[evtType]);
 
             builder.setSmallIcon(MyConfig.getAppIconSource());
 //            builder.setContentInfo("补充内容");
@@ -779,21 +787,23 @@ public class TwsTools {
             builder.setWhen(System.currentTimeMillis());
             Intent intent = new Intent(context, com.tws.commonlib.start.MainActivity.class);
             intent.putExtra(TwsDataValue.EXTRA_KEY_UID, camera.getUid());
+            intent.putExtra(TwsDataValue.EXTRA_ALARM_EVENT_ID, evtType);
             intent.putExtra("eventTime", evtTime);
             int notificationId = camera.getIntId();
             PendingIntent pendingIntent = PendingIntent.getActivity(context, notificationId + evtType, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             builder.setContentIntent(pendingIntent);
 
-            int eventnum = camera.refreshEventNum(context);
+            int eventnum = camera.refreshEventNum(context,evtType);
             //+ (evtType==0?" from server um":evtType==1?"from server xg":"from p2p")
-            builder.setContentText(alarmList[0] + (eventnum > 1 ? (" +" + eventnum) : ""));
+            builder.setContentText(alarmList[evtType] + (eventnum > 1 ? (" +" + eventnum) : ""));
             builder.setContentTitle(camera.getNickName() + " [" + camera.getUid() + "]");
             Notification notification = builder.build();
 
             manager.notify(camera.getUid(), notificationId + evtType, notification);
             Intent newIntent = new Intent();
             newIntent.putExtra(TwsDataValue.EXTRA_KEY_UID, uid);
-            newIntent.setAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
+            newIntent.putExtra(TwsDataValue.EXTRA_ALARM_EVENT_ID, evtType);
+            newIntent.setAction(TwsDataValue.ACTION_CAMERA_ALARM_EVENT);
             context.sendBroadcast(newIntent);
 
 //                        XGLocalMessage local_msg = new XGLocalMessage();

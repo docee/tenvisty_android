@@ -108,7 +108,7 @@ public class PlaybackActivity extends BaseActivity implements IIOTCListener, Vie
             if (_camera.getUid().equalsIgnoreCase(mDevUID)) {
                 mCamera = (MyCamera) _camera;
                 mCamera.registerIOTCListener(this);
-                mCamera.clearEventNum(this);
+                mCamera.clearEventNum(this,0);
                 break;
             }
         }

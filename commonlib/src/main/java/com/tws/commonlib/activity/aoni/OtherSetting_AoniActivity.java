@@ -31,7 +31,6 @@ public class OtherSetting_AoniActivity extends BaseActivity implements IIOTCList
     private String dev_uid;
     private IMyCamera camera;
     ToggleButton togbtn_ledlight;
-    ToggleButton togbtn_osdtime;
     //ToggleButton togbtn_alarm_led;
 
     @Override
@@ -56,11 +55,7 @@ public class OtherSetting_AoniActivity extends BaseActivity implements IIOTCList
     protected void initView() {
         super.initView();
         togbtn_ledlight = (ToggleButton) findViewById(R.id.togbtn_ledlight);
-        togbtn_osdtime = (ToggleButton) findViewById(R.id.togbtn_osdtime);
-        //togbtn_alarm_led = (ToggleButton) findViewById(R.id.togbtn_alarm_led);
         togbtn_ledlight.setOnClickListener(this);
-        togbtn_osdtime.setOnClickListener(this);
-        //togbtn_alarm_led.setOnClickListener(this);
     }
 
 //    void setAlarmLed() {
@@ -77,7 +72,6 @@ public class OtherSetting_AoniActivity extends BaseActivity implements IIOTCList
             // showLoadingView(R.id.togbtn_alarm_led);
             camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ALARMLED_CONTRL_REQ, AVIOCTRLDEFs.SMsgAVIOCtrlGetAlarmLedReq.parseContent(0));
             // camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEZONE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlTimeZone.parseContent());
-            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_OSD_ONOFF_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetVideoModeReq.parseContent(0));
             //camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ENVIRONMENT_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetEnvironmentReq.parseContent(0));
         }
     }
@@ -159,12 +153,6 @@ public class OtherSetting_AoniActivity extends BaseActivity implements IIOTCList
                     hideLoadingView(R.id.togbtn_ledlight);
                 }
                 break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_OSD_ONOFF_RESP: {
-                    int osd = Packet.byteArrayToInt_Little(data,0);
-                    togbtn_osdtime.setChecked(osd == 1);
-                    hideLoadingView(R.id.togbtn_osdtime);
-                }
-                break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_VIDEOMODE_REQ://视频翻转
                     dismissLoadingProgress();
                     break;
@@ -237,9 +225,7 @@ public class OtherSetting_AoniActivity extends BaseActivity implements IIOTCList
 
     @Override
     public void onClick(View view) {
-        if (view.getId() == R.id.togbtn_osdtime) {
-            setOsdTime(((ToggleButton) view).isChecked());
-        } else if (view.getId() == R.id.togbtn_ledlight) {
+        if (view.getId() == R.id.togbtn_ledlight) {
             setLedLight(((ToggleButton) view).isChecked());
         }
 //        else if(view.getId() == R.id.togbtn_alarm_led){

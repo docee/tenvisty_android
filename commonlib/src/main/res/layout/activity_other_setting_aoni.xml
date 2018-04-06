@@ -90,7 +90,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_time"
+                    android:text="@string/title_camera_setting_time"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -99,58 +99,6 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:layout_height="30dp"
                     android:tint="@color/gray"
                     app:srcCompat="@drawable/ic_keyboard_arrow_right_black_24dp" />
-            </LinearLayout>
-
-            <View
-                style="@style/split_short_thin_style"
-                android:layout_width="match_parent" />
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/list_item_bg"
-                android:visibility="gone"
-                android:clickable="true"
-                android:gravity="center_vertical">
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="center"
-                    android:layout_marginLeft="10dp"
-                    android:background="@drawable/ic_reverse"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:maxLines="1"
-                    android:paddingTop="10dp"
-                    android:paddingBottom="10dp"
-                    android:paddingLeft="5dp"
-                    android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_osdtime"
-                    android:textColor="#434343"
-                    android:textSize="16dp" />
-
-                <TextView
-                    android:id="@+id/txt_osdtime_loading"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:maxLines="1"
-                    android:padding="10dp"
-                    android:text="@string/loading"
-                    android:textColor="@color/gray"
-                    android:visibility="invisible"
-                    android:textSize="14dp" />
-                <ToggleButton
-                    android:id="@+id/togbtn_osdtime"
-                    style="@style/btn_toggle_style"
-                    android:layout_width="50dp"
-                    android:layout_height="30dp"
-                    android:background="@android:color/transparent"
-                    android:button="@drawable/toggle_btn_style"
-                    android:gravity="right|center"
-                    android:text=""
-                    android:textOff=""
-                    android:textOn="" />
             </LinearLayout>
 
             <View
@@ -179,7 +127,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_ledlight"
+                    android:text="@string/lab_camera_setting_other_ledlight"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -278,7 +226,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_sdcard"
+                    android:text="@string/lab_camera_setting_other_sdcard"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -318,7 +266,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_devinfo"
+                    android:text="@string/lab_camera_setting_other_info"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 

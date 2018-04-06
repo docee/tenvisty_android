@@ -115,9 +115,9 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
                 String jsonc = arrJson.getString("content");
                 JSONObject conJson = new JSONObject(jsonc);
                 uid = conJson.getString("uid");
-//                type = conJson.getInt("type");
-//                time = conJson.getInt("time");
-                int result = TwsTools.showAlarmNotification(arg0,uid, 1, System.currentTimeMillis());
+                type = conJson.getInt("type");
+                time = conJson.getInt("time");
+                int result = TwsTools.showAlarmNotification(arg0,uid, type, time);
                 if(result == -2 ) {
                     camera = IMyCamera.MyCameraFactory.shareInstance().createCamera("", uid, "admin", "admin");
                     if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {

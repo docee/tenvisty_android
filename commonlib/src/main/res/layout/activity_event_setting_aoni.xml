@@ -53,7 +53,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_camera_setting_sens"
+                        android:text="@string/title_camera_setting_event_sens"
                         android:textColor="#434343"
                         android:textSize="16dp" />
                     <TextView
@@ -174,7 +174,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_camera_setting_eventrecord"
+                        android:text="@string/lab_camera_setting_event_record"
                         android:textColor="#434343"
                         android:textSize="16dp" />
                     <ToggleButton
@@ -212,7 +212,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_camera_setting_duration_record"
+                        android:text="@string/lab_camera_setting_event_record_duration"
                         android:textColor="#434343"
                         android:textSize="16dp" />
                     <TextView

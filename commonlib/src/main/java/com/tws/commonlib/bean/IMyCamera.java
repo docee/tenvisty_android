@@ -40,10 +40,10 @@ public interface IMyCamera {
     public  boolean isFirstLogin();
     public  boolean isPlaying();
     public CameraState getState();
-    public int getEventNum();
-    public void setEventNum(int eventNum);
-    public int refreshEventNum(Context context);
-    public int clearEventNum(Context context);
+    public int getEventNum(int eventType);
+    public void setEventNum(int eventNum,int eventType);
+    public int refreshEventNum(Context context,int eventType);
+    public int clearEventNum(Context context,int eventType);
     public String getSoftVersion();
     public  void setSoftVersion(String version);
     //只连接，不登录
@@ -75,7 +75,7 @@ public interface IMyCamera {
     public void asycnStopSpeak(final TaskExecute te);
     public void ptz(int type);
     public void asyncPtz(final int type);
-    public boolean shouldPush();
+    public boolean shouldPush(int evtType,long evtTime);
     public void openPush(final CameraClient.ServerResultListener2 succListner, final CameraClient.ServerResultListener2 errorListner);
     public void closePush(Context context);
     public  boolean  isPushOpen();

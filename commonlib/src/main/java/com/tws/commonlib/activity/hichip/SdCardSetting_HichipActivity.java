@@ -10,9 +10,6 @@ import android.widget.EditText;
 
 import com.hichip.base.HiLog;
 import com.hichip.content.HiChipDefines;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.TwsToast;
@@ -49,7 +46,7 @@ public class SdCardSetting_HichipActivity extends BaseActivity implements IIOTCL
             }
         }
 
-        this.setTitle(getString(R.string.title_sdcard_setting));
+        this.setTitle(getString(R.string.title_camera_setting_sdcard));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -192,7 +189,7 @@ public class SdCardSetting_HichipActivity extends BaseActivity implements IIOTCL
                         dismissLoadingProgress();
                         if(isCheckingFormatResult){
                             isCheckingFormatResult= false;
-                            TwsToast.showToast(SdCardSetting_HichipActivity.this, getString(R.string.tips_fotmat_succ));
+                            TwsToast.showToast(SdCardSetting_HichipActivity.this, getString(R.string.toast_fotmat_succ));
                             //finish();
                         }
                     }
@@ -210,7 +207,7 @@ public class SdCardSetting_HichipActivity extends BaseActivity implements IIOTCL
                         this.sendEmptyMessageDelayed(CheckingFormatResult,5000);
                     }
                     else{
-                        TwsToast.showToast(SdCardSetting_HichipActivity.this, getString(R.string.tips_fotmat_succ));
+                        TwsToast.showToast(SdCardSetting_HichipActivity.this, getString(R.string.toast_fotmat_succ));
                         dismissLoadingProgress();
                     }
                     break;

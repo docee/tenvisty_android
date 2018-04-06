@@ -44,7 +44,7 @@ public class SdCardSetting_AoniActivity extends BaseActivity implements IIOTCLis
             }
         }
 
-        this.setTitle(getString(R.string.title_sdcard_setting));
+        this.setTitle(getString(R.string.title_camera_setting_sdcard));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -190,7 +190,7 @@ public class SdCardSetting_AoniActivity extends BaseActivity implements IIOTCLis
                     int result = Packet.byteArrayToInt_Little(data,0);
                     if(result == 0){
                         getRemoteData();
-                        TwsToast.showToast(SdCardSetting_AoniActivity.this,getString(R.string.tips_fotmat_succ));
+                        TwsToast.showToast(SdCardSetting_AoniActivity.this,getString(R.string.toast_fotmat_succ));
                     }
                     else if(result == 1){
                         handler.postDelayed(new Runnable() {

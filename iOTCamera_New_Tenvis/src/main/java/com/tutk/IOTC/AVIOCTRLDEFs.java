@@ -259,6 +259,15 @@ public class AVIOCTRLDEFs {
     public static final int IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_REQ = 0X60090;
     public static final int IOTYPE_USER_IPCAM_UPGRADE_PROGRESS_RESP = 0X60091;
 
+    //推送开关设置
+//开关推送设置请求/获取
+    //报警推送设置
+    public static final int IOTYPE_USER_IPCAM_SET_ALARM_PUSH_EN_REQ = 0X4009F;
+    public static final int IOTYPE_USER_IPCAM_SET_ALARM_PUSH_EN_RESP = 0X400A0;
+    public static final int IOTYPE_USER_IPCAM_GET_ALARM_PUSH_EN_REQ = 0X400A1;
+    public static final int IOTYPE_USER_IPCAM_GET_ALARM_PUSH_EN_RESP = 0X400A2;
+
+
     //PIR灵敏度设置
     public static final int IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_REQ = 0X6000c; //PIR SENSITIVITY
     public static final int IOTYPE_USER_IPCAM_SET_PIR_SENSITIVITY_RESP = 0X6000d;

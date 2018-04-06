@@ -8,21 +8,12 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.media.Image;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.content.res.AppCompatResources;
-import android.util.EventLog;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
@@ -41,20 +32,13 @@ import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import com.hichip.content.HiChipDefines;
 import com.hichip.tools.Packet;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlListEventReq;
 import com.tutk.IOTC.AVIOCTRLDEFs.STimeDay;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.CameraFolderActivity;
-import com.tws.commonlib.activity.PlaybackActivity;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
@@ -65,7 +49,6 @@ import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.bean.TwsSessionState;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.controller.SpinnerButton;
-import com.tws.commonlib.task.VideoThumbImgTask;
 import com.tws.commonlib.util.ImageCache;
 import com.tws.commonlib.util.ImageFetcher;
 import com.tws.commonlib.util.ImageWorker;
@@ -82,7 +65,6 @@ import java.util.List;
 import java.util.TimeZone;
 import java.util.UUID;
 
-import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_ALL;
 import static com.tutk.IOTC.AVIOCTRLDEFs.AVIOCTRL_EVENT_MOTIONDECT;
 
 public class EventList_HichipActivity extends BaseActivity implements IIOTCListener, IDownloadCallback {
@@ -321,7 +303,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
         });
         txt_search_event_time = (TextView) findViewById(R.id.txt_search_event_time);
         spinner_type = (SpinnerButton) findViewById(R.id.spinner_type);
-        spinner_type.setTitles(new String[]{getString(R.string.lab_record_event), getString(R.string.lab_record_time)});
+        spinner_type.setTitles(getResources().getStringArray(R.array.event_type));
         spinner_type.setSpinnerButtonListener(new SpinnerButton.SpinnerButtonListener() {
             @Override
             public void OnSpinnerButtonClick(int which) {
@@ -412,7 +394,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
                     file_info.isSelected = !file_info.isSelected;
                     v.findViewById(R.id.img_select).setSelected(file_info.isSelected);
                 } else {
-                    TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.tip_alear_dowm));
+                    TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.tip_has_downloaded));
                 }
             } else {
                 Bundle extras = new Bundle();
@@ -489,7 +471,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
             }
         } else {
-            TwsToast.showToast(EventList_HichipActivity.this, getString(R.string.tips_setting_failed));
+            showAlert(getString(R.string.alert_setting_fail));
         }
     }
 
@@ -1422,7 +1404,7 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_LIGHT);
         final AlertDialog dlg = builder.create();
-        dlg.setTitle(getText(R.string.dialog_title_eventsearch));
+        dlg.setTitle(getText(R.string.dialog_title_event_search));
         dlg.setIcon(android.R.drawable.ic_dialog_info);
 
         LayoutInflater inflater = dlg.getLayoutInflater();

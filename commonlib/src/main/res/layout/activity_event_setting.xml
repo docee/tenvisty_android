@@ -53,7 +53,7 @@
                         android:paddingBottom="10dp"
                         android:paddingLeft="5dp"
                         android:paddingRight="10dp"
-                        android:text="@string/lab_camera_setting_sens"
+                        android:text="@string/title_camera_setting_event_sens"
                         android:textColor="#434343"
                         android:textSize="16dp" />
                     <TextView

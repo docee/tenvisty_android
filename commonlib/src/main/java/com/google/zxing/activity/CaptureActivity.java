@@ -47,7 +47,6 @@ import com.google.zxing.decoding.RGBLuminanceSource;
 import com.google.zxing.qrcode.QRCodeReader;
 import com.google.zxing.view.ViewfinderView;
 import com.tws.commonlib.R;
-import com.tws.commonlib.activity.AddCameraActivity;
 import com.tws.commonlib.activity.AddCameraInputUidActivity;
 import com.tws.commonlib.activity.AddCameraNavigationTypeActivity;
 import com.tws.commonlib.activity.SaveCameraActivity;

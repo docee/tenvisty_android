@@ -151,7 +151,7 @@ public class VideoViewAdapter extends SimpleAdapter {
             holder.txt_nikename.setText(camera.getNickName());
             holder.txt_state.setBackgroundResource(camera.getCameraStateBackgroundColor());
             holder.txt_state.setText(camera.getCameraStateDesc());
-            if (camera.getEventNum() > 0) {
+            if (camera.getEventNum(0) > 0) {
                 holder.img_push_alarm.setVisibility(View.VISIBLE);
             } else {
                 holder.img_push_alarm.setVisibility(View.GONE);
@@ -186,7 +186,7 @@ public class VideoViewAdapter extends SimpleAdapter {
                             holder.ll_tip_sleep.setVisibility(View.VISIBLE);
                         }
                     } else {
-                        Log.i("VideoViewAdapter", "state:" + (camera.isConnected() ? 1 : 0) + " supplier:" + camera.getSupplier() + " connectstate:" + ((MyCamera) camera).connect_state);
+                       // Log.i("VideoViewAdapter", "state:" + (camera.isConnected() ? 1 : 0) + " supplier:" + camera.getSupplier() + " connectstate:" + ((MyCamera) camera).connect_state);
                         holder.ll_tip_disconnected.setVisibility(View.VISIBLE);
                     }
                 }

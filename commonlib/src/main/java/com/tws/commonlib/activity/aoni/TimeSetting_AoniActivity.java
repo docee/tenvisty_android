@@ -11,14 +11,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
-import com.hichip.content.HiChipDefines;
-import com.hichip.system.HiDefaultData;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.setting.TimezoneSettingActivity;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
@@ -208,7 +205,7 @@ public class TimeSetting_AoniActivity extends BaseActivity implements IIOTCListe
 //                            getRemoteData();
 //                        }
                     } else {
-                        TwsToast.showToast(TimeSetting_AoniActivity.this, getString(R.string.tips_setting_failed));
+                        showAlert(getString(R.string.alert_setting_fail));
                     }
                 }
                 break;
@@ -265,7 +262,7 @@ public class TimeSetting_AoniActivity extends BaseActivity implements IIOTCListe
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_ZONE_INFO_RESP:
                     dismissLoadingProgress();
                     if (data[3] == 0) {
-                        TwsToast.showToast(TimeSetting_AoniActivity.this, getString(R.string.tips_setting_succ));
+                        TwsToast.showToast(TimeSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
                     } else {
                         showAlert(getString(R.string.alert_setting_fail));
                     }

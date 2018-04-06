@@ -103,10 +103,6 @@
             android:launchMode="singleTask"
             android:screenOrientation="portrait"></activity>
         <activity
-            android:name="com.tws.commonlib.activity.AddCameraActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize"
-            android:screenOrientation="portrait"></activity>
-        <activity
             android:name="com.tws.commonlib.activity.AddDeviceWirelessActivity"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:launchMode="singleTask"

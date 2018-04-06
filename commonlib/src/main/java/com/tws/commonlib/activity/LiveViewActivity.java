@@ -10,14 +10,12 @@ import android.graphics.Point;
 import android.graphics.Shader.TileMode;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.provider.MediaStore;
 import android.support.v4.content.ContextCompat;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -43,7 +41,6 @@ import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.St_SInfo;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.aoni.EventList_AoniActivity;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.MyLiveViewGLMonitor;
 import com.tws.commonlib.base.ScreenSwitchUtils;
 import com.tws.commonlib.base.TwsToast;
@@ -652,7 +649,7 @@ public class LiveViewActivity extends BaseActivity implements
                         case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_PRESET_POINT_RESP:
                             //success
                             if (data[0] == 0) {
-                                TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_set_succ));
+                                TwsToast.showToast(LiveViewActivity.this, getString(R.string.toast_setting_succ));
                                 mCamera.asyncSendIOCtrl(mSelectedChannel, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_PRESET_LIST_REQ, new byte[1]);
                             } else {
                                 TwsToast.showToast(LiveViewActivity.this, getString(R.string.tips_preset_set_fail));
@@ -846,7 +843,7 @@ public class LiveViewActivity extends BaseActivity implements
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(LiveViewActivity.this, LiveViewActivity.this.getText(R.string.tips_snapshot_ok), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LiveViewActivity.this, LiveViewActivity.this.getText(R.string.toast_snapshot_succeed), Toast.LENGTH_SHORT).show();
                                 }
                             });
                             TwsTools.addImageGallery(LiveViewActivity.this, path, fileName);

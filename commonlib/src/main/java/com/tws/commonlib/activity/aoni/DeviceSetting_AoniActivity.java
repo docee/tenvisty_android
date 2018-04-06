@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.App;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
@@ -21,7 +20,6 @@ import com.tws.commonlib.activity.setting.EventSettingActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraNameActivity;
 import com.tws.commonlib.activity.setting.ModifyCameraPasswordActivity;
 import com.tws.commonlib.activity.setting.OtherSettingActivity;
-import com.tws.commonlib.activity.setting.RecordSettingActivity;
 import com.tws.commonlib.activity.setting.SystemSettingActivity;
 import com.tws.commonlib.activity.setting.WiFiListActivity;
 import com.tws.commonlib.base.TwsTools;
@@ -53,7 +51,7 @@ public class DeviceSetting_AoniActivity extends BaseActivity implements IIOTCLis
                 break;
             }
         }
-        setTitle(R.string.title_deviceSetting);
+        setTitle(R.string.title_camera_setting);
         initView();
         getSetting();
         camera.registerIOTCListener(this);

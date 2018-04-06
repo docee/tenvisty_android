@@ -34,7 +34,7 @@ public class ModifyCameraNameActivity extends BaseActivity {
                 break;
             }
         }
-        this.setTitle(getResources().getString(R.string.title_camera_name));
+        this.setTitle(getResources().getString(R.string.title_edit_camera_info));
         initView();
     }
 

@@ -90,7 +90,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_time"
+                    android:text="@string/title_camera_setting_time"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -128,7 +128,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_audio"
+                    android:text="@string/title_camera_setting_audio"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -164,7 +164,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_reverse"
+                    android:text="@string/lab_camera_setting_other_mirror"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -217,7 +217,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_inverse"
+                    android:text="@string/lab_camera_setting__other_flip"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -316,7 +316,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_sdcard"
+                    android:text="@string/lab_camera_setting_other_sdcard"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 
@@ -356,7 +356,7 @@ xmlns:app="http://schemas.android.com/apk/res-auto"
                     android:paddingBottom="10dp"
                     android:paddingLeft="5dp"
                     android:paddingRight="10dp"
-                    android:text="@string/lab_other_setting_devinfo"
+                    android:text="@string/lab_camera_setting_other_info"
                     android:textColor="#434343"
                     android:textSize="16dp" />
 

@@ -17,9 +17,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.TimePicker;
 
-import com.hichip.callback.ICameraIOSessionCallback;
 import com.hichip.content.HiChipDefines;
-import com.hichip.control.HiCamera;
 import com.tws.commonlib.R;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -418,7 +416,7 @@ public class SetScheduleTimeController implements IIOTCListener {
 					}
 					else if(msg.arg1 == ioCmdSet[scheduleType])
 					{
-						TwsToast.showToast(activity, activity.getString(R.string.tips_setting_succ));
+						TwsToast.showToast(activity, activity.getString(R.string.toast_setting_succ));
 						if(onSchuduleResult!=null){
 							onSchuduleResult.onSetRemoteData();
 						}

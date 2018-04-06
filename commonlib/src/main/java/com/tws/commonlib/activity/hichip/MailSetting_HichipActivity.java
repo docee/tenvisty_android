@@ -1,7 +1,5 @@
 package com.tws.commonlib.activity.hichip;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -21,7 +19,6 @@ import android.widget.ToggleButton;
 import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.ExpandAnimation;
@@ -87,7 +84,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
             }
         }
 
-        this.setTitle(getString(R.string.title_mail_setting));
+        this.setTitle(getString(R.string.title_camera_setting_mail));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -403,7 +400,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     if(isChecking){
                         dismissLoadingProgress();
                         if(msg.arg1 == 0){
-                            TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.tips_setting_succ));
+                            TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
                             camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
                             MailSetting_HichipActivity.this.finish();
                             //TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_test_success));
@@ -419,7 +416,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
                             }
                             else{
                                 dismissLoadingProgress();
-                                TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.tips_setting_succ));
+                                TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
 
                                 camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
                                 MailSetting_HichipActivity.this.finish();
@@ -428,7 +425,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
                         }
                         else{
                             dismissLoadingProgress();
-                            TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.tips_setting_failed));
+                            showAlert(getString(R.string.alert_setting_fail));
                         }
                     }
                     break;

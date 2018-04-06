@@ -34,12 +34,9 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.google.zxing.activity.CaptureActivity;
-import com.hichip.tools.HiSinVoiceData;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
-import com.tws.commonlib.activity.AddCameraActivity;
-import com.tws.commonlib.activity.AddCameraNavigationTypeActivity;
 import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.activity.LiveViewActivity;
 import com.tws.commonlib.activity.aoni.DeviceSetting_AoniActivity;
@@ -59,7 +56,6 @@ import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.CameraState;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
-import com.tws.commonlib.bean.MyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.bean.TwsSessionState;
 
@@ -250,11 +246,11 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                         TextView txt_state = view.findViewById(R.id.txt_state);
                                         if (txt_state != null) {
                                             txt_state.setBackgroundResource(R.drawable.shape_state_connecting);
-                                            txt_state.setText(String.format(getString(R.string.tips_upgrading_percent), process.p + ""));
+                                            txt_state.setText(String.format(getString(R.string.process_upgrading_percent), process.p + ""));
                                         }
                                         if (process.p >= 100) {
                                             TwsToast.showToast(CameraFragment.this.getActivity(), getString(R.string.toast_updating_succ_reboot));
-                                            txt_state.setText(getString(R.string.tips_rebooting));
+                                            txt_state.setText(getString(R.string.process_rebooting));
                                         }
                                     }
                                 });
@@ -395,7 +391,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             Builder dlgBuilder = new Builder(CameraFragment.this.getContext());
             dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
 
-            dlgBuilder.setMessage(String.format(getString(R.string.dialog_msg_strict_modify_pwd), camera.getNickName()));
+            dlgBuilder.setMessage(String.format(getString(R.string.dialog_msg_strict_change_pwd), camera.getNickName()));
             dlgBuilder.setCancelable(false);
             dlgBuilder.setPositiveButton(getText(R.string.modify),
                     new DialogInterface.OnClickListener() {//点击修改按钮跳转至高级设置界面修改设备密码
@@ -419,7 +415,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             dlgBuilder.show().setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialogInterface) {
-                    isShowModifyPwdDlg = false;
+
                 }
             });
         }
@@ -517,9 +513,9 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         camera.sendIOCtrl(0, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (camera.getVideoQuality())));
                     }
                     //camera.asyncStartVideo(null);
-                    if (camera.getEventNum() > 0) {
+                    if (camera.getEventNum(0) > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                        int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
+                        int eventnum = camera.clearEventNum(CameraFragment.this.getContext(),0);
                         int intId = camera.getIntId();
                         manager.cancel(camera.getUid(), intId);
                     }
@@ -566,9 +562,9 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     } else if (camera.isConnected()) {
                         camera.asyncStartVideo(null);
 
-                        if (camera.getEventNum() > 0) {
+                        if (camera.getEventNum(0) > 0) {
                             NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
-                            int eventnum = camera.clearEventNum(CameraFragment.this.getContext());
+                            int eventnum = camera.clearEventNum(CameraFragment.this.getContext(),0);
                             int intId = camera.getIntId();
                             manager.cancel(camera.getUid(), intId);
                         }
@@ -664,6 +660,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
             IntentFilter filter = new IntentFilter();
             filter.addAction(TwsDataValue.ACTION_CAMERA_INIT_END);
             filter.addAction(TwsDataValue.ACTION_CAMERA_REFRESH);
+            filter.addAction(TwsDataValue.ACTION_CAMERA_ALARM_EVENT);
             filter.addAction(TwsDataValue.ACTION_CAMERA_REFRESH_ONE_ITEM);
             CameraFragment.this.getActivity().registerReceiver(receiver, filter);
         }
@@ -673,6 +670,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     public void onResume() {
         super.onResume();
         TwsDataValue.setTryConnectcamera(null);
+        isShowModifyPwdDlg = false;
         refreshTitle();
         refreshItems();
         for (IMyCamera camera : TwsDataValue.cameraList()) {
@@ -794,7 +792,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         }
         Builder builder = new AlertDialog.Builder(CameraFragment.this.getContext());
         dlg = builder.create();
-        dlg.setTitle(getString(R.string.dialog_title_camera_password_wrong));
+        dlg.setTitle(getString(R.string.camera_state_passwordWrong));
         dlg.setIcon(android.R.drawable.ic_menu_save);
         LayoutInflater inflater = dlg.getLayoutInflater();
         View view = inflater.inflate(R.layout.hint_password_error, null);
@@ -919,7 +917,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                             if (c.getUid().equals(uid)) {
                                 View cameraView = getCameraView(c);//.findViewById(R.id.img_push_alarm)
                                 if (cameraView != null) {
-                                    if (c.getEventNum() > 0) {
+                                    if (c.getEventNum(0) > 0) {
                                         cameraView.findViewById(R.id.img_push_alarm).setVisibility(View.VISIBLE);
                                     }
                                     Bitmap snap = c.getSnapshot();
@@ -952,6 +950,44 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     }
                 }
                 //refreshItems();
+            }
+            else if(intent.getAction().equals(TwsDataValue.ACTION_CAMERA_ALARM_EVENT)){
+                Bundle bundle = intent.getExtras();
+                if (bundle != null) {
+                    String uid = bundle.getString(TwsDataValue.EXTRA_KEY_UID);
+                    int evtType = bundle.getInt(TwsDataValue.EXTRA_ALARM_EVENT_ID);
+                    if (uid != null) {
+                        for (IMyCamera c : TwsDataValue.cameraList()) {
+                            if (c.getUid().equals(uid)) {
+                                View cameraView = getCameraView(c);//.findViewById(R.id.img_push_alarm)
+                                if (cameraView != null) {
+                                    if(c.getSupplier() == IMyCamera.Supllier.AN){
+                                        //电池事件
+                                        if(evtType >= 7 && evtType <= 10){
+                                            c.sendIOCtrl(0, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_BAT_PRAM_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+                                        }
+                                        else if(evtType > 10){
+                                            if(!c.isSleeping() && !c.isConnected() && !c.isPasswordWrong()){
+                                                c.asyncStop(new IMyCamera.TaskExecute() {
+                                                    @Override
+                                                    public void onPosted(IMyCamera camera, Object data) {
+                                                        camera.start();
+                                                    }
+                                                });
+                                            }
+                                        }
+                                    }
+                                    else{
+                                        if (c.getEventNum(0) > 0) {
+                                            cameraView.findViewById(R.id.img_push_alarm).setVisibility(View.VISIBLE);
+                                        }
+                                    }
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
 

@@ -24,10 +24,8 @@ import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.L;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.setting.WiFiSetActivity;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -71,7 +69,7 @@ public class WiFiList_HichipActivity extends BaseActivity implements IIOTCListen
                 break;
             }
         }
-        this.setTitle(getResources().getString(R.string.title_setting_wifi));
+        this.setTitle(getResources().getString(R.string.title_camera_setting_wifi));
         initView();
         camera.registerIOTCListener(this);
     }

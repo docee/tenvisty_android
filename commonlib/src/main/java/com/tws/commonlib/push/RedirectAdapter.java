@@ -21,6 +21,7 @@ public class RedirectAdapter {
 
     public static boolean checkPushRedirect(Activity activity) {
         String uid = null;
+        int evtType = 0;
         IMyCamera camera = null;
         // 判断是否从推送通知栏打开的
         XGPushClickedResult click = XGPushManager.onActivityStarted(activity);
@@ -39,6 +40,7 @@ public class RedirectAdapter {
             Intent intent = activity.getIntent();
             if (intent != null) {
                 uid = intent.getStringExtra(TwsDataValue.EXTRA_KEY_UID);
+                evtType = intent.getIntExtra(TwsDataValue.EXTRA_ALARM_EVENT_ID, 0);
             }
         }
         if (uid != null) {
@@ -53,9 +55,10 @@ public class RedirectAdapter {
             NotificationManager manager = (NotificationManager) activity.getSystemService(Context.NOTIFICATION_SERVICE);
             //int eventnum = ((MyCamera) camera).clearEventNum(activity);
             int intId = camera.getIntId();
-            manager.cancel(camera.getUid(), intId);
-            manager.cancel(camera.getUid(), intId+1);
-            manager.cancel(camera.getUid(), intId+2);
+            manager.cancel(camera.getUid(), intId + evtType);
+            if (evtType != 0) {
+                camera.clearEventNum(activity, evtType);
+            }
 //            for (int i = 1; i <= eventnum; i++) {
 //                manager.cancel(intId + i);
 //            }

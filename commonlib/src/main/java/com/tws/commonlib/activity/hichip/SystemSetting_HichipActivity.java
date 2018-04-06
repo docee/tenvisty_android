@@ -1,6 +1,5 @@
 package com.tws.commonlib.activity.hichip;
 
-import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -12,12 +11,9 @@ import android.view.View;
 import com.hichip.base.HiLog;
 import com.hichip.content.HiChipDefines;
 import com.hichip.tools.Packet;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.setting.SystemSettingActivity;
 import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
@@ -424,7 +420,7 @@ public class SystemSetting_HichipActivity extends BaseActivity implements IIOTCL
                 @Override
                 public void onTimeOut(TwsProgressDialog dialog) {
                     updateState = -1;
-                    TwsToast.showToast(SystemSetting_HichipActivity.this, getString(R.string.process_connect_timeout));
+                    TwsToast.showToast(SystemSetting_HichipActivity.this, getString(R.string.toast_connect_timeout));
                 }
             });
             checkUpdate();
@@ -650,6 +646,7 @@ public class SystemSetting_HichipActivity extends BaseActivity implements IIOTCL
 
         updateStatus = UPDATA_STATE_CHECKING;
     }
+
     public String getFirmInfo(String url) {
         HttpGet httpGet = new HttpGet(url);
         HttpResponse httpResponse = null;

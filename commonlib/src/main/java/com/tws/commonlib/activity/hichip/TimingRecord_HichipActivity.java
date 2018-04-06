@@ -5,30 +5,19 @@ import android.graphics.Paint;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.content.ContextCompat;
-import android.text.Html;
-import android.text.method.HideReturnsTransformationMethod;
-import android.text.method.PasswordTransformationMethod;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.hichip.content.HiChipDefines;
 import com.hichip.data.HiDeviceInfo;
-import com.hichip.sdk.HiChipP2P;
-import com.tutk.IOTC.Camera;
-import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.base.SetScheduleTimeController;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
-import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -120,7 +109,7 @@ public class TimingRecord_HichipActivity extends BaseActivity implements IIOTCLi
             @Override
             public void onSetRemoteData() {
                 // TODO Auto-generated method stub
-                TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.tips_setting_succ));
+                TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.toast_setting_succ));
                 finish();
             }
 
@@ -152,8 +141,7 @@ public class TimingRecord_HichipActivity extends BaseActivity implements IIOTCLi
         }
 
         if(rec_time_val < 15 || rec_time_val > recordTime) {
-
-            Toast.makeText(TimingRecord_HichipActivity.this, String.format(getText(R.string.alert_recording_time_range).toString(), recordTime), Toast.LENGTH_LONG).show();
+            showAlert( String.format(getText(R.string.alert_recording_time_range).toString(), recordTime));
             return;
         }
 
@@ -164,7 +152,7 @@ public class TimingRecord_HichipActivity extends BaseActivity implements IIOTCLi
             public void onTimeOut(TwsProgressDialog dialog) {
                 isTimeout = true;
                 dismissLoadingProgress();
-                TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.process_connect_timeout));
+                TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.toast_connect_timeout));
 
             }
         });
@@ -268,7 +256,7 @@ public class TimingRecord_HichipActivity extends BaseActivity implements IIOTCLi
                             case HiChipDefines.HI_P2P_SET_REC_AUTO_PARAM: {
                                 dismissLoadingProgress();
                                 if (rec_param != null && rec_param.u32Enable == 0) {
-                                    TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.tips_setting_succ));
+                                    TwsToast.showToast(TimingRecord_HichipActivity.this, getString(R.string.toast_setting_succ));
                                     finish();
                                 }
                             }

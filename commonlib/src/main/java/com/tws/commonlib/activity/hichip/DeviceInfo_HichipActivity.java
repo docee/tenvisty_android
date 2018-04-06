@@ -8,15 +8,10 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
 
 import com.hichip.content.HiChipDefines;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.HichipCamera;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
@@ -58,7 +53,7 @@ public class DeviceInfo_HichipActivity extends BaseActivity implements IIOTCList
             }
         }
 
-        this.setTitle(getString(R.string.title_setting_devinfo));
+        this.setTitle(getString(R.string.title_camera_setting_info));
         initView();
         camera.registerIOTCListener(this);
     }

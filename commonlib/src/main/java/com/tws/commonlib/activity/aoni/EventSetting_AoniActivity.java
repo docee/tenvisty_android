@@ -1,7 +1,6 @@
 package com.tws.commonlib.activity.aoni;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
@@ -14,7 +13,6 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ToggleButton;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
@@ -22,7 +20,6 @@ import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.hichip.TimingRecord_HichipActivity;
 import com.tws.commonlib.activity.setting.SensitivitySettingActivity;
 import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.TwsProgressDialog;
@@ -81,19 +78,19 @@ public class EventSetting_AoniActivity extends BaseActivity implements IIOTCList
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETRCD_DURATION_RESP:
                     if (Packet.byteArrayToInt_Little(data, 0) == 0) {
                         camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETRCD_DURATION_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetMotionDetectReq.parseContent(0));
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_succ));
+                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
                     } else {
                         dismissLoadingProgress();
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_failed));
+                        showAlert(getString(R.string.alert_setting_fail));
                     }
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETRECORD_RESP:
                     dismissLoadingProgress();
                     if (Packet.byteArrayToInt_Little(data, 0) == 0) {
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_succ));
+                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
                     } else {
                         togbtn_record.setChecked(!togbtn_record.isChecked());
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_failed));
+                        showAlert(getString(R.string.alert_setting_fail));
                     }
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GETRCD_DURATION_RESP: {
@@ -116,10 +113,10 @@ public class EventSetting_AoniActivity extends BaseActivity implements IIOTCList
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_BAT_PUSH_EN_RESP: {
                     dismissLoadingProgress();
                     if (Packet.byteArrayToInt_Little(data, 0) == 0) {
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_succ));
+                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
                     } else {
                         togbtn_push_battery.setChecked(!togbtn_push_battery.isChecked());
-                        TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_failed));
+                        showAlert(getString(R.string.alert_setting_fail));
                     }
                 }
                 break;
@@ -167,7 +164,7 @@ public class EventSetting_AoniActivity extends BaseActivity implements IIOTCList
         Log.i("1233333", "==showPasswordWrongHint==");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final AlertDialog dlg = builder.create();
-        dlg.setTitle(getString(R.string.dialog_title_camera_modify_recordduration));
+        dlg.setTitle(getString(R.string.dialog_title_camera_change_record_duration));
         dlg.setIcon(android.R.drawable.ic_menu_save);
         LayoutInflater inflater = dlg.getLayoutInflater();
         View view = inflater.inflate(R.layout.hint_record_duration, null);
@@ -187,7 +184,7 @@ public class EventSetting_AoniActivity extends BaseActivity implements IIOTCList
                 try {
                     seconds = Integer.parseInt(duration);
                     if (seconds < 10 || seconds > 300) {
-                        Toast.makeText(EventSetting_AoniActivity.this, String.format(getText(R.string.alert_alarm_recording_time_range).toString(), 10, 300), Toast.LENGTH_LONG).show();
+                        showAlert(String.format(getText(R.string.alert_alarm_recording_time_range).toString(), 10, 300));
                         return;
                     }
                     setRecordDuration(seconds);
@@ -325,7 +322,7 @@ public class EventSetting_AoniActivity extends BaseActivity implements IIOTCList
                             @Override
                             public void run() {
                                 dismissLoadingProgress();
-                                TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.tips_setting_succ));
+                                TwsToast.showToast(EventSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
                             }
                         });
                     }

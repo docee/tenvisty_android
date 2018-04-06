@@ -48,7 +48,7 @@ public class SensitivitySettingActivity extends BaseActivity implements IIOTCLis
             }
         }
 
-        this.setTitle(getString(R.string.title_camera_setting_sens));
+        this.setTitle(getString(R.string.title_camera_setting_event_sens));
         initView();
         camera.registerIOTCListener(this);
     }

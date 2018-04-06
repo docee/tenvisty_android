@@ -16,11 +16,7 @@ import android.widget.LinearLayout;
 
 import com.hichip.content.HiChipDefines;
 import com.hichip.sdk.HiChipP2P;
-import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.L;
-import com.tutk.IOTC.NSCamera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.MainActivity;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
@@ -64,7 +60,7 @@ public class WiFiSet_HichipActivity extends BaseActivity implements IIOTCListene
                 break;
             }
         }
-        this.setTitle(getResources().getString(R.string.title_setting_wifi));
+        this.setTitle(getResources().getString(R.string.title_camera_setting_wifi));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -117,7 +113,7 @@ public class WiFiSet_HichipActivity extends BaseActivity implements IIOTCListene
                 handler.removeMessages(REQUEST_GET_WIFI);
 
                 dismissLoadingProgress();
-                TwsToast.showToast(WiFiSet_HichipActivity.this, getString(R.string.tips_setting_succ));
+                TwsToast.showToast(WiFiSet_HichipActivity.this, getString(R.string.toast_setting_succ));
 
                 WiFiSet_HichipActivity.this.setResult(RESULT_OK);
                 camera.stop();

@@ -43,7 +43,7 @@
 
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_server" />
+                            android:text="@string/lab_camera_setting_ftp_server" />
 
                         <EditText
                             android:id="@+id/ftp_setting_server_edt"
@@ -61,7 +61,7 @@
 
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_port" />
+                            android:text="@string/lab_camera_setting_ftp_port" />
 
                         <EditText
                             android:id="@+id/ftp_setting_port_edt"
@@ -79,7 +79,7 @@
 
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_username" />
+                            android:text="@string/lab_camera_setting_ftp_username" />
 
                         <EditText
                             android:id="@+id/ftp_setting_username_edt"
@@ -95,7 +95,7 @@
 
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_password" />
+                            android:text="@string/lab_camera_setting_ftp_password" />
 
                         <EditText
                             android:id="@+id/ftp_setting_psw_edt"
@@ -111,7 +111,7 @@
                         style="@style/editbox_item_ll">
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_passive_mode"/>
+                            android:text="@string/lab_camera_setting_ftp_passive_mode"/>
 
                         <ToggleButton
                             android:id="@+id/ftp_setting_mode_tgbtn"
@@ -132,7 +132,7 @@
 
                         <TextView
                             style="@style/editbox_item_textview"
-                            android:text="@string/lab_ftp_setting_path" />
+                            android:text="@string/lab_camera_setting_ftp_path" />
 
                         <EditText
                             android:id="@+id/ftp_setting_path_edt"

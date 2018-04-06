@@ -1,8 +1,6 @@
 package com.tws.commonlib.activity.setting;
 
-import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -70,7 +68,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
     @Override
     protected void initView() {
         final NavigationBar title = (NavigationBar) findViewById(R.id.title_top);
-        title.setTitle(getString(R.string.title_modify_camera_password));
+        title.setTitle(getString(R.string.title_change_camera_password));
         title.setButton(NavigationBar.NAVIGATION_BUTTON_RIGHT);
         title.setNavigationBarButtonListener(new NavigationBar.NavigationBarButtonListener() {
 
@@ -265,7 +263,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
 
                         camera.setPassword(newPassword);
                         camera.sync2Db(ModifyCameraPasswordActivity.this);
-                        Toast.makeText(ModifyCameraPasswordActivity.this, getText(R.string.tips_modify_security_code_succ).toString(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(ModifyCameraPasswordActivity.this, getText(R.string.toast_change_password_succeed).toString(), Toast.LENGTH_SHORT).show();
                         camera.stop();
                         handler.postDelayed(new Runnable() {
                             @Override

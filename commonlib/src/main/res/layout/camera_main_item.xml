@@ -148,7 +148,7 @@
                 android:layout_height="match_parent"
                 android:paddingTop="70dp"
                 android:gravity="center"
-                android:text="@string/tips_camera_list_play"
+                android:text="@string/btn_camera_list_play"
                 android:textColor="@color/white" />
             <ImageView
                 android:id="@+id/btn_play"
@@ -168,7 +168,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/tips_camera_list_reconnect"
+                android:text="@string/btn_camera_list_reconnect"
                 android:gravity="center"
                 android:paddingTop="70dp"
                 android:textColor="@color/white" />
@@ -192,7 +192,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:text="@string/tips_camera_list_wakeup"
+                android:text="@string/btn_camera_list_wakeup"
                 android:gravity="center"
                 android:paddingTop="70dp"
                 android:textColor="@color/white" />
@@ -216,7 +216,7 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:paddingTop="70dp"
-                android:text="@string/tips_camera_list_reenter_password"
+                android:text="@string/btn_camera_list_reenter_password"
                 android:textColor="@color/white" />
             <ImageView
                 android:id="@+id/btn_modifyPassword"
@@ -253,5 +253,5 @@
         android:layout_height="30dp"
         android:layout_marginTop="36dp"
         android:layout_alignParentRight="true"
-        app:srcCompat="@drawable/ic_battery_20_black_24dp" />
+        app:srcCompat="@drawable/ic_battery_charging_full_black_24dp" />
 </RelativeLayout>

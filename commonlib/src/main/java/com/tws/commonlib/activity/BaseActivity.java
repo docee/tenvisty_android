@@ -36,8 +36,6 @@ import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.controller.NavigationBar;
 import com.tws.commonlib.view.TwsListView;
 
-import java.io.BufferedOutputStream;
-
 public class BaseActivity extends AppCompatActivity {
     protected TwsProgressDialog progressDialog;
     private final static int GO_ACTIVITY = 999;
@@ -279,7 +277,7 @@ public class BaseActivity extends AppCompatActivity {
             progressDialog = TwsProgressDialog.createProgressDialog(BaseActivity.this, 60000, new TwsProgressDialog.OnTimeOutListener() {
                 @Override
                 public void onTimeOut(TwsProgressDialog dialog) {
-                    TwsToast.showToast(BaseActivity.this, getString(R.string.process_connect_timeout));
+                    TwsToast.showToast(BaseActivity.this, getString(R.string.toast_connect_timeout));
                 }
             });
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -314,7 +312,7 @@ public class BaseActivity extends AppCompatActivity {
             progressDialog = TwsProgressDialog.createProgressDialog(BaseActivity.this, 60000, new TwsProgressDialog.OnTimeOutListener() {
                 @Override
                 public void onTimeOut(TwsProgressDialog dialog) {
-                    TwsToast.showToast(BaseActivity.this, getString(R.string.process_connect_timeout));
+                    TwsToast.showToast(BaseActivity.this, getString(R.string.toast_connect_timeout));
                 }
             });
             progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);

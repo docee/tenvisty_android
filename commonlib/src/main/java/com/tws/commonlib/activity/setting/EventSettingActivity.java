@@ -14,7 +14,6 @@ import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
-import com.tws.commonlib.activity.hichip.EventSetting_HichipActivity;
 import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.TwsProgressDialog;
 import com.tws.commonlib.base.TwsToast;
@@ -143,7 +142,7 @@ public class EventSettingActivity extends BaseActivity implements IIOTCListener 
                             @Override
                             public void run() {
                                 dismissLoadingProgress();
-                                TwsToast.showToast(EventSettingActivity.this, getString(R.string.tips_setting_succ));
+                                TwsToast.showToast(EventSettingActivity.this, getString(R.string.toast_setting_succ));
                             }
                         });
                     }

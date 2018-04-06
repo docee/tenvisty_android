@@ -74,7 +74,7 @@ public class MailSettingActivity extends BaseActivity implements IIOTCListener {
             }
         }
 
-        this.setTitle(getString(R.string.title_mail_setting));
+        this.setTitle(getString(R.string.title_camera_setting_mail));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -366,7 +366,7 @@ public class MailSettingActivity extends BaseActivity implements IIOTCListener {
                         }else {
 
                             AlertDialog.Builder alertbox = new AlertDialog.Builder(MailSettingActivity.this);
-                            alertbox.setMessage(getText(R.string.tips_setting_succ));
+                            alertbox.setMessage(getText(R.string.toast_setting_succ));
                             alertbox.setNeutralButton(getText(R.string.ok), new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface arg0, int arg1) {

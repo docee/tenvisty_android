@@ -7,11 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
@@ -37,7 +33,6 @@ import com.tutk.IOTC.AVIOCTRLDEFs.STimeDay;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.NSCamera;
 import com.tws.commonlib.R;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.bean.IIOTCListener;
@@ -48,7 +43,6 @@ import com.tws.commonlib.util.ImageCache;
 import com.tws.commonlib.util.ImageFetcher;
 import com.tws.commonlib.util.ImageWorker;
 
-import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -238,7 +232,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
         });
         txt_search_event_time = (TextView) findViewById(R.id.txt_search_event_time);
         spinner_type = (SpinnerButton) findViewById(R.id.spinner_type);
-        spinner_type.setTitles(new String[]{getString(R.string.lab_record_event), getString(R.string.lab_record_time)});
+        spinner_type.setTitles(getResources().getStringArray(R.array.event_type));
         spinner_type.setSpinnerButtonListener(new SpinnerButton.SpinnerButtonListener() {
             @Override
             public void OnSpinnerButtonClick(int which) {
@@ -886,7 +880,7 @@ public class EventListActivity extends BaseActivity implements IIOTCListener {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_LIGHT);
         final AlertDialog dlg = builder.create();
-        dlg.setTitle(getText(R.string.dialog_title_eventsearch));
+        dlg.setTitle(getText(R.string.dialog_title_event_search));
         dlg.setIcon(android.R.drawable.ic_dialog_info);
 
         LayoutInflater inflater = dlg.getLayoutInflater();

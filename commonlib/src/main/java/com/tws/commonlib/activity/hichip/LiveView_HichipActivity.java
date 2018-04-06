@@ -39,14 +39,11 @@ import com.hichip.content.HiChipDefines;
 import com.hichip.sdk.HiChipP2P;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.L;
-import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.St_SInfo;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.CameraFolderActivity;
-import com.tws.commonlib.activity.EventListActivity;
 import com.tws.commonlib.base.HiLiveViewGLMonitor;
-import com.tws.commonlib.base.MyConfig;
 import com.tws.commonlib.base.ScreenSwitchUtils;
 import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
@@ -614,9 +611,9 @@ public class LiveView_HichipActivity extends BaseActivity implements
                     switch (requestCode) {
                         case HiChipDefines.HI_P2P_SET_PTZ_PRESET:
                             if (msg.arg2 == 0) {
-                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_setting_succ));
+                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.toast_setting_succ));
                             } else {
-                                TwsToast.showToast(LiveView_HichipActivity.this, getString(R.string.tips_setting_failed));
+                                showAlert(getString(R.string.alert_setting_fail));
                             }
 
                             break;
@@ -797,7 +794,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    Toast.makeText(LiveView_HichipActivity.this, LiveView_HichipActivity.this.getText(R.string.tips_snapshot_ok), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(LiveView_HichipActivity.this, LiveView_HichipActivity.this.getText(R.string.toast_snapshot_succeed), Toast.LENGTH_SHORT).show();
                                 }
                             });
                             TwsTools.addImageGallery(LiveView_HichipActivity.this, path, fileName);

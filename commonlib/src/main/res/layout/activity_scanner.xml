@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             app:corner_color="@color/colorPrimary"
             app:frame_color="@color/viewfinder_frame"
-            app:label_text="@string/lab_scan_qrcode"
+            app:label_text="@string/tips_scan_qrcode"
             app:label_text_color="@color/lightgray"
             app:label_text_size="14"
             app:laser_color="@color/colorPrimary"
@@ -79,7 +79,7 @@
                     android:textSize="13dp"
                     android:gravity="center"
                     android:textColor="@color/lightlessgray"
-                    android:text="@string/lab_flash" />
+                    android:text="@string/btn_scan_qrcode_flash" />
             </LinearLayout>
 
             <LinearLayout
@@ -108,7 +108,7 @@
                     android:gravity="center"
                     android:textSize="13dp"
                     android:textColor="@color/lightlessgray"
-                    android:text="@string/lab_btn_search_lan" />
+                    android:text="@string/btn_search_lan" />
             </LinearLayout>
         </LinearLayout>
     </FrameLayout>

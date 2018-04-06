@@ -403,8 +403,7 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
         Bundle bundle = new Bundle();
         bundle.putByteArray(TwsDataValue.EXTRAS_KEY_DATA, arg2);
         Message msg = handler.obtainMessage();
-        msg.what = arg1;
-        msg.arg2 = arg3;
+        msg.what = arg3;
         msg.setData(bundle);
         handler.sendMessage(msg);
 
@@ -481,39 +480,44 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
                     }
 
                     break;
+                case TwsDataValue.HANDLE_MESSAGE_PLAY_STATE: {
+                    switch (msg.arg1) {
+                        case ICameraPlayStateCallback.PLAY_STATE_START:
 
-                case ICameraPlayStateCallback.PLAY_STATE_START:
-
-                    isPlaying = true;
-                    play_btn_playback_online.setClickable(true);
-                    model = HI_P2P_PB_PLAY;
-                    mIsEnd = false;
-                    video_width = msg.arg1;
-                    video_height = msg.arg2;
-                    play_btn_playback_online.setSelected(false);
+                            isPlaying = true;
+                            play_btn_playback_online.setClickable(true);
+                            model = HI_P2P_PB_PLAY;
+                            mIsEnd = false;
+                            video_width = msg.getData().getInt("width");
+                            video_height =  msg.getData().getInt("height");
+                            play_btn_playback_online.setSelected(false);
 
 
-                    resetMonitorSize();
-                    break;
-                case ICameraPlayStateCallback.PLAY_STATE_EDN:
-                    Log.i("tedu", "--------PLAY_STATE_EDN------");
-                    isPlaying = false;
-                    mIsEnd = true;
-                    model = HI_P2P_PB_STOP;
-                    // mTvStartTime.setText(sdf.format(new Date(0)));
+                            resetMonitorSize();
+                            break;
+                        case ICameraPlayStateCallback.PLAY_STATE_EDN:
+                            Log.i("tedu", "--------PLAY_STATE_EDN------");
+                            isPlaying = false;
+                            mIsEnd = true;
+                            model = HI_P2P_PB_STOP;
+                            // mTvStartTime.setText(sdf.format(new Date(0)));
 
-                    play_btn_playback_online.setSelected(true);
-                    play_btn_playback_online.setClickable(true);
-                    prs_playing.setProgress(progressTime);
+                            play_btn_playback_online.setSelected(true);
+                            play_btn_playback_online.setClickable(true);
+                            prs_playing.setProgress(progressTime);
 
-                    mCamera.stopPlayback();
+                            mCamera.stopPlayback();
 
-                    TwsToast.showToast(Playback_HichipActivity.this, getString(R.string.tips_play_record_end));
+                            TwsToast.showToast(Playback_HichipActivity.this, getString(R.string.tips_play_record_end));
 
-                    break;
-                case ICameraPlayStateCallback.PLAY_STATE_POS:
+                            break;
+                        case ICameraPlayStateCallback.PLAY_STATE_POS:
 
-                    break;
+                            break;
+                    }
+                }
+                break;
+
 
                 case HANDLE_MESSAGE_PROGRESSBAR_RUN:
 
@@ -627,9 +631,12 @@ public class Playback_HichipActivity extends BaseActivity implements IIOTCListen
         }
 
         Message msg = handler.obtainMessage();
-        msg.what = state;
-        msg.arg1 = w;
-        msg.arg2 = h;
+        msg.what = TwsDataValue.HANDLE_MESSAGE_PLAY_STATE;
+        msg.arg1 = state;
+        Bundle bundle = new Bundle();
+        bundle.putInt("width",w);
+        bundle.putInt("height",h);
+        msg.setData(bundle);
         handler.sendMessage(msg);
     }
 

@@ -111,6 +111,23 @@
         <item>External Alarm</item>
         <item>Detection Alarm</item>
     </string-array>
+    <string-array name="tips_alarm_aoni_list_array">
+        <item>Detection Alarm</item>
+        <item>Alarm Record Fault</item>
+        <item>Ring</item><!--E936不支持-->
+        <item>Plug SD Card</item><!--E936不支持-->
+        <item>Unplug SD Card</item><!--E936不支持-->
+        <item>SD Card Is Empty</item><!--E936不支持-->
+        <item>Unkown SD Card</item><!--E936不支持-->
+        <item>Low Power</item>
+        <item>External Power Supply</item>
+        <item>Charging</item>>
+        <item>Battery Is Fully Charged</item>
+        <item>Upgrade Firmware Successfully</item>
+        <item>Upgrade Firmware Failed</item>
+        <item>Upgrade Firmware Failed</item><!--E936不支持-->
+        <item>Upgrade Firmware Failed</item>
+    </string-array>
     <string-array name="recording_day_time">
         <item>Monday</item>
         <item>Tuesday</item>
@@ -201,4 +218,8 @@
         <item>(GMT+13:00)Tongatapu</item>
     </string-array>
 
+    <string-array name="event_type">
+        <item>EVENT RECORD</item>
+        <item>TIMING RECORD</item>
+    </string-array>
 </resources>

@@ -182,7 +182,7 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                         updateState = 3;
                         refreshProgressTest(getString(R.string.dialog_msg_new_firmware_updating_succ_reboot));
                     } else {
-                        refreshProgressTest(getString(R.string.dialog_msg_new_firmware_updating) + " " + process.p + "%");
+                        refreshProgressTest(getString(R.string.process_upgrading) + " " + process.p + "%");
                     }
                     break;
                 }
@@ -219,7 +219,7 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                                     public void onClick(DialogInterface dialogInterface, int which) {
                                         switch (which) {
                                             case DialogInterface.BUTTON_POSITIVE:
-                                                showLoadingProgress(getString(R.string.dialog_msg_new_firmware_updating), false, 240000, new TwsProgressDialog.OnTimeOutListener() {
+                                                showLoadingProgress(getString(R.string.process_upgrading), false, 240000, new TwsProgressDialog.OnTimeOutListener() {
                                                     @Override
                                                     public void onTimeOut(TwsProgressDialog dialog) {
 
@@ -235,11 +235,11 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                                 showAlert(getString(R.string.dialog_msg_new_firmware_already_latest));
                             }
                         } catch (Exception e) {
-                            showAlert(getString(R.string.tips_update_getinfo_fail));
+                            showAlert(getString(R.string.dialog_msg_new_firmware_getaccinfo_failed));
                             e.printStackTrace();
                         }
                     } else {
-                        showAlert(getString(R.string.tips_update_getinfo_fail));
+                        showAlert(getString(R.string.dialog_msg_new_firmware_getaccinfo_failed));
                     }
                 }
                 break;
@@ -339,7 +339,7 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                 @Override
                 public void onTimeOut(TwsProgressDialog dialog) {
                     updateState = -1;
-                    TwsToast.showToast(SystemSettingActivity.this,getString(R.string.process_connect_timeout));
+                    TwsToast.showToast(SystemSettingActivity.this,getString(R.string.toast_connect_timeout));
                 }
             });
             camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_FIRMWARE_INFO_REQ, new byte[1]);

@@ -12,7 +12,6 @@ import android.widget.ListView;
 import com.hichip.content.HiChipDefines;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.adapter.ItemListAdapter;
@@ -54,7 +53,7 @@ public class SensitivitySetting_HichipActivity extends BaseActivity implements I
             }
         }
 
-        this.setTitle(getString(R.string.title_camera_setting_sens));
+        this.setTitle(getString(R.string.title_camera_setting_event_sens));
         initView();
         camera.registerIOTCListener(this);
     }

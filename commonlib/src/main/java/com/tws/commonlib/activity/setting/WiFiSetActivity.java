@@ -17,7 +17,6 @@ import android.widget.LinearLayout;
 import com.tutk.IOTC.AVIOCTRLDEFs;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.L;
-import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
@@ -61,7 +60,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                 break;
             }
         }
-        this.setTitle(getResources().getString(R.string.title_setting_wifi));
+        this.setTitle(getResources().getString(R.string.title_camera_setting_wifi));
         initView();
         camera.registerIOTCListener(this);
     }
@@ -229,7 +228,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                                         showAlert(getString(R.string.alert_wifi_connect_fail));
                                     }  //保存
                                     else if (model.status == 0) {
-                                        TwsToast.showToast(WiFiSetActivity.this, getString(R.string.tips_setting_succ));
+                                        TwsToast.showToast(WiFiSetActivity.this, getString(R.string.toast_setting_succ));
                                         setResult(RESULT_OK);
                                         finish();
                                     }
@@ -247,7 +246,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                                 String strSsid = TwsTools.getString(ssid_);
                                 String strPwd = TwsTools.getString(pwd_);
                                 if (strSsid.equals(edtWifiSsid.getText().toString()) && strPwd.equals(edtWifiPassword.getText().toString())) {
-                                    TwsToast.showToast(WiFiSetActivity.this, getString(R.string.tips_setting_succ));
+                                    TwsToast.showToast(WiFiSetActivity.this, getString(R.string.toast_setting_succ));
                                     setResult(RESULT_OK);
                                     finish();
                                 } else {
@@ -276,7 +275,7 @@ public class WiFiSetActivity extends BaseActivity implements IIOTCListener {
                                             if (status == 1 || status == 4) {
                                                 dismissLoadingProgress();
                                                 L.i(WiFiSetActivity.class, "success");
-                                                TwsToast.showToast(WiFiSetActivity.this, getString(R.string.tips_setting_succ));
+                                                TwsToast.showToast(WiFiSetActivity.this, getString(R.string.toast_setting_succ));
                                                 setResult(RESULT_OK);
                                                 finish();
                                             } else if (status == 2) {

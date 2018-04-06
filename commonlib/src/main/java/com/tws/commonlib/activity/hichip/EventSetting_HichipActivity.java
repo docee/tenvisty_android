@@ -6,15 +6,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.View;
-import android.widget.CompoundButton;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import com.hichip.base.HiLog;
 import com.hichip.content.HiChipDefines;
-import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.Camera;
-import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.activity.setting.SensitivitySettingActivity;
@@ -107,7 +103,7 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                     togbtn_ftp_video.setChecked(param.u32FtpRec == 1 ? true : false);
                     break;
                 case HiChipDefines.HI_P2P_SET_ALARM_PARAM:
-                    TwsToast.showToast(EventSetting_HichipActivity.this,getString(R.string.tips_setting_succ));
+                    TwsToast.showToast(EventSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
                     break;
 
             }
@@ -263,7 +259,7 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                             @Override
                             public void run() {
                                 dismissLoadingProgress();
-                                TwsToast.showToast(EventSetting_HichipActivity.this, getString(R.string.tips_setting_succ));
+                                TwsToast.showToast(EventSetting_HichipActivity.this, getString(R.string.toast_setting_succ));
                             }
                         });
                     }

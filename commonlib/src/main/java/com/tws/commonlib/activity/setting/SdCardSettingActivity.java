@@ -43,7 +43,7 @@ public class SdCardSettingActivity extends BaseActivity implements IIOTCListener
             }
         }
 
-        this.setTitle(getString(R.string.title_sdcard_setting));
+        this.setTitle(getString(R.string.title_camera_setting_sdcard));
         initView();
         camera.registerIOTCListener(this);
     }

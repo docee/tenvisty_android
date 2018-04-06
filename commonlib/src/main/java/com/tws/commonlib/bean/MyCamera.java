@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -19,7 +18,6 @@ import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlPtzCmd;
 import com.tutk.IOTC.AVIOCTRLDEFs.SStreamDef;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.ICameraPlayStateCallback;
-import com.tutk.IOTC.IRegisterIOTCListener;
 import com.tutk.IOTC.L;
 import com.tutk.IOTC.NSCamera;
 import com.tutk.IOTC.Packet;
@@ -27,7 +25,6 @@ import com.tws.commonlib.App;
 import com.tws.commonlib.R;
 import com.tws.commonlib.base.CameraClient;
 import com.tws.commonlib.base.MyConfig;
-import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.base.TwsTools;
 import com.tws.commonlib.db.DatabaseManager;
 import com.umeng.commonsdk.UMConfigure;
@@ -40,11 +37,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,7 +76,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     private long rebootTimeout = 120000;
     private boolean isWakingUp = false;
     private boolean isStopManually = false;
-    AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoResp deviceInfo = null;
+    public AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoResp deviceInfo = null;
     AVIOCTRLDEFs.SMsgAVIoctrlDevModelConfig deviceConfig = null;
     private BatteryStatus batteryStatus = new BatteryStatus();
     //bengin index,0:云台，1：:双向语音,2:预置位,3:光学变焦,4:SD卡槽 20170316-yilu
@@ -183,11 +175,11 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             }
         } else {
             if (this.getState() == CameraState.Rebooting || this.getState() == CameraState.WillRebooting) {
-                return App.getContext().getString(R.string.tips_rebooting);
+                return App.getContext().getString(R.string.process_rebooting);
             } else if (this.getState() == CameraState.Reseting || this.getState() == CameraState.WillReseting) {
-                return App.getContext().getString(R.string.tips_reseting);
+                return App.getContext().getString(R.string.process_reseting);
             } else if (this.getState() == CameraState.Upgrading || this.getState() == CameraState.WillUpgrading) {
-                return App.getContext().getString(R.string.tips_upgrading);
+                return App.getContext().getString(R.string.process_upgrading);
             }
 
         }
@@ -242,35 +234,35 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     }
 
-    public synchronized int getEventNum() {
+    public synchronized int getEventNum(int eventType) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(App.getContext());
-        int eventnum = sp.getInt("eventnum_" + this.getUid(), 0);
+        int eventnum = sp.getInt("eventnum_" + this.getUid()+"_"+eventType, 0);
         return eventnum;
     }
 
     @Override
-    public void setEventNum(int eventNum) {
+    public void setEventNum(int eventNum,int eventType) {
         this.pushNotificationStatus = eventNum;
     }
 
-    public synchronized int refreshEventNum(Context context) {
+    public synchronized int refreshEventNum(Context context,int eventType) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        int eventnum = sp.getInt("eventnum_" + this.getUid(), 0);
+        int eventnum = sp.getInt("eventnum_" + this.getUid()+"_"+eventType, 0);
         eventnum++;
-        sp.edit().putInt("eventnum_" + this.getUid(), eventnum).commit();
+        sp.edit().putInt("eventnum_" + this.getUid()+"_"+eventType, eventnum).commit();
         return eventnum;
     }
 
-    public synchronized int clearEventNum(Context context) {
+    public synchronized int clearEventNum(Context context,int eventType) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        int eventnum = sp.getInt("eventnum_" + this.getUid(), 0);
-        sp.edit().putInt("eventnum_" + this.getUid(), 0).commit();
+        int eventnum = sp.getInt("eventnum_" + this.getUid()+"_"+eventType, 0);
+        sp.edit().putInt("eventnum_" + this.getUid()+"_"+eventType, 0).commit();
         return eventnum;
     }
 
-    public synchronized void setEventNum(Context context, int eventNum) {
+    public synchronized void setEventNum(Context context, int eventNum,int eventType) {
         SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(context);
-        sp.edit().putInt("eventnum_" + this.getUid(), 0).commit();
+        sp.edit().putInt("eventnum_" + this.getUid()+"_"+eventType, 0).commit();
     }
 
 
@@ -1206,7 +1198,16 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 rebootTimeout = 120000;
                 cameraState = CameraState.WillUpgrading;
             }
-        } else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
+        }
+        else if(avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_REMOTE_UPGRADE_RESP){
+            AVIOCTRLDEFs.SMsgAVIoctrlRemoteUpgradeResp resp = new AVIOCTRLDEFs.SMsgAVIoctrlRemoteUpgradeResp(data);
+            if(resp.result == 0 || resp.result == -1){
+                beginRebootTime = System.currentTimeMillis();
+                rebootTimeout = 120000;
+                cameraState = CameraState.WillUpgrading;
+            }
+        }
+        else if (avIOCtrlMsgType == AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP) {
             if (this.isFirstLogin()) {
                 this.setFirstLogin(false);
                 AVIOCTRLDEFs.SMsgAVIoctrlTime time = new AVIOCTRLDEFs.SMsgAVIoctrlTime(data);
@@ -1261,7 +1262,9 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
     }
 
     public  void getInitConfig(){
-        this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+        if(this.modelName == null) {
+            this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_DEVINFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
+        }
         if (this.getSupplier() == Supllier.AN) {
             //this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEMODE_TO_SHARE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
             // this.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_DEVICEMODEL_CONFIG_REQ, AVIOCTRLDEFs.SMsgAVIoctrlDeviceInfoReq.parseContent());
@@ -1307,6 +1310,11 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                 cameraState = CameraState.Reseting;
                 beginRebootTime = System.currentTimeMillis();
                 rebootTimeout = 120000;
+            }
+            else if(cameraState == CameraState.WillUpgrading){
+                cameraState = cameraState.Upgrading;
+                beginRebootTime = System.currentTimeMillis();
+                rebootTimeout = 180000;
             }
             //重启，复位，升级固件超时处理
             if (System.currentTimeMillis() - beginRebootTime > rebootTimeout) {
@@ -1413,18 +1421,32 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
 
     private long lastPushTime;
 
-    public boolean shouldPush() {
-        //相对摄像机时间的每30秒一次回
-        boolean result = !(Math.abs(System.currentTimeMillis() - lastPushTime) < 60000);
-        if (result && this.pushNotificationStatus > 0) {
-            lastPushTime = System.currentTimeMillis();
+    public boolean shouldPush(int evtType,long evtTime) {
+        Log.i("evtTime",evtTime+"");
+        if(getSupplier() != Supllier.AN){
+            //相对摄像机时间的每30秒一次回
+            boolean result = !(Math.abs(System.currentTimeMillis() - lastPushTime) < 60000);
+            if (result && this.pushNotificationStatus > 0) {
+                lastPushTime = System.currentTimeMillis();
+            }
+            return result && this.pushNotificationStatus > 0 && !isPlaying();
         }
-        return result && this.pushNotificationStatus > 0 && !isPlaying();
+        else{
+            if(lastPushTime == evtTime){
+                return false;
+            }
+            else{
+                lastPushTime = evtTime;
+                return true;
+            }
+        }
         //return this.pushNotificationStatus > 0;
     }
 
     public void openPush(final CameraClient.ServerResultListener2 succListner, final CameraClient.ServerResultListener2 errorListner) {
-
+        if(this.getSupplier()==Supllier.AN){
+            this.sendIOCtrl(0,AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_ALARM_PUSH_EN_REQ, AVIOCTRLDEFs.SMsgAVIoctrlBatPush.parseContent(1));
+        }
         if ((TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) && (TwsDataValue.UMToken == null || TwsDataValue.UMToken.isEmpty())) {
             if (TwsDataValue.XGToken == null || TwsDataValue.XGToken.isEmpty()) {
                 MyCamera.initXGPush(App.getContext());
@@ -1654,7 +1676,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
                     uid = conJson.getString("uid");
                     type = conJson.getInt("type");
                     time = conJson.getInt("time");
-                    TwsTools.showAlarmNotification(context, uid, 0, System.currentTimeMillis());
+                    TwsTools.showAlarmNotification(context, uid, type, time);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.tutk.IOTC.AVIOCTRLDEFs;
-import com.tutk.IOTC.AVIOCTRLDEFs.SMsgAVIoctrlListEventReq;
 import com.tutk.IOTC.AVIOCTRLDEFs.STimeDay;
 import com.tutk.IOTC.Camera;
 import com.tutk.IOTC.NSCamera;
@@ -246,7 +245,7 @@ public class EventList_AoniActivity extends BaseActivity implements IIOTCListene
         });
         txt_search_event_time = (TextView) findViewById(R.id.txt_search_event_time);
         spinner_type = (SpinnerButton) findViewById(R.id.spinner_type);
-        spinner_type.setTitles(new String[]{getString(R.string.lab_record_event), getString(R.string.lab_record_time)});
+        spinner_type.setTitles(getResources().getStringArray(R.array.event_type));
         spinner_type.setSpinnerButtonListener(new SpinnerButton.SpinnerButtonListener() {
             @Override
             public void OnSpinnerButtonClick(int which) {
@@ -934,7 +933,7 @@ public class EventList_AoniActivity extends BaseActivity implements IIOTCListene
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_LIGHT);
         final AlertDialog dlg = builder.create();
-        dlg.setTitle(getText(R.string.dialog_title_eventsearch));
+        dlg.setTitle(getText(R.string.dialog_title_event_search));
         dlg.setIcon(android.R.drawable.ic_dialog_info);
 
         LayoutInflater inflater = dlg.getLayoutInflater();

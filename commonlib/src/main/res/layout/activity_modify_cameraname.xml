@@ -23,7 +23,7 @@
 
             <TextView
                 style="@style/editbox_item_textview"
-                android:text="@string/title_camera_name" />
+                android:text="@string/lab_setting_camera_name" />
             <EditText
                 android:id="@+id/edit_cameraName"
                 style="@style/editbox_item_edittext"

@@ -92,7 +92,7 @@ public class SearchCameraActivity extends BaseActivity {
                 //如果该摄像机已经在自己摄像机列表中，则弹出相关提示对话框
                 for (IMyCamera camera : TwsDataValue.cameraList()) {
                     if (camera.getUid().equalsIgnoreCase(searchResult.uid)) {
-                        Toast.makeText(SearchCameraActivity.this.getApplicationContext(), getText(R.string.tips_add_camera_duplicated_search), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(SearchCameraActivity.this.getApplicationContext(), getText(R.string.toast_add_camera_duplicated_search), Toast.LENGTH_SHORT).show();
                         return;
                     }
                 }

@@ -315,7 +315,12 @@ public class FolderFragment extends BaseFragment implements AdapterView.OnItemCl
             if (holder != null) {
                 holder.txt_name.setText(model.cameraName);
                 holder.txt_count.setText(String.format(getString(R.string.tips_folder_desc), model.photoCount + "", model.videoCount + ""));
-                mImageFetcher.loadImage(model.thumbPath, holder.img_snap);
+                if(model.thumbPath == null){
+                    holder.img_snap.setImageResource(R.drawable.default_img);
+                }
+                else {
+                    mImageFetcher.loadImage(model.thumbPath, holder.img_snap);
+                }
 
             }
 

@@ -50,7 +50,7 @@ public class SensitivitySetting_AoniActivity extends BaseActivity implements IIO
             }
         }
 
-        this.setTitle(getString(R.string.title_camera_setting_sens));
+        this.setTitle(getString(R.string.title_camera_setting_event_sens));
         initView();
         camera.registerIOTCListener(this);
     }
