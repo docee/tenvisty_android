@@ -79,8 +79,8 @@ public class App extends Application {
 
             }
         });
-        CustomCrashHandler mCustomCrashHandler = CustomCrashHandler.getInstance();
-        mCustomCrashHandler.setCustomCrashHanler(getApplicationContext());
+//        CustomCrashHandler mCustomCrashHandler = CustomCrashHandler.getInstance();
+//        mCustomCrashHandler.setCustomCrashHanler(getApplicationContext());
 
         HichipCamera.initP2P();
         //注册推送

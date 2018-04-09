@@ -1298,7 +1298,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             isWakingUp = false;
         }
         // && state != CameraState.WillUpgrading
-        if ((this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
+        if ((this.connect_state == NSCamera.CONNECTION_STATE_CONNECTED || this.connect_state ==NSCamera.CONNECTION_STATE_SLEEPING || this.connect_state == NSCamera.CONNECTION_STATE_WRONG_PASSWORD) && cameraState != CameraState.WillUpgrading && cameraState != CameraState.WillRebooting && cameraState != CameraState.WillReseting) {
             cameraState = CameraState.None;
         } else if (this.connect_state == NSCamera.CONNECTION_STATE_TIMEOUT || this.connect_state == NSCamera.CONNECTION_STATE_CONNECT_FAILED || this.connect_state ==
                 NSCamera.CONNECTION_STATE_DISCONNECTED || this.connect_state == NSCamera.CONNECTION_STATE_UNKNOWN_DEVICE) {
@@ -1456,7 +1456,7 @@ public class MyCamera extends Camera implements com.tutk.IOTC.IRegisterIOTCListe
             return;
         }
 
-        CameraClient.shareCameraClient().openPushCamera(App.getContext(), uid, new CameraClient.ServerResultListener2() {
+        CameraClient.shareCameraClient().openPushCamera(App.getContext(), uid,this.modelName, new CameraClient.ServerResultListener2() {
             @Override
             public void serverResult(String resultString, JSONObject jsonArray) {
                 try {

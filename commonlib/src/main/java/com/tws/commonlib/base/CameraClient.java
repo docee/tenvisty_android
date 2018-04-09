@@ -194,7 +194,8 @@ public class CameraClient {
     }
 
     //开启Push功能
-    public void openPushCamera(Context context, String uidString, ServerResultListener2 succListener, ServerResultListener2 errorListener) {
+    //cameraSupplier对应不同固件方案商不同eventType定义
+    public void openPushCamera(Context context, String uidString,String cameraFeature, ServerResultListener2 succListener, ServerResultListener2 errorListener) {
         if (uidString == null || uidString.length() == 0) {
             System.out.println("openPushCamera camera fail,uidString is null");
             return;
@@ -207,8 +208,8 @@ public class CameraClient {
         }
         String timestamp = System.currentTimeMillis() / 1000 + "";
         String appid = MyConfig.getPackageName();
-        String sign = createSign(new String[]{uidString, TwsDataValue.XGToken, TwsDataValue.UMToken,timestamp, appid,  "tenvisapp"});
-        reqString = "/api/push/open?token1=" + TwsDataValue.XGToken + "&token2=" + TwsDataValue.UMToken + "&uid=" + uidString + "&appid=" + appid + "&timestamp=" + timestamp + "&sign=" + sign + "&platform=android";
+        String sign = createSign(new String[]{uidString, TwsDataValue.XGToken, TwsDataValue.UMToken,timestamp, appid,cameraFeature,  "tenvisapp"});
+        reqString = "/api/push/open?token1=" + TwsDataValue.XGToken + "&token2=" + TwsDataValue.UMToken + "&uid=" + uidString + "&appid=" + appid + "&timestamp=" + timestamp + "&sign=" + sign + "&platform=android&feature="+cameraFeature;
         sendURLReq(reqString, succListener, errorListener);
     }
 

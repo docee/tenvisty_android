@@ -509,9 +509,9 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     }
                     startActivity(intent);
                 } else if (btnId == R.id.btn_play) {
-                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
-                        camera.sendIOCtrl(0, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (camera.getVideoQuality())));
-                    }
+//                    if(camera.getP2PType() == IMyCamera.CameraP2PType.TutkP2P) {
+//                        camera.sendIOCtrl(0, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SETSTREAMCTRL_REQ, AVIOCTRLDEFs.SMsgAVIoctrlSetStreamCtrlReq.parseContent(0, (byte) (camera.getVideoQuality())));
+//                    }
                     //camera.asyncStartVideo(null);
                     if (camera.getEventNum(0) > 0) {
                         NotificationManager manager = (NotificationManager) CameraFragment.this.getContext().getSystemService(Context.NOTIFICATION_SERVICE);
@@ -526,14 +526,17 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                     camera.stop();
                     showPasswordWrongHint(camera);
                 } else if (btnId == R.id.btn_reconnect) {
+                    Log.i("click button1",System.currentTimeMillis()+"");
                     camera.asyncStop(new IMyCamera.TaskExecute() {
                         @Override
                         public void onPosted(IMyCamera c, Object data) {
                             c.start();
+                            Log.i("click button2",System.currentTimeMillis()+"");
                         }
                     });
                 }
                 else if(btnId == R.id.btn_wakeup){
+                    Log.i("click button1",System.currentTimeMillis()+"");
                     if(!camera.isWakingUp()){
                         camera.asyncWakeUp(new IMyCamera.TaskExecute() {
                             @Override
@@ -542,12 +545,14 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                     @Override
                                     public void run() {
                                         camera.start();
+                                        Log.i("click button3",System.currentTimeMillis()+"");
                                     }
                                 }, 3000);
                                 CameraFragment.this.getActivity().runOnUiThread(new Runnable() {
                                     @Override
                                     public void run() {
                                         refreshItems();
+                                        Log.i("click button2",System.currentTimeMillis()+"");
                                     }
                                 });
                             }

@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
         initView();
         requestEnd();
-        L.isDebug = true;
+        L.isDebug = false;
 
     }
     @Override

@@ -89,7 +89,7 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:tint="@color/darkgray"
-                        app:srcCompat="@drawable/ic_alarm_push"/>
+                        app:srcCompat="@drawable/ic_push"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -140,7 +140,7 @@
                         android:layout_gravity="center"
                         android:layout_marginLeft="10dp"
                         android:tint="@color/darkgray"
-                        app:srcCompat="@drawable/ic_sd_card_recording"/>
+                        app:srcCompat="@drawable/ic_alarm_record2"/>
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"

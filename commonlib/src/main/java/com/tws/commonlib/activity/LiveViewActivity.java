@@ -289,6 +289,7 @@ public class LiveViewActivity extends BaseActivity implements
         if (mCamera != null) {
             mCamera.registerIOTCListener(LiveViewActivity.this);
             mCamera.registerPlayStateListener(this);
+            mCamera.stopVideo();
             mCamera.asyncStartVideo(new IMyCamera.TaskExecute() {
                 @Override
                 public void onPosted(IMyCamera c, Object data) {

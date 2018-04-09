@@ -203,7 +203,7 @@
                 android:scaleType="center"
                 android:clickable="true"
                 android:focusableInTouchMode="true"
-                app:srcCompat="@drawable/ic_refresh" />
+                app:srcCompat="@drawable/ic_wakeup" />
 
         </RelativeLayout>
         <RelativeLayout

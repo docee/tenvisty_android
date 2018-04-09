@@ -15,6 +15,7 @@ import com.tutk.IOTC.Packet;
 import com.tws.commonlib.R;
 import com.tws.commonlib.activity.BaseActivity;
 import com.tws.commonlib.adapter.TimezoneItemListAdapter;
+import com.tws.commonlib.base.TwsToast;
 import com.tws.commonlib.bean.IIOTCListener;
 import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
@@ -169,6 +170,7 @@ public class TimezoneSetting_AoniActivity extends BaseActivity implements IIOTCL
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_NTP_CONFIG_RESP: {
                     if (Packet.byteArrayToInt_Little(data, 0) == 0) {
                         dismissLoadingProgress();
+                        camera.unregisterIOTCListener(TimezoneSetting_AoniActivity.this);
                         setResult(RESULT_OK, new Intent().putExtra("timezone", adapter.getPos()));
                         TimezoneSetting_AoniActivity.this.finish();
                     } else {
@@ -183,18 +185,6 @@ public class TimezoneSetting_AoniActivity extends BaseActivity implements IIOTCL
                     }
                 }
                 break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ZONE_INFO_RESP:
-                    dismissLoadingProgress();
-                    break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_ZONE_INFO_RESP:
-                    if (data[3] == 0) {
-                        dismissLoadingProgress();
-                        setResult(RESULT_OK, new Intent().putExtra("timezone", adapter.getPos()));
-                        TimezoneSetting_AoniActivity.this.finish();
-                    } else {
-                        showAlert(getString(R.string.alert_setting_fail));
-                    }
-                    break;
 
             }
             super.handleMessage(msg);

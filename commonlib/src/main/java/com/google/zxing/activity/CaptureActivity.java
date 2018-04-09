@@ -164,9 +164,6 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                 txt_inputuid.setVisibility(View.GONE);
             }
         }
-        if (!TwsTools.checkPermission(this, Manifest.permission.CAMERA)) {
-            TwsTools.showAlertDialog(this);
-        }
         //添加toolbar
 //        addToolbar();
     }
@@ -323,26 +320,30 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
     @Override
     protected void onResume() {
         super.onResume();
-        SurfaceView surfaceView = (SurfaceView) findViewById(R.id.scanner_view);
-        SurfaceHolder surfaceHolder = surfaceView.getHolder();
-        if (hasSurface) {
-            initCamera(surfaceHolder);
-        } else {
-            surfaceHolder.addCallback(this);
-            surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+        if (!TwsTools.checkPermission(this, Manifest.permission.CAMERA)){
+            TwsTools.showAlertDialog(this);
         }
-        decodeFormats = null;
-        characterSet = null;
+        else{
+            SurfaceView surfaceView = (SurfaceView) findViewById(R.id.scanner_view);
+            SurfaceHolder surfaceHolder = surfaceView.getHolder();
+            if (hasSurface) {
+                initCamera(surfaceHolder);
+            } else {
+                surfaceHolder.addCallback(this);
+                surfaceHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+            }
+            decodeFormats = null;
+            characterSet = null;
 
-        playBeep = true;
-        AudioManager audioService = (AudioManager) getSystemService(AUDIO_SERVICE);
-        if (audioService.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
-            playBeep = false;
-        }
-        initBeepSound();
-        vibrate = true;
-        closeLight();
-        //quit the scan view
+            playBeep = true;
+            AudioManager audioService = (AudioManager) getSystemService(AUDIO_SERVICE);
+            if (audioService.getRingerMode() != AudioManager.RINGER_MODE_NORMAL) {
+                playBeep = false;
+            }
+            initBeepSound();
+            vibrate = true;
+            closeLight();
+            //quit the scan view
 //		cancelScanButton.setOnClickListener(new OnClickListener() {
 //
 //			@Override
@@ -350,6 +351,8 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
 //				CaptureActivity.this.finish();
 //			}
 //		});
+        }
+
     }
 
     @Override

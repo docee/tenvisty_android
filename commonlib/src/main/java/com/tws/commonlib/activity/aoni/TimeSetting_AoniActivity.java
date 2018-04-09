@@ -221,52 +221,6 @@ public class TimeSetting_AoniActivity extends BaseActivity implements IIOTCListe
                     hideLoadingView(R.id.togbtn_dst);
                 }
                 break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIMEZONE_RESP:
-                    dismissLoadingProgress();
-                    AVIOCTRLDEFs.SMsgAVIoctrlTimeZone timeZone = new AVIOCTRLDEFs.SMsgAVIoctrlTimeZone(data);
-                    accTimezoneIndex = timeZone.nGMTDiff + 12;
-                    // String strTimeZone = new String(timeZone.szTimeZoneString).trim();
-                    txt_timezone.setText(timezoneSourceList[accTimezoneIndex].split(";")[0]);
-                    hideLoadingView(R.id.txt_timezone);
-                    break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIMEZONE_RESP:
-                    if (data[0] == 0x00) {
-                        dismissLoadingProgress();
-                        TimeSetting_AoniActivity.this.finish();
-                    } else {
-                        showAlert(getString(R.string.alert_setting_fail));
-                        getRemoteData();
-                    }
-                    break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_RESP:
-                    dismissLoadingProgress();
-                    hideLoadingView(R.id.txt_time);
-                    AVIOCTRLDEFs.SMsgAVIoctrlTime time = new AVIOCTRLDEFs.SMsgAVIoctrlTime(data);
-                    txt_time.setText(time.timeInfo.getTime());
-                    //txt_time.setText(String.format("%s/%s/%s %s:%s:%s",(int)time.timeInfo.month+"",(int)time.timeInfo.day+"",(int)time.timeInfo.year+"",(int)time.timeInfo.hour+"",(int)time.timeInfo.minute+"",(int)time.timeInfo.second+""));
-                    break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIME_INFO_RESP:
-                    if (data[3] == 0) {
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_TIME_INFO_REQ, AVIOCTRLDEFs.SMsgAVIoctrlGetTimeReq.parseContent(false));
-                            }
-                        }, 5000);
-                        //dismissLoadingProgress();
-                    } else {
-                        dismissLoadingProgress();
-                        showAlert(getString(R.string.alert_setting_fail));
-                    }
-                    break;
-                case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_ZONE_INFO_RESP:
-                    dismissLoadingProgress();
-                    if (data[3] == 0) {
-                        TwsToast.showToast(TimeSetting_AoniActivity.this, getString(R.string.toast_setting_succ));
-                    } else {
-                        showAlert(getString(R.string.alert_setting_fail));
-                    }
-                    break;
             }
             super.handleMessage(msg);
         }
