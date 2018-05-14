@@ -1,26 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <string-array name="tab_name">
-        <item>camera</item>
-        <item>image</item>
-        <item>event</item>
-        <item>about</item>
-    </string-array>
-
-    <string-array name="connect_state">
-        <item>Connecting&#8230;</item>
-        <item>Connecting&#8230;</item>
-        <item>Online</item>
-        <item>Disconnected</item>
-        <item>Disconnected</item>
-        <item>Wrong Password</item>
-        <item>Disconnected</item>
-        <item>Disconnected</item>
-        <item>Disconnected</item>
-        <item>SLEEPING</item>
-        <item>Waking Up&#8230;</item>
-    </string-array>
     <string-array name="motion_detection_sensitivity">
         <item>Highest</item>
         <item>High</item>
@@ -28,13 +7,9 @@
         <item>Low</item>
         <item>Close</item>
     </string-array>
-    <string-array name="audio_input_style">
-        <item>Line in</item>
-        <item>Mic</item>
-    </string-array>
     <string-array name="device_timezone_old">
         <item>(GMT-11)Midway Islands;Samoa</item>
-        <item>(GMT-10) Hawaii;</item>
+        <item>(GMT-10)Hawaii;</item>
         <item>(GMT-9)Alaska;</item>
         <item>(GMT-8)Pacific Time(USA or Canada);</item>
         <item>(GMT-7)Mountain Time(USA or Canada);</item>
@@ -54,31 +29,13 @@
         <item>(GMT+7)Bangkok;Hanoi;Jakarta;</item>
         <item>(GMT+8)Beijing;Singapore;Hongkong;Taipei;</item>
         <item>(GMT+9)Tokyo;Seoul;Yakutsk;</item>
-        <item>(GMT+10) Guam;Melbourne;Sydney;</item>
-        <item>(GMT+11) Magadan;New Caledonia;Solomon Islands;</item>
-        <item>(GMT+12) Wellington;Auckland;fiji</item>
+        <item>(GMT+10)Guam;Melbourne;Sydney;</item>
+        <item>(GMT+11)Magadan;New Caledonia;Solomon Islands;</item>
+        <item>(GMT+12)Wellington;Auckland;fiji</item>
     </string-array>
     <string-array name="net_work_style">
         <item>CABLE</item>
         <item>WIFI</item>
-    </string-array>
-    <string-array name="video_frequency">
-        <item>50HZ</item>
-        <item>60HZ</item>
-    </string-array>
-    <string-array name="video_apenc">
-        <item>INVALID</item>
-        <item>NONE</item>
-        <item>WEP</item>
-        <item>WPA_TKIP</item>
-        <item>WPA_AES</item>
-        <item>WPA2_TKIP</item>
-        <item>WPA2_AES</item>
-    </string-array>
-    <string-array name="recording_time">
-        <item>None</item>
-        <item>All Day</item>
-        <item>Manually</item>
     </string-array>
     <string-array name="record_type">
         <item>OFF</item>
@@ -90,18 +47,6 @@
         <item>SSL</item>
         <item>TLS</item>
         <item>STARTTLS</item>
-    </string-array>
-    <string-array name="online_recording_type">
-        <item>All recording</item>
-        <item>Manual recording</item>
-        <item>Alarm recording</item>
-        <item>Plan recording</item>
-    </string-array>
-
-    <string-array name="alarm_action_picture_num">
-        <item>1</item>
-        <item>2</item>
-        <item>3</item>
     </string-array>
 
     <string-array name="tips_alarm_list_array">
@@ -127,15 +72,6 @@
         <item>Upgrade Firmware Failed</item>
         <item>Upgrade Firmware Failed</item><!--E936不支持-->
         <item>Upgrade Firmware Failed</item>
-    </string-array>
-    <string-array name="recording_day_time">
-        <item>Monday</item>
-        <item>Tuesday</item>
-        <item>Wednesday</item>
-        <item>Thursday</item>
-        <item>Friday</item>
-        <item>Saturday</item>
-        <item>Sunday</item>
     </string-array>
     <string-array name="stream_quality">
         <item>HD</item>

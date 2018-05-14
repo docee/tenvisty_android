@@ -198,8 +198,8 @@ public class EventList_HichipActivity extends BaseActivity implements IIOTCListe
             title.setTitle(this.getTitle().toString());
             title.setButton(NavigationBar.NAVIGATION_BUTTON_LEFT);
             title.setButton(NavigationBar.NAVIGATION_BUTTON_RIGHT);
-            title.setRightBtnText(getString(R.string.edit));
             title.setRightBtnBackground(0);
+            title.setRightBtnText(getString(R.string.edit));
             title.setNavigationButtonLeftListner(new NavigationBar.NavigationBarButtonListener() {
 
                 @Override

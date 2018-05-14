@@ -30,6 +30,7 @@ import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewSwitcher;
@@ -1594,7 +1595,8 @@ public class LiveView_HichipActivity extends BaseActivity implements
     private void resetMonitorSize(boolean large, double move) {
 
         if (monitor.height == 0 && monitor.width == 0) {
-
+            monitor.screen_height =   ((RelativeLayout)monitor.getParent()).getLayoutParams().height;
+            monitor.screen_width =   ((RelativeLayout)monitor.getParent()).getLayoutParams().width;
             initMatrix((int) monitor.screen_width, (int) monitor.screen_height);
         }
 
@@ -1620,7 +1622,7 @@ public class LiveView_HichipActivity extends BaseActivity implements
         }
 
         if (monitor.left > 0 || monitor.width < (int) monitor.screen_width || monitor.height < (int) monitor.screen_height || monitor.bottom > 0) {
-            initMatrix((int) monitor.screen_width, (int) monitor.screen_height);
+            initMatrix((int)monitor.screen_width, (int)monitor.screen_height);
         }
 
         HiLog.e("mMonitor.left=" + monitor.left + " mMonitor.bottom=" + monitor.bottom + "\n mMonitor.width=" + monitor.width + " mMonitor.height=" + monitor.height);

@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="motion_detection_sensitivity">
+        <item>最高</item>
+        <item>高</item>
+        <item>中</item>
+        <item>低</item>
+        <item>閉じる</item>
+    </string-array>
+    <string-array name="device_timezone_old">
+        <item>(GMT-11)ミッドウェー島;サモア諸島;</item>
+        <item>(GMT-10)ハワイ;</item>
+        <item>(GMT-9)アラスカ;</item>
+        <item>(GMT-8)太平洋標準時(アメリカとカナダ);</item>
+        <item>(GMT-7)山地標準時(アメリカとカナダ);</item>
+        <item>(GMT-6)中部標準時(アメリカとカナダ);</item>
+        <item>(GMT-5)東部時間(アメリカとカナダ);ボゴタ;リマ;</item>
+        <item>(GMT-4)大西洋標準時(カナダ);サンディエゴs;ラパス;</item>
+        <item>(GMT-3)ブラジリア;ブエノスアイレス</item>
+        <item>(GMT-2)大西洋中部;</item>
+        <item>(GMT-1)アゾレス諸島;カーボベルデ諸島;</item>
+        <item>(GMT 0)グリニッジ標準時：ロンドン;リスボン;カサブランカ;</item>
+        <item>(GMT+1)パリ;ベルリン;ローマ;マドリード;</item>
+        <item>(GMT+2)アテネ;エルサレム;カイロ;ヘルシンキ;</item>
+        <item>(GMT+3)モスクワ;ナイロビ;リヤド</item>
+        <item>(GMT+4)バクー;トビリシ;アブダビ;マスカット;</item>
+        <item>(GMT+5)ニューデリー;イスラマバード;カラチ;</item>
+        <item>(GMT+6)ダカール;アルマトイ;ノボシビルスク;アスタナ;</item>
+        <item>(GMT+7)バンコク;ハノイ;ジャカルタ;</item>
+        <item>(GMT+8)北京;シンガポール;ホンコン;台北;</item>
+        <item>(GMT+9)ソウル;ヤクーツク;東京;</item>
+        <item>(GMT+10)グアム;メルボルン;シドニー;</item>
+        <item>(GMT+11)ソロモン諸島;ニューカレドニア;マガダン</item>
+        <item>(GMT+12)ウェリントン;フィジー;オークランド</item>
+    </string-array>
+    <string-array name="net_work_style">
+        <item>CABLE</item>
+        <item>WIFI</item>
+    </string-array>
+    <string-array name="record_type">
+        <item>閉じる</item>
+        <item>常時録画</item>
+        <item>アラーム時録画</item>
+    </string-array>
+    <string-array name="safety_connection">
+        <item>None</item>
+        <item>SSL</item>
+        <item>TLS</item>
+        <item>STARTTLS</item>
+    </string-array>
+
+    <string-array name="tips_alarm_list_array">
+        <item>移動監察</item>
+        <item>外部警報</item>
+        <item>音声警報</item>
+        <item>外部警報</item>
+        <item>移動監察</item>
+    </string-array>
+    <string-array name="tips_alarm_aoni_list_array">
+        <item>検出アラーム</item>
+        <item>アラーム記録の欠陥</item>
+        <item>Ring</item><!--E936不支持-->
+        <item>Plug SD Card</item><!--E936不支持-->
+        <item>Unplug SD Card</item><!--E936不支持-->
+        <item>SD Card Is Empty</item><!--E936不支持-->
+        <item>Unkown SD Card</item><!--E936不支持-->
+        <item>電力の低下</item>
+        <item>外部電源</item>
+        <item>バッテリー充電中</item>>
+        <item>バッテリーが完全に充電されています</item>
+        <item>ファームウェアのアップグレードに成功しました</item>
+        <item>ファームウェアのアップグレードに失敗しました</item>
+        <item>ファームウェアのアップグレードに失敗しました</item><!--E936不支持-->
+        <item>ファームウェアのアップグレードに失敗しました</item>
+    </string-array>
+
+    <string-array name="stream_quality">
+        <item>HD</item>
+        <item>SD</item>
+    </string-array>
+    <string-array name="device_timezone_new">
+        <item>(GMT-12:00)国際日付変更線西側第12時間帯</item>
+        <item>(GMT-11:00)ミッドウェー島，サモア諸島</item>
+        <item>(GMT-10:00)ハワイ</item>
+        <item>(GMT-09:00)アラスカ</item>
+        <item>(GMT-08:00)太平洋標準時(アメリカとカナダ)</item>
+        <item>(GMT-07:00)チワワ，ラパス，マサトラン</item>
+        <item>(GMT-07:00)山地標準時(アメリカとカナダ)</item>
+        <item>(GMT-07:00)アリゾナ州</item>
+        <item>(GMT-06:00)サスカチュワン州</item>
+        <item>(GMT-06:00)グアダラハラ，メキシコシティ，モンテレー</item>
+        <item>(GMT-06:00)中部標準時(アメリカとカナダ)</item>
+        <item>(GMT-06:00)コスタリカ</item>
+        <item>(GMT-05:00)インディアナ州</item>
+        <item>(GMT-05:00)東部時間(アメリカとカナダ)</item>
+        <item>(GMT-05:00)ボゴタ，リマ，キト</item>
+        <item>(GMT-04:30)カラカス</item>
+        <item>(GMT-04:00)サンディエゴ</item>
+        <item>(GMT-04:00)大西洋標準時(カナダ)</item>
+        <item>(GMT-03:30)ニューファンドランド</item>
+        <item>(GMT-03:00)モンテビデオ</item>
+        <item>(GMT-03:00)ブエノスアイレス</item>
+        <item>(GMT-03:00)サンパウロ</item>
+        <item>(GMT-02:00)大西洋中部</item>
+        <item>(GMT-01:00)カーボベルデ諸島</item>
+        <item>(GMT-01:00)アゾレス諸島</item>
+        <item>(GMT+00:00)グリニッジ標準時：ダブリン、ロンドン、リスボン</item>
+        <item>(GMT+00:00)カサブランカ</item>
+        <item>(GMT+01:00)アムステルダム、パリ、ベルリン、ローマ、マドリード、ストックホルム</item>
+        <item>(GMT+01:00)ベオグラード、ブラチスラバ、ブダペスト、リュブリャナ</item>
+        <item>(GMT+01:00)ブリュッセル、コペンハーゲン、マドリード、パリ</item>
+        <item>(GMT+01:00)サラエボ、スコピエ、ワルシャワ、ザグレブ</item>
+        <item>(GMT+01:00)中部アフリカの西部</item>
+        <item>(GMT+02:00)アンマン</item>
+        <item>(GMT+02:00)アテネ、ブカレスト、イスタンブール</item>
+        <item>(GMT+02:00)カイロ</item>
+        <item>(GMT+02:00)ハラレ、プレトリア</item>
+        <item>(GMT+02:00)ヘルシンキ、キエフ、リガ、ソフィア、タリン、ビリニュス</item>
+        <item>(GMT+02:00)エルサレム</item>
+        <item>(GMT+03:00)バグダッド</item>
+        <item>(GMT+03:00)クウェート、リヤド</item>
+        <item>(GMT+03:00)モスクワ</item>
+        <item>(GMT+03:00)ナイロビ</item>
+        <item>(GMT+03:30)テヘラン</item>
+        <item>(GMT+04:00)アブダビ、マスカット</item>
+        <item>(GMT+04:00)バクー</item>
+        <item>(GMT+04:30)カブール</item>
+        <item>(GMT+05:00)エカテリンブルク</item>
+        <item>(GMT+05:00)イスラマバード、カラチ</item>
+        <item>(GMT+05:30)カルカッタ，ムンバイ，マドラス、ニューデリー</item>
+        <item>(GMT+05:45)カトマンズ</item>
+        <item>(GMT+06:00)ノボシビルスク</item>
+        <item>(GMT+06:00)ダッカ</item>
+        <item>(GMT+06:00)アスタナ</item>
+        <item>(GMT+06:30)ヤンゴン</item>
+        <item>(GMT+07:00)バンコク，ハノイ，ジャカルタ</item>
+        <item>(GMT+07:00)クラスノヤルスク</item>
+        <item>(GMT+08:00)北京、重慶、ホンコン、ウルムチ</item>
+        <item>(GMT+08:00)イルクーツク</item>
+        <item>(GMT+08:00)クアラルンプール，シンガポール</item>
+        <item>(GMT+08:00)パース</item>
+        <item>(GMT+08:00)台北</item>
+        <item>(GMT+09:00)大阪、札幌、東京</item>
+        <item>(GMT+09:00)ソウル</item>
+        <item>(GMT+09:00)ヤクーツク</item>
+        <item>(GMT+09:30)アデレード</item>
+        <item>(GMT+10:00)ブリスベン</item>
+        <item>(GMT+10:00)キャンベラ，メルボルン、シドニー</item>
+        <item>(GMT+10:00)グアム，ポートモレスビー</item>
+        <item>(GMT+10:00)ホバート</item>
+        <item>(GMT+10:00)ウラジオストク</item>
+        <item>(GMT+11:00)マガダン</item>
+        <item>(GMT+12:00)オークランド、ウェリントン</item>
+        <item>(GMT+12:00)フィジー</item>
+        <item>(GMT+13:00)トンガタプ島</item>
+    </string-array>
+
+    <string-array name="event_type">
+        <item>イベントの記録</item>
+        <item>タイミングの記録</item>
+    </string-array>
+</resources>

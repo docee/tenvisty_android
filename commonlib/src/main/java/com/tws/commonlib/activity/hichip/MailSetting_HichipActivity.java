@@ -1,5 +1,6 @@
 package com.tws.commonlib.activity.hichip;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
@@ -90,7 +91,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
     }
 
     @Override
-    public void finish(){
+    public void finish() {
         super.finish();
         quit();
     }
@@ -106,7 +107,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
             public void OnNavigationButtonClick(int which) {
                 switch (which) {
                     case NavigationBar.NAVIGATION_BUTTON_RIGHT:
-                        setMailSetting(false);
+                        getAlarmParams();
                         break;
                 }
             }
@@ -233,53 +234,52 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
             camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_EMAIL_PARAM, new byte[0]);
         }
     }
+
     void setMailSetting(boolean check) {
-        if(param != null) {
-            if(check){
-                refreshProgressTest(getString(R.string.process_testting));
-            }
-            else{
-                showLoadingProgress(getString(R.string.process_setting));
-            }
+        if (param != null) {
+            showLoadingProgress(getString(R.string.process_setting));
             isSetting = true;
-            if (preOpen != togbtn_open.isChecked()) {
-                camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_ALARM_PARAM, null);
-            } else {
-                int enable = togbtn_open.isChecked() ? 1 : 0;
-                String smtp_svr = mailbox_setting_server_edt.getText().toString();
-                String user = mailbox_setting_username_edt.getText().toString();
-                String password = mailbox_setting_psw_edt.getText().toString();
-                String sender = mailbox_setting_username_edt.getText().toString();
-                String receiver = mailbox_setting_receive_edt.getText().toString();
-                String subject = mailbox_setting_theme_edt.getText().toString();
-                String message = mailbox_setting_message_edt.getText().toString();
-                int ssl = mailbox_setting_safety_spn.getSelectedItemPosition();
-                int smtp_port = ssl == ENCTYPE_NONE ? 25 : (ssl == ENCTYPE_STARTTLS ? 587 : 465);
-                try {
-                    smtp_port = Integer.parseInt(mailbox_setting_port_edt.getText().toString());
-                } catch (Exception ex) {
+            //邮箱报警已打开
+            int enable = togbtn_open.isChecked() ? 1 : 0;
+            String smtp_svr = mailbox_setting_server_edt.getText().toString();
+            String user = mailbox_setting_username_edt.getText().toString();
+            String password = mailbox_setting_psw_edt.getText().toString();
+            String sender = mailbox_setting_username_edt.getText().toString();
+            String receiver = mailbox_setting_receive_edt.getText().toString();
+            String subject = mailbox_setting_theme_edt.getText().toString();
+            String message = mailbox_setting_message_edt.getText().toString();
+            int ssl = mailbox_setting_safety_spn.getSelectedItemPosition();
+            int smtp_port = ssl == ENCTYPE_NONE ? 25 : (ssl == ENCTYPE_STARTTLS ? 587 : 465);
+            try {
+                smtp_port = Integer.parseInt(mailbox_setting_port_edt.getText().toString());
+            } catch (Exception ex) {
 
-                }
-                param.setStrSvr(smtp_svr);
-                param.u32Port = smtp_port;
-                param.setStrUsernm(user);
-                param.setStrPasswd(password);
-                param.setStrTo(receiver);
-                param.setStrFrom(sender);
-                param.setStrSubject(subject);
-                param.setStrText(message);
-                param.u32LoginType = 1;
-                param.u32Auth = ssl;
-                isChecking = check;
-                byte[] sendParam = HI_P2P_S_EMAIL_PARAM_EXT2.parseContent(param, check?1:0);
-
-                camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_EMAIL_PARAM_EXT, sendParam);
             }
+            param.setStrSvr(smtp_svr);
+            param.u32Port = smtp_port;
+            param.setStrUsernm(user);
+            param.setStrPasswd(password);
+            param.setStrTo(receiver);
+            param.setStrFrom(sender);
+            param.setStrSubject(subject);
+            param.setStrText(message);
+            param.u32LoginType = 1;
+            param.u32Auth = ssl;
+            isChecking = check;
+            byte[] sendParam = HI_P2P_S_EMAIL_PARAM_EXT2.parseContent(param, check ? 1 : 0);
+            camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_EMAIL_PARAM_EXT, sendParam);
+
         }
     }
 
+    void getAlarmParams() {
+        isSetting = true;
+        showLoadingProgress(getString(R.string.process_setting));
+        camera.sendIOCtrl(0, HiChipDefines.HI_P2P_GET_ALARM_PARAM, null);
+    }
 
-    private  void  quit(){
+
+    private void quit() {
         if (camera != null) {
             camera.unregisterIOTCListener(this);
         }
@@ -355,18 +355,34 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
 
             switch (msg.what) {
                 case HiChipDefines.HI_P2P_GET_ALARM_PARAM: {
-                    if(isSetting) {
+                    if (isSetting) {
                         alarmParam = new HiChipDefines.HI_P2P_S_ALARM_PARAM(data);
-                        alarmParam.u32EmailSnap = togbtn_open.isChecked() ? 1 : 0;
-                        camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_ALARM_PARAM, alarmParam.parseContent());
+                        if(togbtn_open.isChecked()){
+                            setMailSetting(true);
+                        }
+                        else{
+                            //开关没变
+                            if (alarmParam.u32EmailSnap == (togbtn_open.isChecked() ? 1 : 0)) {
+                                camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
+                                MailSetting_HichipActivity.this.finish();
+                            }
+                            else{
+                                alarmParam.u32EmailSnap = 0;
+                                camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_ALARM_PARAM, alarmParam.parseContent());
+                            }
+                        }
                     }
                 }
                 break;
                 case HiChipDefines.HI_P2P_SET_ALARM_PARAM:
-                    if(isSetting) {
-                        preOpen = alarmParam.u32EmailSnap == 1;
-                        MailSetting_HichipActivity.this.setResult(RESULT_OK,new Intent().putExtra("intEnable",alarmParam.u32EmailSnap));
-                        setMailSetting(false);
+                    if (isSetting) {
+                        MailSetting_HichipActivity.this.setResult(RESULT_OK, new Intent().putExtra("intEnable", alarmParam.u32EmailSnap));
+
+                        dismissLoadingProgress();
+                        TwsToast.showToast(MailSetting_HichipActivity.this, getString(R.string.toast_setting_succ));
+
+                        camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
+                        MailSetting_HichipActivity.this.finish();
                     }
                     break;
                 case HiChipDefines.HI_P2P_GET_EMAIL_PARAM:
@@ -397,33 +413,41 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     }
                     break;
                 case HiChipDefines.HI_P2P_SET_EMAIL_PARAM_EXT:
-                    if(isChecking){
-                        dismissLoadingProgress();
-                        if(msg.arg1 == 0){
-                            TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
-                            camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
-                            MailSetting_HichipActivity.this.finish();
-                            //TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_test_success));
+                    if (isChecking) {
+                        //dismissLoadingProgress();
+                        if (msg.arg1 == 0) {
+                            setMailSetting(false);
+                        } else {
+                            showAlertnew(android.R.drawable.ic_dialog_alert, getString(R.string.warning), getString(R.string.dialog_msg_test_falied), getString(R.string.cancel), getString(R.string.yes), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int which) {
+                                    switch (which) {
+                                        case DialogInterface.BUTTON_POSITIVE:
+                                            setMailSetting(false);
+                                            break;
+                                        case DialogInterface.BUTTON_NEGATIVE:
+                                            dismissLoadingProgress();
+                                            break;
+                                    }
+                                }
+                            });
                         }
-                        else{
-                            showAlert(getString(R.string.dialog_msg_emailtest_falied));
-                        }
-                    }
-                    else{
-                        if(msg.arg1 == 0){
-                            if(togbtn_open.isChecked()) {
-                                setMailSetting(true);
-                            }
-                            else{
+                    } else {
+                        if (msg.arg1 == 0) {
+                            if (alarmParam.u32EmailSnap == (togbtn_open.isChecked() ? 1 : 0)) {
+                                MailSetting_HichipActivity.this.setResult(RESULT_OK, new Intent().putExtra("intEnable", alarmParam.u32EmailSnap));
+
                                 dismissLoadingProgress();
-                                TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.toast_setting_succ));
+                                TwsToast.showToast(MailSetting_HichipActivity.this, getString(R.string.toast_setting_succ));
 
                                 camera.unregisterIOTCListener(MailSetting_HichipActivity.this);
                                 MailSetting_HichipActivity.this.finish();
+                            } else {
+                                alarmParam.u32EmailSnap = 1;
+                                camera.sendIOCtrl(0, HiChipDefines.HI_P2P_SET_ALARM_PARAM, alarmParam.parseContent());
                             }
                             //TwsToast.showToast(MailSetting_HichipActivity.this,getString(R.string.tips_setting_succ));
-                        }
-                        else{
+                        } else {
                             dismissLoadingProgress();
                             showAlert(getString(R.string.alert_setting_fail));
                         }
@@ -504,6 +528,7 @@ public class MailSetting_HichipActivity extends BaseActivity implements IIOTCLis
 
         camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USEREX_IPCAM_GET_MAIL_STATUS_REQ, AVIOCTRLDEFs.SMsgAVIoctrlExGetMailStatusReq.parseContent());
     }
+
     /**
      * 提示连续两次点击两次返回则退出应用
      */

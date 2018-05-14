@@ -1,12 +1,12 @@
 <resources>
     <string name="title_home">Home</string>
-    <string name="filter_vcode">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-</string>
+    <string name="filter_vcode" translatable="false">0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-</string>
 
     <!-- General -->
     <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
     <string name="ok">OK</string>
     <string name="warning">Warning</string>
-    <string name="modify">Modify</string>
     <string name="delete">Delete</string>
     <string name="ready">Ready</string>
     <string name="retry">Retry</string>
@@ -47,15 +47,15 @@
     <string name="title_camera_setting_timezone">Time Zone</string>
     <string name="title_camera_setting_time">Time Setting</string>
     <string name="title_camera_setting_sdcard">SD Card</string>
-    <string name="title_camera_setting_info">Device Information</string>
+    <string name="title_camera_setting_info">Camera Information</string>
     <string name="title_camera_setting_system">System Setting</string>
     <string name="title_camera_setting_audio">Audio Setting</string>
     <string name="title_camera_setting_record_timing">Timing Record</string>
     <string name="title_userhelp">Help</string>
     <string name="title_version">APP Version</string>
     <string name="title_privacy_policy">Privacy Policy</string>
-    <string name="title_sub_device_time">Device Time</string>
-    <string name="title_sub_device_timezone">Device Time Zone</string>
+    <string name="title_sub_device_time">Camera Time</string>
+    <string name="title_sub_device_timezone">Camera Time Zone</string>
 
     <!--field label-->
     <string name="lab_password_old">Old</string>
@@ -84,9 +84,8 @@
     <string name="lab_camera_setting_mail_advance">Advanced Setting</string>
     <string name="lab_camera_setting_mail_smtp_server">SMTP Server Host</string>
     <string name="lab_camera_setting_mail_smtp_port">Port</string>
-    <string name="lab_camera_setting_mail_safety_connection">Safe Link</string>
+    <string name="lab_camera_setting_mail_safety_connection">Encrypt Type</string>
     <string name="lab_camera_setting_mail_receiver">Send to</string>
-    <string name="lab_camera_setting_mail_sender">Sender</string>
     <string name="lab_camera_setting_mail_subject">Subject</string>
     <string name="lab_camera_setting_mail_message">Message</string>
     <string name="lab_camera_setting_other_mirror">Mirror</string>
@@ -94,7 +93,7 @@
     <string name="lab_camera_setting_other_ledlight">Led Light</string>
     <string name="lab_camera_setting_other_sdcard">SD Card</string>
     <string name="lab_camera_setting_other_info">Camera Information</string>
-    <string name="lab_camera_setting_other_info_model">Model</string>
+    <!--<string name="lab_camera_setting_other_info_model">Model</string>-->
     <string name="lab_camera_setting_other_info_fmversion">Firmware Version</string>
     <string name="lab_camera_setting_other_info_softversion">Software Version</string>
     <string name="lab_camera_setting_other_info_network">Network</string>
@@ -106,15 +105,15 @@
     <string name="lab_setting_change_password">Change Password</string>
     <string name="lab_setting_network">Wi-Fi</string>
     <string name="lab_camera_setting_other_time_dst">Clock for daylight saving time</string>
-    <string name="lab_camera_password_reenter">Re-enter password</string>
+    <string name="lab_camera_password_reenter">Re-enter [%s] password</string>
     <string name="lab_share_email_chooseClient">Choose Email Client</string>
     <string name="lab_record_timing_duration">Duration</string>
     <string name="lab_record_timing_seconds">seconds</string>
     <string name="lab_record_timing_time">Record Time</string>
-    <string name="lab_volumn_input">Input volume</string>
-    <string name="lab_volumn_output">Output volume</string>
+    <string name="lab_volumn_input">Input Volume</string>
+    <string name="lab_volumn_output">Output Volume</string>
     <string name="lab_camera_setting_ftp_server">Server</string>
-    <string name="lab_camera_setting_ftp_port">Server Port</string>
+    <string name="lab_camera_setting_ftp_port">Port</string>
     <string name="lab_camera_setting_ftp_username">User Name</string>
     <string name="lab_camera_setting_ftp_password">Password</string>
     <string name="lab_camera_setting_ftp_passive_mode">Passive mode</string>
@@ -134,7 +133,9 @@
     <string name="process_setting">Setting&#8230;</string>
     <string name="process_testting">Testing&#8230;</string>
     <string name="process_upgrading">Upgrading&#8230;</string>
-    <string name="process_upgrading_percent">Upgrading %s%%</string>
+    <string name="process_upgrading_percent">Upgrading %d%%</string>
+    <string name="process_formating">Formating&#8230;</string>
+    <string name="process_change">Change</string>
 
     <string name="tips_camera_setting_other_timezone_select">Select time zone</string>
     <string name="tips_scan_qrcode">Align camera QR Code within frame to scan</string>
@@ -144,15 +145,15 @@
     <string name="tips_wireless_install">Note:\nOnly support 2.4GHz Wi-Fi.</string>
     <string name="tips_camera_offline">Camera offline</string>
     <string name="tips_result_not_found">No result found.</string>
-    <string name="tips_search_camera_no_result">No Device on LAN</string>
+    <string name="tips_search_camera_no_result">No Camera on LAN</string>
     <string name="tips_play_record_end">Video play ends</string>
     <string name="tips_setting_wifi_available_networks">AVAILABLE NETWORKS</string>
     <string name="tips_press_again_to_exit">Press again to exit.</string>
     <string name="tips_sd_card_setting">Format command will ERASE all data of SD Card</string>
     <string name="tips_copyright">Copyright 2017 All rights reserved.</string>
-    <string name="tips_wireless_install_operate">Please enter the Wi-Fi password.</string>
+    <string name="tips_wireless_install_operate">Please enter the Wi-Fi password</string>
     <string name="tips_wireless_install_setting">Keep phone near to camera and turn up the phone volume</string>
-    <string name="tips_folder_desc" formatted="false">%s photos, %s videos</string>
+    <string name="tips_folder_desc" formatted="false">%d photos, %d videos</string>
     <string name="tips_nocamera">No Camera</string>
     <string name="tips_wifi_open">Open</string>
     <string name="tips_wifi_encrypted">Encrypted</string>
@@ -160,20 +161,23 @@
     <string name="tips_wifi_wrong_password">Wrong Password</string>
     <string name="tips_wifi_saved">Saved</string>
     <string name="tips_recordtime_none_title">NONE</string>
-    <string name="tips_recordtime_none_desc">Device will stop recording on SD Card</string>
+    <string name="tips_recordtime_none_desc">Camera will stop recording on SD Card</string>
     <string name="tips_recordtime_allday_title">ALL DAY</string>
     <string name="tips_recordtime_allday_desc">24/7 Continuous Record</string>
     <string name="tips_recordtime_custom_title">CUSTOM SETTING</string>
     <string name="tips_recordtime_custom_desc">Set your own recording time</string>
-    <string name="tips_device_time_setting_reboot_camera">Notice: Change timezone will reboot device</string>
+    <string name="tips_device_time_setting_reboot_camera">Notice: Change timezone will reboot camera</string>
+    <string name="tips_device_time_setting_timezone_select">Select time zone</string>
     <string name="tips_play_progress">Play progress: </string>
     <string name="tips_add_camera_type_wireless_desc">Add camera by 2.4GHz Wi-Fi.</string>
     <string name="tips_add_camera_type_wireless_title">Wireless</string>
-    <string name="tips_add_camera_type_wired_desc">Add camera by Ethernet cable.\n(Only support by Ethernet port device)</string>
+    <string name="tips_add_camera_type_wired_desc">Add camera by Ethernet cable.\n(Only support by Ethernet port camera)</string>
     <string name="tips_add_camera_type_wired_title">Wired</string>
     <string name="tips_add_camera_fail_title">Wi-Fi Configure Failed</string>
-    <string name="tips_add_camera_fail_1">Notes for Wi-Fi configuration of IP camera:\n1. Please confirm your Wi-Fi is 2.4GHz.\n2. The Wi-Fi Encryption must be WPA/WPA2.\n3. Make sure no unsupported characters＂ \ ` $（$[ $ included in Wi-Fi password and SSID.\n4. DHCP is enabled in Router.\n5. Please keep camera near to your router &#038; your phone and connect to stable network.\n6. The indoor camera will beep when configuring Wi-Fi, please turn up phone volume for better configuration. If you need configure an outdoor IP camera, please power the camera and press the reset button about 10 seconds to restore factory settings before configuration.</string>
+    <string name="tips_add_camera_fail_1">Notes for Wi-Fi configuration of IP camera:\n1. Please make sure your Wi-Fi password is correct.\n2. Please confirm your Wi-Fi is 2.4GHz.\n3. The Wi-Fi Encryption must be WPA/WPA2.\n4. Make sure no unsupported characters＂ \\ ` $( $[ ${ included in Wi-Fi password and SSID.\n5. DHCP is enabled in Router.\n6. Please keep camera near to your router &#038; your phone and connect to stable network.\n7. The indoor camera will beep when configuring Wi-Fi, please turn up phone volume for better configuration. If you need configure an outdoor IP camera, please power the camera and press the reset button about 10 seconds to restore factory settings before configuration.</string>
     <string name="tips_add_camera_fail_2">Notes for Wi-Fi configuration of IP camera:\n1. Please make sure your Wi-Fi password is correct.\n2. Please confirm your Wi-Fi is 2.4GHz.\n3. DHCP is enabled in Router.\n4. Please keep camera near to your router &#038; your phone and connect to stable network.\n</string>
+    <string name="tips_nophoto">No Photos</string>
+    <string name="tips_novideo">No Videos</string>
 
     <string name="dialog_msg_strict_change_pwd">Your camera [%s] uses default password, please change the password for security.</string>
     <string name="dialog_title_camera_change_record_duration">Change Record Duration</string>
@@ -185,18 +189,19 @@
     <string name="dialog_msg_format_sd_card">Format command will ERASE all data of SD Card, continue?</string>
     <string name="dialog_msg_restore_factory_settings">Setup data will be initialized. Are you sure to reset?</string>
     <string name="dialog_msg_reboot_camera">Are you sure to reboot camera?</string>
-    <string name="dialog_msg_delete_local_pic_confirm">Confirm to delete?</string>
+    <string name="dialog_msg_delete_local_pic_confirm">Are you sure to delete?</string>
     <string name="dialog_msg_new_firmware">New firmware is available, update?</string>
     <string name="dialog_msg_new_firmware_update">The camera is upgrading, please do not power off and keep the network available</string>
     <string name="dialog_msg_new_firmware_already_latest">It is the latest version already</string>
-    <string name="dialog_msg_new_firmware_upgrading">The camera is upgrading....</string>
+    <string name="dialog_msg_new_firmware_upgrading">The camera is upgrading...</string>
     <string name="dialog_msg_new_firmware_getaccinfo_failed">Get firmware info failed, please try again later.</string>
-    <string name="dialog_msg_new_firmware_updating_succ_reboot">Firmware update succeed, camera will reboot later, please wait a moment.</string>
+    <string name="dialog_msg_new_firmware_updating_succ_reboot">Firmware update successfully, camera will reboot later, please wait a moment.</string>
     <string name="dialog_msg_new_firmware_updating_fail">Update firmware failed</string>
     <string name="dialog_msg_no_network">The phone network is disconnected. Please check the network settings.</string>
     <string name="dialog_msg_emailtest_falied">Test failed, please check your email settings.</string>
     <string name="dialog_msg_ftptest_falied">Test failed, please check your FTP settings.</string>
-    <string name="dialog_msg_record_selectdownload">Please select the record.</string>
+    <string name="dialog_msg_test_falied">Test failed, continue to save?</string>
+    <string name="dialog_msg_record_selectdownload">Please select the record</string>
     <string name="dialog_msg_download_complete">Download complete, you can view downloaded videos under this path: Image - Video - Download</string>
     <string name="dialog_msg_add_camera_connected">Camera is online, please enter its password to add.</string>
 
@@ -206,6 +211,7 @@
     <string name="btn_camera_list_wakeup">tap to wake up</string>
     <string name="btn_first_add_camera">tap to add camera</string>
     <string name="btn_search_lan">LAN Search</string>
+    <string name="btn_format">Format SDCard</string>
     <string name="btn_scan_qrcode_flash">Flash</string>
     <string name="btn_password_show">show password</string>
     <string name="btn_preset_set">Set</string>
@@ -219,11 +225,11 @@
     <string name="btn_preset_6">6</string>
     <string name="btn_preset_7">7</string>
     <string name="btn_preset_8">8</string>
-    <string name="btn_time_adjust">Tap to adjust time</string>
-    <string name="btn_ptz_zoomin">Zoom in</string>
-    <string name="btn_ptz_zoomout">Zoom out</string>
-    <string name="btn_ptz_focusout">Focus out</string>
-    <string name="btn_ptz_focusin">Focus in</string>
+    <string name="btn_time_adjust">tap to adjust time</string>
+    <string name="btn_ptz_zoomin">Zoom In</string>
+    <string name="btn_ptz_zoomout">Zoom Out</string>
+    <string name="btn_ptz_focusout">Focus Out</string>
+    <string name="btn_ptz_focusin">Focus In</string>
     <string name="btn_toView">To view</string>
     <string name="btn_inputuid_maually">Input UID manually</string>
     <string name="btn_camera_connected_network">Camera has been connected to network?</string>
@@ -238,13 +244,13 @@
     <string name="alert_wifi_onlysupport_24g">Sorry, only 2.4GHz Wi-Fi supported by camera, please switch the phone into 2.4GHz Wi-Fi for connection</string>
     <string name="alert_wifi_onlysupport_wpa">Sorry, only WPA/WPA2 Wi-Fi supported by camera, please switch the Wi-Fi on your phone into WPA/WPA2 encryption mode</string>
     <string name="alert_wifi_ssid_supportchar">Sorry, unsupported characters like %s by camera exits in current Wi-Fi SSID on phone. Please revise the Wi-Fi SSID or switch phone into other supported Wi-Fi. Supported Characters: English letters, numbers, and symbols excluding ` \" \\ $( $[ ${ </string>
-    <string name="alert_camera_exist">Camera already exists in your list.</string>
+    <string name="alert_camera_exist">Camera already exists in your list</string>
     <string name="alert_input_camera_name">[Camera Name] must be entered.</string>
     <string name="alert_input_camera_uid">[UID] is not entered.</string>
     <string name="alert_invalid_camera_uid">Invalid UID</string>
     <string name="alert_input_camera_password">[Password] is not entered.</string>
-    <string name="alert_snapshot_failed">Snapshot failed.</string>
-    <string name="alert_snapshot_no_sdcard">No SDCard found in your camera.</string>
+    <string name="alert_snapshot_failed">Snapshot Failed</string>
+    <string name="alert_snapshot_no_sdcard">No SD Card found in your phone.</string>
     <string name="alert_record_failed">can not record</string>
     <string name="alert_input_wifi_password">Wi-Fi password is not entered.</string>
     <string name="alert_setting_fail">Setting Failed</string>
@@ -258,11 +264,11 @@
     <string name="alert_wifi_password_wrong">Wi-Fi password wrong</string>
     <string name="alert_wifi_connect_fail">Fail to connect Wi-Fi, please try again later.</string>
     <string name="alert_wifi_config_fail">Wi-Fi config failed, please check your password and try again</string>
-    <string name="alert_device_time_setting_reboot_camera">Change timezone daylight setting will reboot device</string>
+    <string name="alert_device_time_setting_reboot_camera">Change timezone daylight setting will reboot camera</string>
     <string name="alert_camera_wakeup">the camera is sleeping, you need to wake it up first.</string>
 
-    <string name="alert_recording_time_range">15&#8211;%d seconds time range </string>
-    <string name="alert_alarm_recording_time_range">%d&#8211;%d seconds time range </string>
+    <string name="alert_recording_time_range">15-%d seconds time range</string>
+    <string name="alert_alarm_recording_time_range">%d-%d seconds time range</string>
 
     <string name="hint_camera_oldpassword">Old Password</string>
     <string name="hint_camera_newpassword">New Password</string>
@@ -272,36 +278,36 @@
     <string name="hint_input_camera_uid">Camera UID</string>
     <string name="hint_input_camera_name">Camera Name</string>
 
-    <string name="tips_modify_camera_pwd">Please make sure your password length is 6&#8211;12 characters and contains at least two combinations of below characters.\n    1.capital\n    2.small letter\n    3.number\n    4.special character：~!@$%^()_-,|/*.</string>
-    <string name="tips_connected_internet">Camera has been connected to Internet?</string>
+    <string name="tips_modify_camera_pwd">Please make sure your password length is 6-12 characters and contains at least two combinations of below characters.\n    1.capital\n    2.small letter\n    3.number\n    4.special character：~!@$%^()_-,|/*.</string>
     <string name="tips_setting_wifi_wait">Configuring Wi-Fi, please wait&#8230;</string>
     <string name="tips_search_lan">Camera On LAN</string>
     <string name="tips_mail_send_success">Send Successfully</string>
     <string name="tips_preset_set_fail">Preset setting failed</string>
     <string name="tips_preset_call_fail">Preset calling failed</string>
     <string name="tip_has_downloaded">The video has been downloaded yet</string>
-    <string name="tips_downlaoding_video">Downloading %s.</string>
-    <string name="tips_inputuid_maually">Please enter the UID number on camera label.</string>
+    <string name="tips_downlaoding_video">Downloading (%s)</string>
+    <string name="tips_waiting">Waiting</string>
+    <string name="tips_inputuid_maually">Please enter the UID number on camera label</string>
 
     <string name="hint_mail_setting_sender">Email Account</string>
     <string name="hint_mail_setting_sender_pwd">Email Password</string>
     <string name="hint_mail_setting_smtp_server">SMTP Server Host</string>
     <string name="hint_mail_setting_port">Port</string>
     <string name="hint_mail_setting_receive_address">Receiver</string>
-    <string name="hint_ftp_setting_server">Ftp Service Address</string>
-    <string name="hint_ftp_setting_username">Ftp Account</string>
-    <string name="hint_ftp_setting_password">Ftp Password</string>
+    <string name="hint_ftp_setting_server">FTP Service Address</string>
+    <string name="hint_ftp_setting_username">FTP Account</string>
+    <string name="hint_ftp_setting_password">FTP Password</string>
     <string name="hint_ftp_setting_path">Path</string>
 
     <string name="toast_fotmat_succ">Format Successfully</string>
     <string name="toast_setting_succ">Setting Successfully</string>
-    <string name="toast_snapshot_succeed">Snapshot successfully.</string>
-    <string name="toast_change_password_succeed">Password changed successfully, device will reconnect soon.</string>
-    <string name="toast_connect_timeout">&quot;Connection timeout,please try again.&quot;</string>
+    <string name="toast_snapshot_succeed">Snapshot Successfully</string>
+    <string name="toast_change_password_succeed">Password changed successfully, camera will reconnect soon.</string>
+    <string name="toast_connect_timeout">Connection timeout, please try again.</string>
     <string name="toast_add_camera_duplicated_search">this camera is in your camera list, please tap other camera.</string>
     <string name="toast_connect_drop">connection dropped</string>
-    <string name="toast_updating_succ_reboot">Firmware update succeed, camera will reboot later, please wait a moment.</string>
-    <string name="toast_updating_succ_finish">Firmware update succeed</string>
+    <string name="toast_updating_succ_reboot">Firmware update successfully, camera will reboot later, please wait a moment.</string>
+    <string name="toast_updating_succ_finish">Firmware update successfully</string>
     <string name="toast_stop_record">recording stopped</string>
     <string name="tip_not_switch_quality">Can\'t change quality while recording</string>
     <string name="no_network_connection_toast">No network connection found</string>
@@ -333,8 +339,8 @@
     <string name="camera_state_passwordWrong">Wrong Password</string>
     <string name="camera_state_sleep">Sleeping</string>
 
-    <string name="spinner_photos">Photos</string>
-    <string name="spinner_videos">Videos</string>
+    <string name="spinner_photos">PHOTOS</string>
+    <string name="spinner_videos">VIDEOS</string>
     <string name="spinner_record_event">EVENT RECORD</string>
     <string name="spinner_record_timing">TIMING RECORD</string>
 

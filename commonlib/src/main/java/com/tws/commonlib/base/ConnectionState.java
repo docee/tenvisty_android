@@ -120,11 +120,14 @@ public class ConnectionState {
 			NetworkInfo mWifi = connManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
 			if(mWifi.isConnected()){
 					this._connectState = WIFI_CONNECT_STATE;
-					WifiManager	mWifiManager = (WifiManager) this.context.getSystemService (Context.WIFI_SERVICE);
+					WifiManager	mWifiManager = (WifiManager) this.context.getSystemService(Context.WIFI_SERVICE);
 		        	WifiInfo WifiInfo = mWifiManager.getConnectionInfo();
 					List<WifiConfiguration> wifiConfigList = mWifiManager.getConfiguredNetworks();
 				//当前连接SSID
 				String currentSSid =WifiInfo.getSSID();
+				if(currentSSid == "<unknown ssid>"){
+					currentSSid = mWifi.getExtraInfo();
+				}
 				int icLen = currentSSid.length();
 				if (currentSSid.startsWith("\"") && currentSSid.endsWith("\""))
 				{

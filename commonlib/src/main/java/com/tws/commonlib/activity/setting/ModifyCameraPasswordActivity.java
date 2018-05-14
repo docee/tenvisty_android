@@ -154,7 +154,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
             return false;
         }
 
-        if (true || TwsTools.isUserPwdLegal(newPwd)) {
+        if (TwsTools.isUserPwdLegal(newPwd)) {
             if (camera != null) {
                 newPassword = newPwd;
                 if (camera.getP2PType() == IMyCamera.CameraP2PType.HichipP2P) {
@@ -171,7 +171,7 @@ public class ModifyCameraPasswordActivity extends BaseActivity implements IIOTCL
                 maxRetryCount--;
             }
 
-            showLoadingProgress(getText(R.string.modify).toString(), true, 60000, new TwsProgressDialog.OnTimeOutListener() {
+            showLoadingProgress(getText(R.string.process_change).toString(), true, 60000, new TwsProgressDialog.OnTimeOutListener() {
                 @Override
                 public void onTimeOut(TwsProgressDialog dialog) {
                     TwsToast.showToast(ModifyCameraPasswordActivity.this, getText(R.string.alert_modify_security_code_failed).toString());

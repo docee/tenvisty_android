@@ -109,6 +109,7 @@ public class TimeSettingActivity extends BaseActivity implements IIOTCListener {
         showLoadingProgress();
         if (camera != null) {
             showLoadingView(R.id.txt_timezone);
+            ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 0;
             showLoadingView(R.id.txt_time);
             showLoadingView(R.id.togbtn_dst);
             camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ZONE_INFO_REQ, new byte[1]);
@@ -194,6 +195,7 @@ public class TimeSettingActivity extends BaseActivity implements IIOTCListener {
                     // String strTimeZone = new String(timeZone.szTimeZoneString).trim();
                     txt_timezone.setText(timezoneSourceList[accTimezoneIndex].split(";")[0]);
                     hideLoadingView(R.id.txt_timezone);
+                    ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 2;
                     break;
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_SET_TIMEZONE_RESP:
                     if (data[0] == 0x00) {
@@ -207,6 +209,7 @@ public class TimeSettingActivity extends BaseActivity implements IIOTCListener {
                 case AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_ZONE_INFO_RESP:
                     dismissLoadingProgress();
                     hideLoadingView(R.id.txt_timezone);
+                    ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 2;
                     hideLoadingView(R.id.togbtn_dst);
                     AVIOCTRLDEFs.SMsgAVIoctrlGetTZoneResp timezone = new AVIOCTRLDEFs.SMsgAVIoctrlGetTZoneResp(data);
                     txt_timezone.setText("");

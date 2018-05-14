@@ -59,6 +59,8 @@ import com.tws.commonlib.bean.IMyCamera;
 import com.tws.commonlib.bean.TwsDataValue;
 import com.tws.commonlib.bean.TwsSessionState;
 
+import org.w3c.dom.Text;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +72,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
     static final int PUBLIC_CAMERA_REQUEST_CODE = 1;
     static final int CAMERA_ADD_REQUEST_CODE = 2;
     static final int CAMERA_EVENTLIST_REQUEST_CODE = 3;
+
     /**
      * 区别是公共摄像机还是自己的摄像机，因为公共摄像机列表继承了该类
      */
@@ -77,7 +80,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
 
     static final int CPU_CORES_NUM = TwsTools.getCpuCoresNum();//获取CPU的核数
     static final float CPU_FREQUENCE_NUM = TwsTools.getCpuFrequence();//获取CPU的频率
-
+    AlertDialog modifyPasswordAlert;
 
     /**
      * 每页有几行
@@ -246,7 +249,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                                         TextView txt_state = view.findViewById(R.id.txt_state);
                                         if (txt_state != null) {
                                             txt_state.setBackgroundResource(R.drawable.shape_state_connecting);
-                                            txt_state.setText(String.format(getString(R.string.process_upgrading_percent), process.p + ""));
+                                            txt_state.setText(String.format(getString(R.string.process_upgrading_percent), process.p));
                                         }
                                         if (process.p >= 100) {
                                             TwsToast.showToast(CameraFragment.this.getActivity(), getString(R.string.toast_updating_succ_reboot));
@@ -388,12 +391,15 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         if (!isShowModifyPwdDlg && CameraFragment.this.getContext() != null) {
 
             isShowModifyPwdDlg = true;
+            if(modifyPasswordAlert != null && modifyPasswordAlert.isShowing()){
+                modifyPasswordAlert.dismiss();
+            }
             Builder dlgBuilder = new Builder(CameraFragment.this.getContext());
             dlgBuilder.setIcon(android.R.drawable.ic_dialog_alert);
 
             dlgBuilder.setMessage(String.format(getString(R.string.dialog_msg_strict_change_pwd), camera.getNickName()));
             dlgBuilder.setCancelable(false);
-            dlgBuilder.setPositiveButton(getText(R.string.modify),
+            dlgBuilder.setPositiveButton(getText(R.string.process_change),
                     new DialogInterface.OnClickListener() {//点击修改按钮跳转至高级设置界面修改设备密码
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
@@ -412,7 +418,8 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
                         });
             }
 
-            dlgBuilder.show().setOnDismissListener(new DialogInterface.OnDismissListener() {
+            modifyPasswordAlert = dlgBuilder.show();//
+            modifyPasswordAlert.setOnDismissListener(new DialogInterface.OnDismissListener() {
                 @Override
                 public void onDismiss(DialogInterface dialogInterface) {
 
@@ -678,6 +685,11 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         isShowModifyPwdDlg = false;
         refreshTitle();
         refreshItems();
+        if(modifyPasswordAlert != null){
+            if(modifyPasswordAlert.isShowing()) {
+                modifyPasswordAlert.dismiss();
+            }
+        }
         for (IMyCamera camera : TwsDataValue.cameraList()) {
             if (camera.isConnected() && camera.getPassword().equalsIgnoreCase(IMyCamera.DEFAULT_PASSWORD)) {
                 modifyPasswordHint(camera);
@@ -803,7 +815,8 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         View view = inflater.inflate(R.layout.hint_password_error, null);
         dlg.setView(view);
         dlg.setCanceledOnTouchOutside(false);
-
+        TextView txt_desc =  view.findViewById(R.id.txt_desc);
+        txt_desc.setText(String.format(getString(R.string.lab_camera_password_reenter),camera.getNickName()));
         final EditText passwordEditText = (EditText) view.findViewById(R.id.cameraPasswordEditText);
         final Button btnOK = (Button) view.findViewById(R.id.btnOK);
         final Button btnCancel = (Button) view.findViewById(R.id.btnCancel);

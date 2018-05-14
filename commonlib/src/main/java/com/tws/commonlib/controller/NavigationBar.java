@@ -13,6 +13,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.tws.commonlib.R;
+import com.tws.commonlib.base.TwsToast;
+import com.tws.commonlib.base.TwsTools;
 
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 
@@ -65,6 +67,11 @@ public class NavigationBar extends RelativeLayout implements View.OnClickListene
     public void setRightBtnText(String str){
         TextView tv=(TextView)findViewById(R.id.btn_finish);
         tv.getLayoutParams().width = WRAP_CONTENT;
+        tv.setText(str);
+    }
+    public void setRightBtnText(String str,int width){
+        TextView tv=(TextView)findViewById(R.id.btn_finish);
+        tv.getLayoutParams().width = TwsTools.dip2px(this.context,width);
         tv.setText(str);
     }
     public void setRightBtnTextSide(int sp){

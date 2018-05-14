@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="motion_detection_sensitivity">
+        <item>Max</item>
+        <item>Elevée</item>
+        <item>Medium</item>
+        <item>Basse</item>
+        <item>Fermer</item>
+    </string-array>
+    <string-array name="device_timezone_old">
+        <item>(GMT-11)Midway Islands;Samoa</item>
+        <item>(GMT-10)Hawaii;</item>
+        <item>(GMT-9)Alaska;</item>
+        <item>(GMT-8)Pacific Time(USA or Canada);</item>
+        <item>(GMT-7)Mountain Time(USA or Canada);</item>
+        <item>(GMT-6)Central Time(USA or Canada);</item>
+        <item>(GMT-5)Eastern Time(USA or Canada);</item>
+        <item>(GMT-4)Atlantic Time(Canada);</item>
+        <item>(GMT-3)Brazilia;Buenos Aires;</item>
+        <item>(GMT-2)Mid-Atlantic;</item>
+        <item>(GMT-1)Azores;Cape Verde;</item>
+        <item>(GMT 0)London;Iceland;Lisbon;</item>
+        <item>(GMT+1)Paris;Rome;Berlin;Madrid;</item>
+        <item>(GMT+2)Israel;Athens;Cairo;Jerusalem;</item>
+        <item>(GMT+3)Moscow;Nairobi;Riyadh;</item>
+        <item>(GMT+4)Baku;Tbilisi;Abu Dhabi;Mascot;</item>
+        <item>(GMT+5)New Delhi;Islamabad;Karachi;</item>
+        <item>(GMT+6)Dakar;Alma Ata;Novosibirsk;Astana;</item>
+        <item>(GMT+7)Bangkok;Hanoi;Jakarta;</item>
+        <item>(GMT+8)Beijing;Singapore;Hongkong;Taipei;</item>
+        <item>(GMT+9)Tokyo;Seoul;Yakutsk;</item>
+        <item>(GMT+10)Guam;Melbourne;Sydney;</item>
+        <item>(GMT+11)Magadan;New Caledonia;Solomon Islands;</item>
+        <item>(GMT+12)Wellington;Auckland;fiji</item>
+    </string-array>
+    <string-array name="net_work_style">
+        <item>CABLE</item>
+        <item>WIFI</item>
+    </string-array>
+    <string-array name="record_type">
+        <item>OFF</item>
+        <item>Enregistrement permanent</item>
+        <item>Enregistrement sur alerte</item>
+    </string-array>
+    <string-array name="safety_connection">
+        <item>None</item>
+        <item>SSL</item>
+        <item>TLS</item>
+        <item>STARTTLS</item>
+    </string-array>
+
+    <string-array name="tips_alarm_list_array">
+        <item>Détection de mouvement</item>
+        <item>External Alarm</item>
+        <item>Voice Alarm</item>
+        <item>External Alarm</item>
+        <item>Détection de mouvement</item>
+    </string-array>
+
+    <string-array name="tips_alarm_aoni_list_array">
+        <item>Alarme de détection</item>
+        <item>Erreur d\'enregistrement d\'alarme</item>
+        <item>Ring</item><!--E936不支持-->
+        <item>Plug SD Card</item><!--E936不支持-->
+        <item>Unplug SD Card</item><!--E936不支持-->
+        <item>SD Card Is Empty</item><!--E936不支持-->
+        <item>Unkown SD Card</item><!--E936不支持-->
+        <item>Batterie faible</item>
+        <item>Alimentation externe</item>
+        <item>Batterie en charge</item>>
+        <item>La batterie est complètement chargée</item>
+        <item>Mise à niveau du micrologiciel réalisée avec succès</item>
+        <item>Mise à niveau du micrologiciel échouée</item>
+        <item>Mise à niveau du micrologiciel échouée</item><!--E936不支持-->
+        <item>Mise à niveau du micrologiciel échouée</item>
+    </string-array>
+
+    <string-array name="stream_quality">
+        <item>HD</item>
+        <item>SD</item>
+    </string-array>
+    <string-array name="device_timezone_new">
+        <item>(GMT-12:00)GMT-12</item>
+        <item>(GMT-11:00)Midway, Samoa</item>
+        <item>(GMT-10:00)Hawaii</item>
+        <item>(GMT-09:00)Alaska</item>
+        <item>(GMT-08:00)Heure du Pacifique (États-Unis et Canada)</item>
+        <item>(GMT-07:00)Chihuahua, La Paz, Mazatlan</item>
+        <item>(GMT-07:00)Heure des Rocheuses</item>
+        <item>(GMT-07:00)Arizona</item>
+        <item>(GMT-06:00)Saskatchewan</item>
+        <item>(GMT-06:00)Guadalajara, Mexico City, Monterrey</item>
+        <item>(GMT-06:00)Heure central</item>
+        <item>(GMT-06:00)Costa Rica</item>
+        <item>(GMT-05:00)Indiana</item>
+        <item>(GMT-05:00)Heure de l\'Est</item>
+        <item>(GMT-05:00)Bogota, Lima, Quito</item>
+        <item>(GMT-04:30)Caracas</item>
+        <item>(GMT-04:00)Santiago</item>
+        <item>(GMT-04:00)L\'heure de l\'Atlantique</item>
+        <item>(GMT-03:30)Newfoundland</item>
+        <item>(GMT-03:00)Montevideo</item>
+        <item>(GMT-03:00)Buenos Aires</item>
+        <item>(GMT-03:00)São Paulo</item>
+        <item>(GMT-02:00)Géorgie du Sud et îles Sandwich du Sud</item>
+        <item>(GMT-01:00)Îles du Cap-Vert</item>
+        <item>(GMT-01:00)Les Açores</item>
+        <item>(GMT+00:00)Dublin, London, Lisbon</item>
+        <item>(GMT+00:00)Casablanca</item>
+        <item>(GMT+01:00)Amsterdam, Paris, Berlin, Rome, Madrid, Stockholm</item>
+        <item>(GMT+01:00)Belgrade, Bratislava, Budapest, Ljubljana</item>
+        <item>(GMT+01:00)Brussels, Copenhagen, Madrid, Paris</item>
+        <item>(GMT+01:00)Sarajevo, Skopje, Warsaw, Zagreb</item>
+        <item>(GMT+01:00)Afrique de l\'Ouest</item>
+        <item>(GMT+02:00)Amman</item>
+        <item>(GMT+02:00)Athènes, Bucarest, Istanbul</item>
+        <item>(GMT+02:00)Le Caire</item>
+        <item>(GMT+02:00)Harare, Pretoria</item>
+        <item>(GMT+02:00)Helsinki, Kiev, Riga, Sofia, Tallinn, Vilnius</item>
+        <item>(GMT+02:00)Jérusalem</item>
+        <item>(GMT+03:00)Baghdad</item>
+        <item>(GMT+03:00)Koweït, Riyad</item>
+        <item>(GMT+03:00)Moscow</item>
+        <item>(GMT+03:00)Nairobi</item>
+        <item>(GMT+03:30)Téhéran</item>
+        <item>(GMT+04:00)Abu Dhabi, Muscat</item>
+        <item>(GMT+04:00)Baku</item>
+        <item>(GMT+04:30)Kaboul</item>
+        <item>(GMT+05:00)Ekaterinbourg</item>
+        <item>(GMT+05:00)Islamabad, Karachi</item>
+        <item>(GMT+05:30)Calcutta, Mumbai, Madras, New Delhi</item>
+        <item>(GMT+05:45)Katmandu</item>
+        <item>(GMT+06:00)Novosibirsk</item>
+        <item>(GMT+06:00)Dhaka</item>
+        <item>(GMT+06:00)Astana</item>
+        <item>(GMT+06:30)Rangoon</item>
+        <item>(GMT+07:00)Bangkok, Hanoi, Jakarta</item>
+        <item>(GMT+07:00)Krasnoyarsk</item>
+        <item>(GMT+08:00)Pékin, Chongqing, Région administrative spéciale de Hong Kong, Urumqi</item>
+        <item>(GMT+08:00)Irkutsk</item>
+        <item>(GMT+08:00)Kuala Lumpur, Singapore</item>
+        <item>(GMT+08:00)Perth</item>
+        <item>(GMT+08:00)Taipei</item>
+        <item>(GMT+09:00)Osaka, Sapporo, Tokyo</item>
+        <item>(GMT+09:00)Séoul</item>
+        <item>(GMT+09:00)Yakutsk</item>
+        <item>(GMT+09:30)Adélaïde</item>
+        <item>(GMT+10:00)Brisbane</item>
+        <item>(GMT+10:00)Canberra, Melbourne, Sydney</item>
+        <item>(GMT+10:00)Guam, Port Moresby</item>
+        <item>(GMT+10:00)Hobart</item>
+        <item>(GMT+10:00)Vladivostok</item>
+        <item>(GMT+11:00)Magadan</item>
+        <item>(GMT+12:00)Auckland, Wellington</item>
+        <item>(GMT+12:00)Fidji</item>
+        <item>(GMT+13:00)Tongatapu</item>
+    </string-array>
+
+    <string-array name="event_type">
+        <item>ENREGISTREMENT D\'EVENEMENT</item>
+        <item>ENREGISTREMENT DU MINUTAGE</item>
+    </string-array>
+</resources>

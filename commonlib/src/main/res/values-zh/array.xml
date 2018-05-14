@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="motion_detection_sensitivity">
+        <item>最高</item>
+        <item>高</item>
+        <item>中</item>
+        <item>低</item>
+        <item>关闭</item>
+    </string-array>
+    <string-array name="device_timezone_old">
+        <item>GMT-11 中途岛;萨摩亚群岛;</item>
+        <item>GMT-10 夏威夷;</item>
+        <item>GMT-9 阿拉斯加;</item>
+        <item>GMT-8 太平洋时间(美国和加拿大);</item>
+        <item>GMT-7 山地时间(美国和加拿大);</item>
+        <item>GMT-6 中部时间(美国和加拿大);</item>
+        <item>GMT-5 东部时间(美国和加拿大);波哥大;利马;</item>
+        <item>GMT-4 大西洋时间(加拿大);圣地亚哥;拉巴斯;</item>
+        <item>GMT-3 巴西利亚;布宜诺斯艾利斯</item>
+        <item>GMT-2 中大西洋;</item>
+        <item>GMT-1 亚速尔群岛;佛得角群岛;</item>
+        <item>GMT 0 格林威治标准时间：伦敦;里斯本;卡萨布兰卡;</item>
+        <item>GMT+1 巴黎;柏林;罗马;马德里;</item>
+        <item>GMT+2 雅典;耶路撒冷;开罗;赫尔辛基;</item>
+        <item>GMT+3 莫斯科;内罗比;利雅得</item>
+        <item>GMT+4 巴库;第比利斯;阿布扎比;马斯喀特;</item>
+        <item>GMT+5 新德里;伊斯兰堡;卡拉奇;</item>
+        <item>GMT+6 达喀尔;阿拉木图;新西伯利亚;阿斯塔纳;</item>
+        <item>GMT+7 曼谷;河内;雅加达;</item>
+        <item>GMT+8 北京;新加坡;香港;台北;</item>
+        <item>GMT+9 首尔;雅库茨克;东京;</item>
+        <item>GMT+10 关岛;墨尔本;悉尼;</item>
+        <item>GMT+11 所罗门群岛;新喀里多尼亚;马加丹</item>
+        <item>GMT+12 惠灵顿;斐济;奥克兰</item>
+    </string-array>
+    <string-array name="net_work_style">
+        <item>有线</item>
+        <item>无线</item>
+    </string-array>
+    <string-array name="record_type">
+        <item>关闭</item>
+        <item>全时录像</item>
+        <item>报警录像</item>
+    </string-array>
+    <string-array name="safety_connection">
+        <item>无</item>
+        <item>SSL</item>
+        <item>TLS</item>
+        <item>STARTTLS</item>
+    </string-array>
+
+    <string-array name="tips_alarm_list_array">
+        <item>移动侦测</item>
+        <item>外置报警</item>
+        <item>声音报警</item>
+        <item>外置报警</item>
+        <item>移动侦测</item>
+    </string-array>
+    <string-array name="tips_alarm_aoni_list_array">
+        <item>移动侦测</item>
+        <item>报警录像异常</item>
+        <item>门铃响</item><!--E936不支持-->
+        <item>插入SD Card</item><!--E936不支持-->
+        <item>取下SD Card</item><!--E936不支持-->
+        <item>SD Card已满</item><!--E936不支持-->
+        <item>未识别SD卡</item><!--E936不支持-->
+        <item>电量低</item>
+        <item>外部供电</item>
+        <item>充电中</item>>
+        <item>电池已充满</item>
+        <item>固件升级成功</item>
+        <item>固件升级失败</item>
+        <item>固件升级失败</item><!--E936不支持-->
+        <item>固件升级失败</item>
+    </string-array>
+    <string-array name="stream_quality">
+        <item>高清</item>
+        <item>标清</item>
+    </string-array>
+    <string-array name="device_timezone_new">
+        <item>(GMT-12:00)国际日期变更线西12区</item>
+        <item>(GMT-11:00)中途岛，萨摩亚群岛</item>
+        <item>(GMT-10:00)夏威夷</item>
+        <item>(GMT-09:00)阿拉斯加</item>
+        <item>(GMT-08:00)太平洋时间（美国和加拿大）</item>
+        <item>(GMT-07:00)奇瓦瓦，拉巴斯，马萨特兰</item>
+        <item>(GMT-07:00)山地时间（美国和加拿大）</item>
+        <item>(GMT-07:00)亚利桑那</item>
+        <item>(GMT-06:00)萨斯喀彻温</item>
+        <item>(GMT-06:00)瓜达拉哈拉，墨西哥城，蒙特雷</item>
+        <item>(GMT-06:00)中部时间 (美国和加拿大)</item>
+        <item>(GMT-06:00)哥斯达黎加</item>
+        <item>(GMT-05:00)印第安纳州</item>
+        <item>(GMT-05:00)东部时间 (美国和加拿大)</item>
+        <item>(GMT-05:00)波哥大，利马，基多</item>
+        <item>(GMT-04:30)加拉加斯</item>
+        <item>(GMT-04:00)圣地亚哥</item>
+        <item>(GMT-04:00)大西洋时间 (加拿大)</item>
+        <item>(GMT-03:30)纽芬兰</item>
+        <item>(GMT-03:00)蒙得维的亚</item>
+        <item>(GMT-03:00)布宜诺斯艾利斯</item>
+        <item>(GMT-03:00)圣保罗</item>
+        <item>(GMT-02:00)中大西洋</item>
+        <item>(GMT-01:00)佛得角群岛</item>
+        <item>(GMT-01:00)亚速尔群岛</item>
+        <item>(GMT+00:00)格林威治标准时间：都柏林，伦敦，里斯本</item>
+        <item>(GMT+00:00)卡萨布兰卡</item>
+        <item>(GMT+01:00)阿姆斯特丹，巴黎，柏林，罗马，马德里，斯多哥尔摩</item>
+        <item>(GMT+01:00)贝尔格莱德，布拉迪斯拉发，布达佩斯，卢布尔雅那</item>
+        <item>(GMT+01:00)布鲁塞尔，哥本哈根，马德里，巴黎</item>
+        <item>(GMT+01:00)萨拉热窝，斯科普里，华沙，萨格勒布</item>
+        <item>(GMT+01:00)中非西部</item>
+        <item>(GMT+02:00)安曼</item>
+        <item>(GMT+02:00)雅典，布加勒斯特，伊斯坦布尔</item>
+        <item>(GMT+02:00)开罗</item>
+        <item>(GMT+02:00)哈拉雷，比勒陀利亚</item>
+        <item>(GMT+02:00)赫尔辛基，基辅，里加，索菲亚，塔林，维尔纽斯</item>
+        <item>(GMT+02:00)耶路撒冷</item>
+        <item>(GMT+03:00)巴格达</item>
+        <item>(GMT+03:00)科威特，利雅得</item>
+        <item>(GMT+03:00)莫斯科</item>
+        <item>(GMT+03:00)内罗毕</item>
+        <item>(GMT+03:30)德黑兰</item>
+        <item>(GMT+04:00)阿布扎比，马斯喀特</item>
+        <item>(GMT+04:00)巴库</item>
+        <item>(GMT+04:30)喀布尔</item>
+        <item>(GMT+05:00)叶卡捷琳堡</item>
+        <item>(GMT+05:00)伊斯兰堡，卡拉奇</item>
+        <item>(GMT+05:30)加尔各答，孟买，马德拉斯，新德里</item>
+        <item>(GMT+05:45)加德满都</item>
+        <item>(GMT+06:00)新西伯利亚</item>
+        <item>(GMT+06:00)达卡</item>
+        <item>(GMT+06:00)阿斯塔纳</item>
+        <item>(GMT+06:30)仰光</item>
+        <item>(GMT+07:00)曼谷，河内，雅加达</item>
+        <item>(GMT+07:00)克拉斯诺亚尔斯克</item>
+        <item>(GMT+08:00)北京，重庆，香港特别行政区，乌鲁木齐</item>
+        <item>(GMT+08:00)伊尔库兹克</item>
+        <item>(GMT+08:00)吉隆坡，新加坡</item>
+        <item>(GMT+08:00)珀斯</item>
+        <item>(GMT+08:00)台北</item>
+        <item>(GMT+09:00)大阪，札幌，东京</item>
+        <item>(GMT+09:00)首尔</item>
+        <item>(GMT+09:00)雅库兹克</item>
+        <item>(GMT+09:30)阿德莱德</item>
+        <item>(GMT+10:00)布里斯班</item>
+        <item>(GMT+10:00)堪培拉，墨尔本，悉尼</item>
+        <item>(GMT+10:00)关岛，莫尔兹比港</item>
+        <item>(GMT+10:00)霍巴特</item>
+        <item>(GMT+10:00)符拉迪沃斯托克</item>
+        <item>(GMT+11:00)马加达</item>
+        <item>(GMT+12:00)奥克兰，惠灵顿</item>
+        <item>(GMT+12:00)斐济</item>
+        <item>(GMT+13:00)努库阿洛法</item>
+    </string-array>
+
+    <string-array name="event_type">
+        <item>报警录像</item>
+        <item>定时录像</item>
+    </string-array>
+</resources>

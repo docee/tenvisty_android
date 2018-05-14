@@ -1,5 +1,6 @@
 package com.tws.commonlib.activity.hichip;
 
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
@@ -64,7 +65,7 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
             public void OnNavigationButtonClick(int which) {
                 switch (which) {
                     case NavigationBar.NAVIGATION_BUTTON_RIGHT:
-                        setFtpSetting(false);
+                        setFtpSetting(true);
                         break;
                 }
             }
@@ -90,12 +91,8 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
 
     void setFtpSetting(boolean check) {
         if (param != null) {
-            if(check){
-                refreshProgressTest(getString(R.string.process_setting));
-            }
-            else{
-                showLoadingProgress(getString(R.string.process_setting));
-            }
+
+            showLoadingProgress(getString(R.string.process_setting));
             isCheck = check;
             String server = ftp_setting_server_edt.getText().toString();
 
@@ -258,8 +255,8 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
                         ftp_setting_mode_tgbtn.setChecked(param.u32Mode == 1);
                         break;
                     case HiChipDefines.HI_P2P_SET_FTP_PARAM_EXT:
-                        if (!isCheck) {
-                           setFtpSetting(true);
+                        if (isCheck) {
+                           setFtpSetting(false);
                         } else {
                             dismissLoadingProgress();
                             camera.unregisterIOTCListener(FTPSetting_HichipActivity.this);
@@ -276,11 +273,23 @@ public class FTPSetting_HichipActivity extends BaseActivity implements IIOTCList
                 switch (msg.what) {
                     case HiChipDefines.HI_P2P_SET_FTP_PARAM_EXT:
                         if (!isCheck) {
+                            dismissLoadingProgress();
                             showAlert(getString(R.string.alert_setting_fail));
                         } else {
-                            showAlert(getString(R.string.dialog_msg_ftptest_falied));
+                            showAlertnew(android.R.drawable.ic_dialog_alert, getString(R.string.warning), getString(R.string.dialog_msg_test_falied), getString(R.string.cancel), getString(R.string.yes), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int which) {
+                                    switch (which) {
+                                        case DialogInterface.BUTTON_POSITIVE:
+                                            setFtpSetting(false);
+                                            break;
+                                        case DialogInterface.BUTTON_NEGATIVE:
+                                            dismissLoadingProgress();
+                                            break;
+                                    }
+                                }
+                            });
                         }
-                        dismissLoadingProgress();
                         break;
 
 

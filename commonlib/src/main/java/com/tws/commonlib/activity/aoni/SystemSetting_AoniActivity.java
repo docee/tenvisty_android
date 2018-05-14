@@ -330,7 +330,7 @@ public class SystemSetting_AoniActivity extends BaseActivity implements IIOTCLis
                     }
                     else if(resp.result == 1){
                         dismissLoadingProgress();
-                        showAlert(getString(R.string.dialog_msg_new_firmware_already_latest));
+                        showAlert(getString(R.string.dialog_msg_new_firmware_already_latest), getString(R.string.prompt).toString(), true, null);
                         //	dismissLoadingProgress();
                         updateStatus = UPDATA_STATE_NONE;
                     }

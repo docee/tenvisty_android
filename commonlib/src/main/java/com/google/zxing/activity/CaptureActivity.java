@@ -443,6 +443,8 @@ public class CaptureActivity extends AppCompatActivity implements Callback {
                                 CameraManager.get().openDriver(surfaceHolder);
                             } catch (IOException e) {
                                 e.printStackTrace();
+                            } catch (RuntimeException e) {
+                                return;
                             }
                         }
                     });

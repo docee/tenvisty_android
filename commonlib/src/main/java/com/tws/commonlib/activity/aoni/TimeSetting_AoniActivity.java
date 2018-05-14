@@ -118,6 +118,7 @@ public class TimeSetting_AoniActivity extends BaseActivity implements IIOTCListe
         showLoadingProgress();
         if (camera != null) {
             showLoadingView(R.id.txt_timezone);
+            ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 0;
             showLoadingView(R.id.txt_time);
             showLoadingView(R.id.togbtn_dst);
             camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_GET_NTP_CONFIG_REQ, new byte[1]);
@@ -218,6 +219,7 @@ public class TimeSetting_AoniActivity extends BaseActivity implements IIOTCListe
                     accTimezoneIndex = ntpConfig.TimeZone - 1;
                     txt_timezone.setText(timezoneSourceList[accTimezoneIndex].split(";")[0]);
                     hideLoadingView(R.id.txt_timezone);
+                    ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 2;
                     hideLoadingView(R.id.togbtn_dst);
                 }
                 break;

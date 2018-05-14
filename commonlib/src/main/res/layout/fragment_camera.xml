@@ -48,12 +48,13 @@
         android:layout_width="match_parent"
         android:layout_height="300sp"
         android:layout_marginTop="50sp"
+        android:visibility="gone"
         android:gravity="center">
 
         <LinearLayout
             android:id="@+id/ll_first_add_tip"
-            android:layout_width="220sp"
-            android:layout_height="180sp"
+            android:layout_width="250sp"
+            android:layout_height="200sp"
             android:background="@drawable/ll_background_dark_corner"
             android:gravity="center"
             android:orientation="vertical">
@@ -67,7 +68,9 @@
                 android:clickable="true" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
+                android:textAlignment="center"
+                android:gravity="center"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="-40sp"
                 android:text="@string/btn_first_add_camera"

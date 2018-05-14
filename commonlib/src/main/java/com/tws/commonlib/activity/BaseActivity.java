@@ -180,6 +180,7 @@ public class BaseActivity extends AppCompatActivity {
                 getResources().getString(
                         msg))
                 .setTitle(R.string.warning)
+                .setIcon(android.R.drawable.ic_dialog_alert)
                 .setPositiveButton(
                         getResources().getString(R.string.ok),
                         listener)

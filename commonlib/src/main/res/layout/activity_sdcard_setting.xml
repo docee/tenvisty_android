@@ -164,7 +164,7 @@
     <Button
         android:id="@+id/btn_erase_sdcard"
         android:layout_width="match_parent"
-        android:text="Format SDCard"
+        android:text="@string/btn_format"
         android:onClick="formatSdCard"
         android:textColor="@color/white"
         android:layout_marginTop="15dp"

@@ -81,7 +81,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="@string/lab_camera_uid"
-                    android:textSize="16dp"
+                    android:textSize="14dp"
                     android:textColor="#333333" />
 
                 <EditText
@@ -124,7 +124,7 @@
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:text="@string/lab_camera_setting_other_info_fmversion"
-                    android:textSize="16dp"
+                    android:textSize="14dp"
                     android:textColor="#333333" />
 
                 <EditText

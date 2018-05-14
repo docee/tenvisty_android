@@ -352,7 +352,7 @@ public class SystemSetting_HichipActivity extends BaseActivity implements IIOTCL
                         tr.start();
                     } else {
                         dismissLoadingProgress();
-                        showAlert(getString(R.string.dialog_msg_new_firmware_already_latest));
+                        showAlert(getString(R.string.dialog_msg_new_firmware_already_latest), getString(R.string.prompt).toString(), true, null);
                         //	dismissLoadingProgress();
                         updateStatus = UPDATA_STATE_NONE;
                     }

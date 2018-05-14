@@ -325,9 +325,9 @@ public class TwsTools {
             e.printStackTrace();
         }
         boolean result = true;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+       // if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 
-            if (targetSdkVersion >= Build.VERSION_CODES.M) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && targetSdkVersion >= Build.VERSION_CODES.M) {
                 // targetSdkVersion >= Android M, we can
                 // use Context#checkSelfPermission
                 result = context.checkSelfPermission(permission)
@@ -337,7 +337,7 @@ public class TwsTools {
                 result = PermissionChecker.checkSelfPermission(context, permission)
                         == PermissionChecker.PERMISSION_GRANTED;
             }
-        }
+       // }
 //        if(!result){
 //            ActivityCompat.requestPermissions((Activity) context, new String[]{permission}, 0);
 //        }

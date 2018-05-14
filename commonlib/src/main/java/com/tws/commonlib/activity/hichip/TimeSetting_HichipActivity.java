@@ -134,6 +134,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
         showLoadingProgress();
         if (camera != null) {
             showLoadingView(R.id.txt_timezone);
+            ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 0;
             showLoadingView(R.id.txt_time);
             showLoadingView(R.id.togbtn_dst);
             if (mIsSupportZoneExt) {// 支持新时区
@@ -236,8 +237,10 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                             }
                         }
                         accTimezoneIndex = index;
+                        togbtn_dst.setChecked(time_ZONE_EXT.u32DstMode == 1);
                         txt_timezone.setText(timezoneSourceList[accTimezoneIndex].split(";")[0]);
                         hideLoadingView(R.id.txt_timezone);
+                        ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 3;
                         hideLoadingView(R.id.togbtn_dst);
                         if (HiDefaultData.TimeZoneField1[accTimezoneIndex][2].equals("1")) {
                             ll_setdst.setVisibility(View.VISIBLE);
@@ -269,6 +272,7 @@ public class TimeSetting_HichipActivity extends BaseActivity implements IIOTCLis
                     }
                     hideLoadingView(R.id.togbtn_dst);
                     hideLoadingView(R.id.txt_timezone);
+                    ((LinearLayout.LayoutParams)txt_timezone.getLayoutParams()).weight = 3;
                     dismissLoadingProgress();
 
                     break;

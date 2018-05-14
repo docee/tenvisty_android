@@ -43,6 +43,7 @@
     android:textColor="@color/white"
     android:textSize="13dp"
     android:gravity="center"
+    android:text="@string/tips_waiting"
     android:layout_width="match_parent"
     android:layout_height="wrap_content" />
 

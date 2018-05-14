@@ -223,7 +223,6 @@ public class EventSetting_HichipActivity extends BaseActivity implements IIOTCLi
                 camera.unregisterIOTCListener(this);
                 requestCode = FTP_SET;
                 intent.setClass(this, FTPSetting_HichipActivity.class);
-                startActivityForResult(intent, getRequestCode(R.id.ll_ftpSetting));
             }
         }
         startActivityForResult(intent, requestCode);

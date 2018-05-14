@@ -87,7 +87,7 @@ public class SdCardSetting_AoniActivity extends BaseActivity implements IIOTCLis
                        if (camera != null) {
                            camera.sendIOCtrl(Camera.DEFAULT_AV_CHANNEL, AVIOCTRLDEFs.IOTYPE_USER_IPCAM_FORMATEXTSTORAGE_REQ, AVIOCTRLDEFs.SMsgAVIoctrlFormatExtStorageReq.parseContent(0));
                        }
-                       showLoadingProgress();
+                       showLoadingProgress(getString(R.string.process_formating));
                        break;
                    case DialogInterface.BUTTON_NEGATIVE:
                        // No button clicked

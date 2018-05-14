@@ -202,7 +202,7 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                             JSONArray vendorTypeDirect = vendorTypeJson.getJSONArray("Direct");
                             if (systemTypeDirect == null || customTypeDirect == null || vendorTypeDirect == null ||
                                     systemTypeDirect.length() == 0 || customTypeDirect.length() == 0 || vendorTypeDirect.length() == 0) {
-                                showAlert(getString(R.string.dialog_msg_new_firmware_already_latest));
+                                showAlert(getString(R.string.dialog_msg_new_firmware_already_latest), getString(R.string.prompt).toString(), true, null);
                                 return;
                             }
                             final String systemTypeVersion = systemTypeDirect.getJSONObject(0).getString("Version");
@@ -232,7 +232,7 @@ public class SystemSettingActivity extends BaseActivity implements IIOTCListener
                                     }
                                 });
                             } else {
-                                showAlert(getString(R.string.dialog_msg_new_firmware_already_latest));
+                                showAlert(getString(R.string.dialog_msg_new_firmware_already_latest), getString(R.string.prompt).toString(), true, null);
                             }
                         } catch (Exception e) {
                             showAlert(getString(R.string.dialog_msg_new_firmware_getaccinfo_failed));
