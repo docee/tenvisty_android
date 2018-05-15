@@ -391,7 +391,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         if (!isShowModifyPwdDlg && CameraFragment.this.getContext() != null) {
 
             isShowModifyPwdDlg = true;
-            if(modifyPasswordAlert != null && modifyPasswordAlert.isShowing()){
+            if(modifyPasswordAlert != null){
                 modifyPasswordAlert.dismiss();
             }
             Builder dlgBuilder = new Builder(CameraFragment.this.getContext());
@@ -686,9 +686,7 @@ public class CameraFragment extends BaseFragment implements OnTouchListener,
         refreshTitle();
         refreshItems();
         if(modifyPasswordAlert != null){
-            if(modifyPasswordAlert.isShowing()) {
-                modifyPasswordAlert.dismiss();
-            }
+            modifyPasswordAlert.dismiss();
         }
         for (IMyCamera camera : TwsDataValue.cameraList()) {
             if (camera.isConnected() && camera.getPassword().equalsIgnoreCase(IMyCamera.DEFAULT_PASSWORD)) {

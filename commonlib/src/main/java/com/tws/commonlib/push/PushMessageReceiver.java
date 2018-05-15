@@ -107,7 +107,7 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
         String key = arg1.getCustomContent();
         String uid = null;
         int type = 0;
-        int time = 0;
+        long time = 0;
         IMyCamera camera = null;
         if (key != null) {
             try {
@@ -116,7 +116,12 @@ public class PushMessageReceiver extends XGPushBaseReceiver {
                 JSONObject conJson = new JSONObject(jsonc);
                 uid = conJson.getString("uid");
                 type = conJson.getInt("type");
-                time = conJson.getInt("time");
+                try {
+                    time = conJson.getInt("time");
+                }
+                catch (Exception ex){
+                    time = System.currentTimeMillis();
+                }
                 int result = TwsTools.showAlarmNotification(arg0,uid, type, time);
                 if(result == -2 ) {
                     camera = IMyCamera.MyCameraFactory.shareInstance().createCamera("", uid, "admin", "admin");

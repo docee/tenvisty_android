@@ -510,6 +510,7 @@ public class CameraFolderActivity extends BaseActivity {
                                     DateScrollItem sItem = findSouceItem(time, type);
                                     if (sItem == null) {
                                         LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
+                                        adapter.checkMode = CameraFolderActivity.this.adapter.isCheckMode();
                                         adapter.setImageFetcher(mImageFetcher);
                                         sItem = new DateScrollItem(time, date, title, adapter, type);
                                         adapterSource.add(sItem);
@@ -536,6 +537,7 @@ public class CameraFolderActivity extends BaseActivity {
                                 if (sItem == null) {
                                     LocalPicItemListAdapter adapter = new LocalPicItemListAdapter(this, new ArrayList<LocalPichModel>(), this.mCamera.getVideoRatio(CameraFolderActivity.this), type);
                                     adapter.setImageFetcher(mImageFetcher);
+                                    adapter.checkMode = CameraFolderActivity.this.adapter.isCheckMode();
                                     sItem = new DateScrollItem(time, date, title, adapter, type);
                                     adapterSource.add(sItem);
                                 }
